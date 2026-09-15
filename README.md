@@ -11,7 +11,7 @@ StockTank is a professional media and podcast network focused on:
 The product should feel like a combination of:
 
 * Shark Tank
-* Bloomberg-style financial media
+* Bloomberg-style,corporate,meme,desk financial media
 * modern podcast/video networks
 * crypto-native media
 * creator networks

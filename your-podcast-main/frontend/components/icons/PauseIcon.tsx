@@ -1,0 +1,14 @@
+export function PauseIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <rect x="3" y="2" width="4" height="12" rx="1" fill="currentColor" />
+      <rect x="9" y="2" width="4" height="12" rx="1" fill="currentColor" />
+    </svg>
+  );
+}

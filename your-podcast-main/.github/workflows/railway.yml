@@ -1,0 +1,108 @@
+name: Railway Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: railway-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Railway
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install backend dependencies
+        run: uv sync --frozen --no-dev
+        working-directory: backend
+
+      - name: Apply D1 migrations
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: uv run python migrate_d1.py upgrade head
+        working-directory: backend
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
+
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
+
+      # Production deploy on push to main or manual trigger
+      - name: Deploy to Production
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: railway up -c --service your-podcast
+        working-directory: backend
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      # PR: verify Docker build + health check
+      - name: Verify Docker Build
+        if: github.event_name == 'pull_request'
+        run: docker build -t podcast-backend-test .
+        working-directory: backend
+
+      - name: Verify Health Check
+        if: github.event_name == 'pull_request'
+        run: |
+          docker run -d --name backend-test -p 8099:8000 \
+            -e ENVIRONMENT=production -e SESSION_SECRET=ci-test \
+            podcast-backend-test
+          for i in $(seq 1 10); do
+            if curl -sf http://localhost:8099/api/health; then
+              echo " Health check passed"
+              docker stop backend-test
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Health check failed"
+          docker logs backend-test
+          docker stop backend-test
+          exit 1
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- railway-deploy -->';
+            const body = `${marker}\n🚂 Backend Docker build verified`;
+            const { data: comments } = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            const existing = comments.find(c => c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                comment_id: existing.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body
+              });
+            }
