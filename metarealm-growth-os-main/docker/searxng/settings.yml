@@ -1,0 +1,17 @@
+# Minimal SearXNG config for MetaRealm OS.
+# The important line is search.formats: it must include json, or our
+# agents' requests get refused. SearXNG disables json by default for
+# public instances, this one only runs on your own machine.
+
+use_default_settings: true
+
+general:
+  instance_name: "MetaRealm OS search"
+
+search:
+  formats:
+    - html
+    - json
+
+server:
+  secret_key: "metarealm-os-local-dev-only-change-if-you-expose-this"

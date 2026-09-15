@@ -1,0 +1,225 @@
+{
+  "name": "MetaRealm OS, morning deal routine",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 7,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "sched",
+      "name": "Every day 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/agents/market-intelligence/run",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{}"
+      },
+      "id": "market-intelligence",
+      "name": "Get gaming news",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/agents/content-strategist/run",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"batch\": true}"
+      },
+      "id": "content-strategist",
+      "name": "Fill content queue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/agents/opportunity-hunter/run",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{}"
+      },
+      "id": "opportunity-hunter",
+      "name": "Hunt deals",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/agents/bd-manager/run",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"auto\": true}"
+      },
+      "id": "bd-manager",
+      "name": "Draft intros",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/agents/crm-manager/run",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{}"
+      },
+      "id": "crm-manager",
+      "name": "Check pipeline",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/agents/relationship-manager/run",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{}"
+      },
+      "id": "relationship-manager",
+      "name": "Warm nudges",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/agents/chief-of-staff/run",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{}"
+      },
+      "id": "chief-of-staff",
+      "name": "Build my day plan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Every day 07:00": {
+      "main": [
+        [
+          {
+            "node": "Get gaming news",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get gaming news": {
+      "main": [
+        [
+          {
+            "node": "Fill content queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fill content queue": {
+      "main": [
+        [
+          {
+            "node": "Hunt deals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hunt deals": {
+      "main": [
+        [
+          {
+            "node": "Draft intros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft intros": {
+      "main": [
+        [
+          {
+            "node": "Check pipeline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check pipeline": {
+      "main": [
+        [
+          {
+            "node": "Warm nudges",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Warm nudges": {
+      "main": [
+        [
+          {
+            "node": "Build my day plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

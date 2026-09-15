@@ -1,0 +1,10 @@
+.env
+.env.prod
+.dev.vars
+node_modules/
+.wrangler/
+dist/
+*.log
+.DS_Store
+.relay-key
+.relay-key.*

@@ -1,0 +1,69 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: metarealm
+      POSTGRES_PASSWORD: metarealm_dev
+      POSTGRES_DB: metarealm_os
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metarealm -d metarealm_os"]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+
+  api:
+    build: ../backend
+    restart: unless-stopped
+    env_file: ../backend/.env
+    environment:
+      - KNOWLEDGE_DIR=/app/knowledge
+      - PROMPTS_DIR=/app/prompts
+      - UPLOADS_DIR=/app/uploads
+      # Points at the searxng container's internal Docker network name.
+      - SEARXNG_URL=http://searxng:8080
+      # Reach Ollama running on your Windows or Mac machine, NOT localhost.
+      # localhost inside Docker means the container itself, which has no Ollama.
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - LLM_PROVIDER=ollama
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app"
+    ports:
+      - "8000:8000"
+    # This line lets the container reach your computer as host.docker.internal.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../backend:/app
+      - ../uploads:/app/uploads
+      - ../prompts:/app/prompts
+      - ../knowledge:/app/knowledge
+
+  # Started only with:  docker compose --profile agents up -d   (Milestones 6-7)
+  searxng:
+    image: searxng/searxng:latest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./searxng:/etc/searxng
+
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_SECURE_COOKIE=false
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  pgdata:
+  n8n_data:

@@ -1,0 +1,47 @@
+{
+  "name": "minds-orchestrator-client",
+  "version": "0.1.0",
+  "description": "A dependency-free client and multi-agent orchestrator for the Animoca Minds Builder API, with field notes on the platform's undocumented behaviour.",
+  "type": "module",
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./src/index.mjs"
+    }
+  },
+  "types": "./index.d.ts",
+  "files": [
+    "src",
+    "index.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test",
+    "example:hello": "node --env-file=.env examples/hello.mjs",
+    "example:circle": "node --env-file=.env examples/circle.mjs",
+    "example:forkcast": "node --env-file=.env examples/forkcast-oracle.mjs"
+  },
+  "keywords": [
+    "animoca",
+    "minds",
+    "hellominds",
+    "ai-agents",
+    "multi-agent",
+    "orchestration"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JasonBitBenderBrink/minds-orchestrator-client.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JasonBitBenderBrink/minds-orchestrator-client/issues"
+  },
+  "homepage": "https://github.com/JasonBitBenderBrink/minds-orchestrator-client#readme",
+  "dependencies": {}
+}
