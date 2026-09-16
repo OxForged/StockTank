@@ -1,6 +1,6 @@
 # StockTank — Go-To-Market & Build Plan (working draft)
 
-Status: **paused at planning checkpoint** (2026-09-16). Nothing committed or pushed yet.
+Status: **Phase 1 in progress** (2026-09-16). Component audits complete (section 7).
 Source of truth for scope: `README.md` (master build prompt, sections 1–59).
 Design direction: `stocktankexample.png`.
 
@@ -129,9 +129,169 @@ gates, so a real public product ships early and AI/mobile/TV follow behind featu
 ---
 
 ## 6. Open blockers
-1. GitHub auth (`gh auth login`)
+0. **Leaked credentials:** `nft-assets-server-main/test_nonce.js` was purged from git history on 2026-09-16 (force-pushed). The wallet key and Alchemy key were public before that, so **rotate them before production** (the owner has committed to this).
+1. ~~GitHub auth~~ done (`OxForged`)
 2. Hosting / domain / provider accounts (Phase 0)
-3. Component audit results (section 7)
+3. ~~License permission~~: the owner confirmed full permission for every component folder.
+4. Revoke the session token in `nft-video-gen-main/scripts/test-mindname-display.mjs:4`.
 
 ## 7. Component audit results
-_Pending: Fable audits running._
+
+### your-podcast-main
+- **What:** AI-generated two-host tech news podcast. RSS ingest → LLM filter → script → TTS → ffmpeg → R2.
+- **Stack mismatch:** Python 3.11/FastAPI backend (D1/SQLite + Alembic); Next.js 16 / React 19 / Tailwind v4 frontend.
+- **License:** no LICENSE file (README only *says* MIT). Treat it as unlicensed until the author confirms.
+- **Reuse (player: the most valuable part):**
+  - `frontend/contexts/AudioContext.tsx` → adapt → `packages/player`. Remove the fake playback timer at lines 69-82, 97-101 and 120-123.
+  - `frontend/components/ProgressBar.tsx` → copy → `packages/player` (accessible slider).
+  - `PlayerControls.tsx`, `MiniPlayer.tsx`, `NowPlaying.tsx` → adapt: swap `next/*` for React Router and hex colors for tokens.
+  - `hooks/useAudioState.ts`, `hooks/useAudioDispatch.ts`, `types/audio.ts`, `lib/format.ts`, `components/icons/*` → copy.
+  - `EpisodeRow.tsx`, `SourcesList.tsx`, `SearchInput.tsx` → adapt → `apps/web`.
+  - `app/globals.css` → adapt: keep the keyframes and reduced-motion rules; drop the cream editorial theme.
+- **Reference only (port Python → Node):**
+  - `services/tts.py`: chunking, 429 backoff, voice per speaker.
+  - `services/llm/prompts.py`: title, keywords, filter prompts.
+  - `services/pipeline.py`: job-step pattern for BullMQ.
+  - `routers/generate.py` + `tasks.py`: 202-then-poll API and 409 for one active job per user.
+- **Missing (build from scratch):** RSS feed *generation*, iTunes namespace, HLS, video, uploads, speech-to-text transcription.
+- **Secrets / URLs:** no keys committed. Hard-coded values to remove:
+  - Vercel origin at `backend/app/main.py:52`
+  - LAN IP at `frontend/next.config.ts:16`
+  - Seed email at `routers/auth.py:121`
+- **Don't reuse:**
+  - The Python backend
+  - D1/SQLite/Alembic
+  - Next pages and config, Vercel/Railway workflows
+  - Onboarding UI
+  - `rss_sources.json`
+  - Google-only cookie auth
+  - `frontend/data/episodes.ts` fake fallback episodes
+  - Auto dev-login
+
+### minds-orchestrator-client-main (MIT)
+- **What:** zero-dependency ESM client for the Animoca Minds API, plus a `runChain` staged pipeline. Has 27 offline tests.
+- **Reuse:**
+  - `src/orchestrate.mjs` → adapt to TS → `services/ai-service/src/orchestration/pipeline.ts`. Its Stage type (prompt, parse, timeout, optional, resume) fits the §55 agents; types are in `index.d.ts:53-98`.
+  - `src/client.mjs:184-230` (tolerant JSON extraction, HTML strip) → copy → `services/ai-service/src/llm/parse.ts`.
+- **Don't reuse:** the Minds transport, `examples/forkcast-oracle.mjs`.
+
+### minds-reward-main (MIT)
+- **What:** ERC-20 reward token + mint-on-claim distributor for Base. Hardhat 3, OpenZeppelin 5.6, about 2,800 lines of tests, a coverage gate and CI.
+- **Reuse:**
+  - `contracts/{Operable,RewardToken,RewardDistributor}.sol`, `ignition/`, `scripts/`, `hardhat.config.ts`, CI → copy → `packages/blockchain/`. Rename the token and fix the stale package name `test402-erc20`.
+  - Write a new BullMQ + viem `allocateBatch` job → `services/blockchain-service`.
+- **Caveat:** privileged keys can mint without a cap. Document this; make no financial promises (§31).
+
+### nft-assets-server-main (no LICENSE, poor quality)
+- **What:** Cloudflare Worker (Hono) that indexes NFT media via Alchemy, caches to R2 and stores metadata in Supabase. Has an x402 paywall stub and an NVIDIA NIM LLM agent. No tests.
+- **Reuse (patterns only):**
+  - `src/worker/sse.js` → `services/api/src/lib/sse.ts`
+  - `src/worker/nvidia.js` → OpenAI-compatible LLM provider with retry and quota classification
+  - `src/worker/nftMedia.js` → `packages/blockchain`
+  - `ingest.ts` / `db.ts` / `schema.sql` → reference for the S3 ingest pipeline
+- **🚨 SECURITY:**
+  - `test_nonce.js:4-5` contains a hard-coded Alchemy API key and a **64-hex wallet private key**. The file is committed (`221d39a`) and the GitHub repo is **public**. Treat both as compromised.
+  - `api-server.ts:286-411`: `/fund` and `/pay-owners` sign ERC-20 transfers with `env.PRIVATE_KEY` from **unauthenticated** routes.
+  - `x402.ts:650` accepts a spoofable "settled" header.
+- **Don't reuse:** x402, `/fund`, `/pay-owners`, `payments.js`, MCP server, brands registry, Supabase coupling.
+
+### x-relay-main (no LICENSE, high quality, 77 vitest tests)
+- **What:** X posting relay. Per-user OAuth2+PKCE, encrypted tokens, guardrails, idempotency, draft queue with approval links, cron scheduler, audit log.
+- **Copy** → `services/api/src/distribution/x/`:
+  - `worker/lib/xclient.ts`
+  - `crypto.ts` (AES-GCM envelope + key rotation)
+  - `guardrails.ts`, `schedule.ts`, `errors.ts`
+- **Adapt:**
+  - `tokens.ts`, `idempotency.ts`, `dispatch.ts`, `scheduler.ts`, `queue.ts`: D1 → Prisma, CAS lock → Redis, cron → BullMQ repeatable job
+  - `schema.sql` → Prisma models (SocialAccount/Post/Queue/AuditLog)
+  - `routes/oauth.ts` + `routes/approve.ts` → Express + Zod
+- **Check:** `STATUS.md` says a builder JWT was once committed upstream.
+- **Don't reuse:** `ops/`, `playbooks/`, `routes/debug.ts`, Cloudflare bindings.
+
+### CreatorOS-main (no LICENSE, hackathon demo)
+- **What:** 4-agent creator assistant. React 18 + Vite + Tailwind 3, Vercel functions, state in localStorage.
+- **No real auth:** `ProtectedRoute.tsx` does nothing.
+- **Fakes:**
+  - Hard-coded metrics in `DashboardContext.tsx:204`
+  - `predictedPerformanceScore = Date.now() % 7`
+  - `connectPlatform` is a `setTimeout` with no OAuth
+- **Take only:**
+  - Zernio social-proxy contract (`api/zernio/*`, `src/lib/zernio.ts`) → optional aggregator DistributionProvider
+  - Repurpose prompt + JSON extractor at `api/minds/repurpose.ts:34-109` → `services/ai-service/prompts`
+  - Brand icons in `src/components/Icons.tsx` → `packages/ui/icons`
+  - `PlannerPage.tsx` calendar → `apps/admin` content calendar, fed from the API
+- **Don't reuse:** `agents/`, `mindsStore`, `DashboardContext`, the growth and analytics agents.
+
+### metarealm-growth-os-main (no LICENSE, strongest source here)
+- **What:** founder business OS. Python FastAPI + SQLAlchemy + Alembic backend; Next 15 / React 19 / Tailwind v4 / Radix (shadcn-style) frontend. 14 AI "employee" agents.
+- **No auth, users or RBAC.** CORS is `*` on the error handler.
+- **Port to TS:**
+  - Agent registry, `log_run`, orchestrator (`agents/{registry,runtime,orchestrator}.py`) → `services/ai-service` + BullMQ; `AgentRun` → Prisma `AiJobRun`
+  - Prompts-as-`.md` convention (`services/llm.py`, `prompts/*.md`)
+  - **Content review queue:** `ContentItem.status`, `api/content.py`, `content_strategist.py`, UI `ContentStudioView`, `ContentDetailSheet`, `AiDraftSheet`, `ContentApprovalWidget` → §27/§56 review workflow
+  - News intel: `services/rss.py`, `market_intelligence.py` scoring/dedup, `services/search.py` + `SearchBudget` → Newsroom (§23)
+  - Runtime settings (DB overrides env; secrets shown only as set or not set) → admin settings
+  - RAG (`services/rag.py`, `embeddings.py`) → reference only; use pgvector
+- **Copy:**
+  - `frontend/components/ui/*` (shadcn kit) and `components/shared/*` → `packages/ui`
+  - `AppShell`, `AppSidebar`, `AppHeader`, `navigation.ts` → `apps/admin` shell. Remove the hard-coded founder name.
+  - `PipelineBoard` → sponsor/deal pipeline
+- **Don't reuse:** CRM, outreach, email finder, proposal code; `seed_data.py` and `knowledge/` (client data in 34 files); string-date columns.
+
+### ai-video-editor-main ("Timeline Studio", MIT for code only)
+- **What:** local-first browser video editor. React 19 + Vite 6, mostly untyped JS, in-browser AI (Whisper, TTS, WebGPU).
+- **Quality:** zero tests. `tsconfig` only covers 2 files. Very large files (`Timeline.jsx` 3,910 lines).
+- **Model weights are NOT MIT-licensed** (see `MODEL_LICENSES.md`). The face-swap weights are research-only.
+- **Copy with attribution → TS packages:**
+  - `src/lib/projectRenderPlan.js`: pure ffmpeg `filter_complex` planner → `services/media-worker`
+  - `src/lib/smartFrame.js`: 16:9 → 9:16 / 1:1 crop solver → vertical and square clips (§13)
+  - `src/lib/subtitles.js`: SRT; `src/lib/exportSettings.js`: bitrate tables → shared
+  - `src/lib/timeline.js`, `timelineCutActions.js`, `timelineRipple.js`, `timelineSnap.js` → shared + admin clip-review editor
+  - `src/lib/captionLayout.js`, `captionStyles.js`, `CaptionOverlay.jsx` → `packages/player`
+  - `src/plugins/generation/{contract,registry,host}.js` → provider-adapter pattern
+- **Reference:**
+  - `src/lib/asr.js` caption segmentation → TranscriptionProvider
+  - `autoEdit.js` scene-change math → AI clipping
+  - `media.js:2214-2452` ffmpeg arguments
+  - `projectCommandEngine.js` plan → validate → diff → apply, as the model for review
+- **Don't reuse:**
+  - Browser WebGPU/ONNX runtimes
+  - Face swap, LivePortrait, JoyVASA (license and deepfake risk)
+  - `App.jsx` and `Timeline.jsx` UI
+  - `public/vendor/*`
+  - i18n blobs
+
+### nft-video-gen-main ("minds.MONSTER", NO LICENSE: re-implement, don't copy)
+- **What:** React 19 + Vite 8 + Cloudflare Worker agent swarm (NVIDIA / OpenRouter / OpenAI / MiniMax), Stripe credits. 30 `node --test` tests.
+- **Reference designs:**
+  - `worker/sse.js` + `job-events.js` + `job-log.js`: resumable SSE job log → BullMQ progress + SSE endpoint
+  - `worker/director-job.js`: step-machine worker
+  - `worker/minimax.js` / `nvidia.js` / `openrouter.js`: provider error taxonomy (retryable, quota, content-filtered)
+  - `worker/signed-media.js`: HMAC signed media URLs → signed HLS/clip URLs
+  - `scripts/encode-hero.sh`: AV1/HEVC/H.264 encode ladder, poster, faststart
+  - `scripts/gen-audio.mjs`: sidechain ducking
+- **⚠ Security flags:**
+  - `scripts/test-mindname-display.mjs:4` has a hard-coded signed session token. Revoke it if still valid.
+  - `src/services/wallet.js:6,30` stores a raw private key in localStorage. Never reuse.
+  - `wrangler.jsonc` contains a personal email address and production origins.
+- **Don't reuse:** the NFT/Minds agents, three.js UI, `wallet.js`, `nfts.json`, `kimi_backup/`.
+
+---
+
+### Reuse summary: what we build from vs. from scratch
+
+| StockTank area | Source | Mode |
+|---|---|---|
+| `packages/ui` shadcn kit, admin shell | metarealm `frontend/components/{ui,shared,layout}` | copy/adapt* |
+| `packages/player` audio | your-podcast `AudioContext`, `ProgressBar`, `MiniPlayer` | adapt* |
+| Captions / clip crop / render plan | ai-video-editor `src/lib/*` | copy (MIT) |
+| Media job progress (SSE) | nft-video-gen / nft-assets `sse.js` | re-implement |
+| AI pipeline / agents | minds-orchestrator `runChain` (MIT) + metarealm registry | adapt |
+| LLM provider adapters | nvidia.js / openrouter.js patterns | re-implement |
+| Review queue (§27, §56) | metarealm content studio | adapt* |
+| Newsroom (§23) | metarealm rss + market_intelligence | port* |
+| X distribution | x-relay `lib/*` | copy/adapt* |
+| Rewards / web3 (optional) | minds-reward contracts (MIT) | copy |
+| **From scratch** | auth + RBAC, Prisma schema, Castopod/AzuraCast adapters, RSS generation, HLS pipeline, Meilisearch, ads, mobile, TV | new |
+
+\* No LICENSE file, but the owner confirmed full permission (2026-09-16), so copying is OK.
