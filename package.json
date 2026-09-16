@@ -1,0 +1,33 @@
+{
+  "name": "stocktank",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "dev": "turbo run dev --parallel --filter=@stocktank/api --filter=@stocktank/web --filter=@stocktank/admin",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "db:generate": "pnpm --filter @stocktank/database generate",
+    "db:migrate": "pnpm --filter @stocktank/database migrate:dev",
+    "db:deploy": "pnpm --filter @stocktank/database migrate:deploy",
+    "db:seed": "pnpm --filter @stocktank/database seed",
+    "infra:up": "docker compose -f docker-compose.dev.yml up -d",
+    "infra:down": "docker compose -f docker-compose.dev.yml down",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.13.5",
+    "eslint": "^10.10.0",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "globals": "^17.12.0",
+    "prettier": "^3.9.7",
+    "turbo": "^2.10.13",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.70.0"
+  }
+}

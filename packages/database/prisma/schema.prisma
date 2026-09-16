@@ -1,0 +1,581 @@
+// StockTank core schema: Milestone 1 (identity, RBAC, system) plus the content-graph foundation (§6–9).
+// Later milestones add media assets, AI, ads, distribution and analytics models.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+  runtime             = "nodejs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────────────────── Identity & access ─────────────────────────
+
+enum UserStatus {
+  active
+  suspended
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String?    @map("password_hash")
+  status       UserStatus @default(active)
+  lastLoginAt  DateTime?  @map("last_login_at")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  profile   Profile?
+  roles     UserRole[]
+  sessions  Session[]
+  auditLogs AuditLog[]
+  apiKeys   ApiKey[]
+  follows   Follow[]
+  bookmarks Bookmark[]
+  host      Host?
+
+  @@map("users")
+}
+
+model Profile {
+  userId        String   @id @map("user_id")
+  displayName   String   @map("display_name")
+  avatarUrl     String?  @map("avatar_url")
+  bio           String?
+  /// Optional public wallet address. Private keys are never stored.
+  walletAddress String?  @unique @map("wallet_address")
+  locale        String   @default("en")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  permissions RolePermission[]
+  users       UserRole[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String  @id @default(cuid())
+  key         String  @unique
+  description String?
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String @map("role_id")
+  permissionId String @map("permission_id")
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model UserRole {
+  userId    String   @map("user_id")
+  roleId    String   @map("role_id")
+  grantedAt DateTime @default(now()) @map("granted_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+/// Server-side sessions. Only a SHA-256 hash of the session token is stored.
+model Session {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  tokenHash  String    @unique @map("token_hash")
+  userAgent  String?   @map("user_agent")
+  ipAddress  String?   @map("ip_address")
+  expiresAt  DateTime  @map("expires_at")
+  revokedAt  DateTime? @map("revoked_at")
+  lastSeenAt DateTime  @default(now()) @map("last_seen_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+/// API keys: only a hash and a short display prefix are stored.
+model ApiKey {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  name       String
+  prefix     String
+  keyHash    String    @unique @map("key_hash")
+  scopes     String[]
+  lastUsedAt DateTime? @map("last_used_at")
+  expiresAt  DateTime? @map("expires_at")
+  revokedAt  DateTime? @map("revoked_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("api_keys")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?  @map("actor_id")
+  action     String
+  targetType String?  @map("target_type")
+  targetId   String?  @map("target_id")
+  metadata   Json?
+  ipAddress  String?  @map("ip_address")
+  requestId  String?  @map("request_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId, createdAt])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model FeatureFlag {
+  key         String   @id
+  enabled     Boolean  @default(false)
+  description String?
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("feature_flags")
+}
+
+model SystemSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
+
+// ───────────────────────── Content graph ─────────────────────────
+
+enum PublishStatus {
+  draft
+  review
+  approved
+  rejected
+  published
+  archived
+}
+
+model Category {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  description String?
+
+  shows Show[]
+
+  @@map("categories")
+}
+
+model Topic {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  episodes EpisodeTopic[]
+
+  @@map("topics")
+}
+
+model Show {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  title       String
+  tagline     String?
+  description String?
+  coverUrl    String?       @map("cover_url")
+  bannerUrl   String?       @map("banner_url")
+  categoryId  String?       @map("category_id")
+  status      PublishStatus @default(draft)
+  isDemo      Boolean       @default(false) @map("is_demo")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  category Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  seasons  Season[]
+  episodes Episode[]
+  hosts    ShowHost[]
+  follows  Follow[]
+
+  @@index([status])
+  @@map("shows")
+}
+
+model Season {
+  id        String   @id @default(cuid())
+  showId    String   @map("show_id")
+  number    Int
+  title     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  show     Show      @relation(fields: [showId], references: [id], onDelete: Cascade)
+  episodes Episode[]
+
+  @@unique([showId, number])
+  @@map("seasons")
+}
+
+model Episode {
+  id              String        @id @default(cuid())
+  showId          String        @map("show_id")
+  seasonId        String?       @map("season_id")
+  slug            String
+  number          Int?
+  title           String
+  summary         String?
+  description     String?
+  coverUrl        String?       @map("cover_url")
+  durationSeconds Int?          @map("duration_seconds")
+  status          PublishStatus @default(draft)
+  publishedAt     DateTime?     @map("published_at")
+  isDemo          Boolean       @default(false) @map("is_demo")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  show      Show             @relation(fields: [showId], references: [id], onDelete: Cascade)
+  season    Season?          @relation(fields: [seasonId], references: [id], onDelete: SetNull)
+  hosts     EpisodeHost[]
+  guests    EpisodeGuest[]
+  projects  EpisodeProject[]
+  companies EpisodeCompany[]
+  topics    EpisodeTopic[]
+  clips     Clip[]
+  bookmarks Bookmark[]
+
+  @@unique([showId, slug])
+  @@index([status, publishedAt])
+  @@map("episodes")
+}
+
+model Host {
+  id        String   @id @default(cuid())
+  userId    String?  @unique @map("user_id")
+  slug      String   @unique
+  name      String
+  bio       String?
+  avatarUrl String?  @map("avatar_url")
+  twitter   String?
+  /// AI hosts must be disclosed (§25).
+  isAi      Boolean  @default(false) @map("is_ai")
+  isDemo    Boolean  @default(false) @map("is_demo")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user     User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  shows    ShowHost[]
+  episodes EpisodeHost[]
+
+  @@map("hosts")
+}
+
+model Guest {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  title     String?
+  bio       String?
+  avatarUrl String?  @map("avatar_url")
+  twitter   String?
+  website   String?
+  isDemo    Boolean  @default(false) @map("is_demo")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  episodes EpisodeGuest[]
+
+  @@map("guests")
+}
+
+model ShowHost {
+  showId String @map("show_id")
+  hostId String @map("host_id")
+
+  show Show @relation(fields: [showId], references: [id], onDelete: Cascade)
+  host Host @relation(fields: [hostId], references: [id], onDelete: Cascade)
+
+  @@id([showId, hostId])
+  @@map("show_hosts")
+}
+
+model EpisodeHost {
+  episodeId String @map("episode_id")
+  hostId    String @map("host_id")
+
+  episode Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  host    Host    @relation(fields: [hostId], references: [id], onDelete: Cascade)
+
+  @@id([episodeId, hostId])
+  @@map("episode_hosts")
+}
+
+model EpisodeGuest {
+  episodeId String  @map("episode_id")
+  guestId   String  @map("guest_id")
+  role      String?
+
+  episode Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  guest   Guest   @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@id([episodeId, guestId])
+  @@map("episode_guests")
+}
+
+model Chain {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  /// EVM chain id where applicable.
+  chainId   Int?     @unique @map("chain_id")
+  explorer  String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  projects  Project[]
+  contracts Contract[]
+
+  @@map("chains")
+}
+
+enum ProjectKind {
+  crypto_project
+  protocol
+  dao
+  infrastructure
+  rwa
+  ecosystem
+  application
+  traditional_company
+}
+
+model Project {
+  id              String        @id @default(cuid())
+  name            String
+  slug            String        @unique
+  /// Not every project has a token.
+  symbol          String?
+  kind            ProjectKind   @default(crypto_project)
+  description     String?
+  logoUrl         String?       @map("logo_url")
+  bannerUrl       String?       @map("banner_url")
+  website         String?
+  twitter         String?
+  discord         String?
+  telegram        String?
+  chainId         String?       @map("chain_id")
+  contractAddress String?       @map("contract_address")
+  category        String?
+  status          PublishStatus @default(draft)
+  launchDate      DateTime?     @map("launch_date")
+  /// Market fields are informational provider snapshots, never advice.
+  marketCap       Decimal?      @map("market_cap") @db.Decimal(24, 2)
+  volume          Decimal?      @db.Decimal(24, 2)
+  liquidity       Decimal?      @db.Decimal(24, 2)
+  marketDataAt    DateTime?     @map("market_data_at")
+  verified        Boolean       @default(false)
+  isDemo          Boolean       @default(false) @map("is_demo")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  chain     Chain?           @relation(fields: [chainId], references: [id], onDelete: SetNull)
+  contracts Contract[]
+  episodes  EpisodeProject[]
+  follows   Follow[]
+
+  @@index([status])
+  @@map("projects")
+}
+
+model Contract {
+  id        String   @id @default(cuid())
+  projectId String?  @map("project_id")
+  chainId   String   @map("chain_id")
+  address   String
+  label     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  chain   Chain    @relation(fields: [chainId], references: [id], onDelete: Cascade)
+
+  @@unique([chainId, address])
+  @@map("contracts")
+}
+
+model Company {
+  id                 String        @id @default(cuid())
+  name               String
+  slug               String        @unique
+  ticker             String?
+  exchange           String?
+  sector             String?
+  industry           String?
+  description        String?
+  logoUrl            String?       @map("logo_url")
+  website            String?
+  country            String?
+  marketDataProvider String?       @map("market_data_provider")
+  status             PublishStatus @default(draft)
+  isDemo             Boolean       @default(false) @map("is_demo")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+
+  episodes EpisodeCompany[]
+  follows  Follow[]
+
+  @@unique([exchange, ticker])
+  @@map("companies")
+}
+
+model EpisodeProject {
+  episodeId String @map("episode_id")
+  projectId String @map("project_id")
+
+  episode Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@id([episodeId, projectId])
+  @@map("episode_projects")
+}
+
+model EpisodeCompany {
+  episodeId String @map("episode_id")
+  companyId String @map("company_id")
+
+  episode Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@id([episodeId, companyId])
+  @@map("episode_companies")
+}
+
+model EpisodeTopic {
+  episodeId String @map("episode_id")
+  topicId   String @map("topic_id")
+
+  episode Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  topic   Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@id([episodeId, topicId])
+  @@map("episode_topics")
+}
+
+/// Clips always link back to a source timestamp (§14). Public publication requires review.
+model Clip {
+  id              String        @id @default(cuid())
+  sourceEpisodeId String        @map("source_episode_id")
+  title           String
+  startTime       Float         @map("start_time")
+  endTime         Float         @map("end_time")
+  transcript      String?
+  confidence      Float?
+  generationModel String?       @map("generation_model")
+  reviewStatus    PublishStatus @default(draft) @map("review_status")
+  isDemo          Boolean       @default(false) @map("is_demo")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  sourceEpisode Episode @relation(fields: [sourceEpisodeId], references: [id], onDelete: Cascade)
+
+  @@index([reviewStatus])
+  @@map("clips")
+}
+
+model NewsSource {
+  id        String   @id @default(cuid())
+  name      String
+  url       String   @unique
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  articles Article[]
+
+  @@map("news_sources")
+}
+
+model Article {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  title       String
+  summary     String?
+  body        String?
+  author      String?
+  originalUrl String?       @map("original_url")
+  sourceId    String?       @map("source_id")
+  status      PublishStatus @default(draft)
+  publishedAt DateTime?     @map("published_at")
+  isDemo      Boolean       @default(false) @map("is_demo")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  source NewsSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@index([status, publishedAt])
+  @@map("articles")
+}
+
+// ───────────────────────── Engagement ─────────────────────────
+
+/// Polymorphic follow: exactly one target column is set (enforced in the API layer).
+model Follow {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  showId    String?  @map("show_id")
+  projectId String?  @map("project_id")
+  companyId String?  @map("company_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  show    Show?    @relation(fields: [showId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  company Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, showId])
+  @@unique([userId, projectId])
+  @@unique([userId, companyId])
+  @@map("follows")
+}
+
+model Bookmark {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  episodeId       String   @map("episode_id")
+  positionSeconds Int      @default(0) @map("position_seconds")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  episode Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, episodeId])
+  @@map("bookmarks")
+}
