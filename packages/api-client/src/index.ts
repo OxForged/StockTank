@@ -3,6 +3,8 @@ import {
   adminUserListResponseSchema,
   apiErrorSchema,
   authResponseSchema,
+  devLoginStatusSchema,
+  type DevLoginStatus,
   readyResponseSchema,
   versionResponseSchema,
   type AdminUserListResponse,
@@ -87,6 +89,11 @@ export function createApiClient(options: ApiClientOptions = {}) {
         await request('POST', '/api/v1/auth/logout', null);
       },
       me: (): Promise<AuthResponse> => request('GET', '/api/v1/auth/me', authResponseSchema),
+      /** Local development only. */
+      devLoginStatus: (): Promise<DevLoginStatus> =>
+        request('GET', '/api/v1/auth/dev-login', devLoginStatusSchema),
+      /** Local development only: signs in as the seeded super admin. */
+      devLogin: (): Promise<AuthResponse> => request('POST', '/api/v1/auth/dev-login', authResponseSchema),
     },
     admin: {
       listUsers: (page = 1, pageSize = 25): Promise<AdminUserListResponse> =>

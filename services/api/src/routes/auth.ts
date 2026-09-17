@@ -28,6 +28,13 @@ export interface AuthDeps {
 
 const INVALID_CREDENTIALS = 'Invalid email or password';
 
+const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
+
+/** Uses the TCP peer address (not X-Forwarded-For), so proxies cannot spoof it. */
+function isLoopback(address: string | undefined): boolean {
+  return address !== undefined && LOOPBACK.has(address);
+}
+
 export function authRouter({ env, prisma, rateLimits }: AuthDeps): Router {
   const router = Router();
 
@@ -133,6 +140,49 @@ export function authRouter({ env, prisma, rateLimits }: AuthDeps): Router {
     });
     clearSessionCookie(res, env);
     res.status(204).end();
+  });
+
+  /**
+   * Local development shortcut: one-click sign-in as the seeded super admin.
+   * Requires DEV_LOGIN_ENABLED=true (refused in production at boot) AND a loopback client.
+   */
+  router.get('/dev-login', (req, res) => {
+    res.json({ enabled: env.DEV_LOGIN_ENABLED && isLoopback(req.socket.remoteAddress) });
+  });
+
+  router.post('/dev-login', async (req, res) => {
+    if (!env.DEV_LOGIN_ENABLED || env.NODE_ENV === 'production' || !isLoopback(req.socket.remoteAddress)) {
+      throw errors.notFound('Route not found');
+    }
+    const preferredEmail = process.env.SEED_ADMIN_EMAIL?.trim().toLowerCase();
+    const user =
+      (preferredEmail
+        ? await prisma.user.findFirst({
+            where: { email: preferredEmail, status: 'active', roles: { some: { role: { key: 'super_admin' } } } },
+            include: userWithAccess,
+          })
+        : null) ??
+      (await prisma.user.findFirst({
+        where: { status: 'active', roles: { some: { role: { key: 'super_admin' } } } },
+        orderBy: { createdAt: 'asc' },
+        include: userWithAccess,
+      }));
+    if (!user) throw errors.notFound('No active super admin exists; run `pnpm db:seed` with SEED_ADMIN_EMAIL set');
+
+    const previousToken = readSessionToken(req);
+    if (previousToken) await revokeSessionByToken(prisma, previousToken);
+    await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+    const { token, sessionId } = await createSession(prisma, env, req, user.id);
+    await writeAudit(prisma, req, {
+      action: 'auth.dev_login',
+      actorId: user.id,
+      targetType: 'session',
+      targetId: sessionId,
+      metadata: { warning: 'development shortcut' },
+    });
+    setSessionCookie(res, env, token);
+    const response: AuthResponse = { user: toCurrentUser(toAuthContext(user, sessionId)) };
+    res.json(response);
   });
 
   router.get('/me', requireAuth, (req, res) => {

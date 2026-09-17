@@ -22,6 +22,11 @@ const apiOnlyEnvSchema = z.object({
     (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
     z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).optional(),
   ),
+  /** Local-only one-click staff sign-in. Refused at boot when NODE_ENV=production. */
+  DEV_LOGIN_ENABLED: z
+    .string()
+    .optional()
+    .transform((v) => v?.trim().toLowerCase() === 'true'),
   GIT_COMMIT: z
     .string()
     .optional()
@@ -37,6 +42,9 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
   if (!parsed.success) {
     const issues = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Invalid API environment:\n${issues}`);
+  }
+  if (parsed.data.DEV_LOGIN_ENABLED && shared.NODE_ENV === 'production') {
+    throw new Error('DEV_LOGIN_ENABLED must not be set in production');
   }
   return { ...shared, ...parsed.data };
 }

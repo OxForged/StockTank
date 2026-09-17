@@ -7,6 +7,7 @@ export type AuditAction =
   | 'auth.login.success'
   | 'auth.login.failure'
   | 'auth.logout'
+  | 'auth.dev_login'
   | 'user.roles.update';
 
 export interface AuditEntry {

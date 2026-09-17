@@ -4,7 +4,7 @@ import { CircleAlert } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 
-import { describeAuthError, useLogin, useMe } from '../lib/auth';
+import { describeAuthError, useDevLogin, useDevLoginStatus, useLogin, useMe } from '../lib/auth';
 import { formValues, validate, type FieldErrors } from '../lib/forms';
 
 export function LoginPage() {
@@ -12,6 +12,8 @@ export function LoginPage() {
   const location = useLocation();
   const { user } = useMe();
   const login = useLogin();
+  const devLoginStatus = useDevLoginStatus();
+  const devLogin = useDevLogin();
   const [errors, setErrors] = useState<FieldErrors<'email' | 'password'>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const from = (location.state as { from?: string } | null)?.from ?? '/';
@@ -68,6 +70,28 @@ export function LoginPage() {
               Sign in
             </Button>
           </form>
+          {devLoginStatus.data ? (
+            <div className="mt-6 border-t border-hairline pt-6">
+              <Button
+                type="button"
+                variant="secondary"
+                size="lg"
+                className="w-full"
+                loading={devLogin.isPending}
+                onClick={() =>
+                  devLogin.mutate(undefined, {
+                    onSuccess: () => navigate(from, { replace: true }),
+                    onError: (err) => setFormError(describeAuthError(err)),
+                  })
+                }
+              >
+                Enter as local admin
+              </Button>
+              <p className="mt-2 text-center text-xs text-muted">
+                Localhost development shortcut. Disabled in production.
+              </p>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

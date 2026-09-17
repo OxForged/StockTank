@@ -11,6 +11,8 @@ export const mockApi = {
     login: vi.fn(),
     logout: vi.fn(),
     me: vi.fn(),
+    devLoginStatus: vi.fn(),
+    devLogin: vi.fn(),
   },
   admin: {
     listUsers: vi.fn(),

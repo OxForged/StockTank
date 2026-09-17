@@ -57,6 +57,10 @@ export const currentUserSchema = z.object({
 });
 export type CurrentUser = z.infer<typeof currentUserSchema>;
 
+/** Local development only: whether one-click staff sign-in is available. */
+export const devLoginStatusSchema = z.object({ enabled: z.boolean() });
+export type DevLoginStatus = z.infer<typeof devLoginStatusSchema>;
+
 export const authResponseSchema = z.object({ user: currentUserSchema });
 export type AuthResponse = z.infer<typeof authResponseSchema>;
 

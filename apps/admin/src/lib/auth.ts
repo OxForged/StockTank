@@ -40,6 +40,31 @@ export function useLogin() {
   });
 }
 
+/** Local development only: is one-click staff sign-in available? */
+export function useDevLoginStatus() {
+  return useQuery({
+    queryKey: ['auth', 'dev-login'],
+    queryFn: async () => {
+      try {
+        return (await api.auth.devLoginStatus()).enabled;
+      } catch {
+        return false;
+      }
+    },
+    enabled: import.meta.env.DEV,
+    staleTime: Infinity,
+    retry: false,
+  });
+}
+
+export function useDevLogin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.auth.devLogin(),
+    onSuccess: (res) => qc.setQueryData(ME_QUERY_KEY, res.user),
+  });
+}
+
 export function useLogout() {
   const qc = useQueryClient();
   return useMutation({
