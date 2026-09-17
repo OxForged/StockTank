@@ -8,6 +8,7 @@ import { NewsletterSignup } from '../../components/marketing/newsletter-signup';
 import { api } from '../../lib/api';
 import { useDocumentTitle } from '../../lib/seo';
 import { FeaturedHero } from './hero';
+import { MarketsSection } from './markets-section';
 import { DemoNotice, LatestSection, LineupSection, RundownSection, WatchlistPanel } from './sections';
 
 function hasDemo(home: HomeResponse): boolean {
@@ -77,6 +78,8 @@ export function HomePage() {
           <AdSlot placement="watchlist_sidebar" variant="sidebar" />
         </div>
       </div>
+
+      <MarketsSection />
 
       <RundownSection rundown={home?.rundown ?? []} loading={isPending} />
 

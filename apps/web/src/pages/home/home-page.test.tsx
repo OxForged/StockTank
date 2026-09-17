@@ -17,6 +17,8 @@ describe('HomePage (hybrid A + B)', () => {
     mockApi.auth.me.mockRejectedValue(new ApiClientError(401, 'UNAUTHENTICATED', 'Not signed in'));
     mockApi.ads.serve.mockResolvedValue({ ad: null });
     mockApi.content.search.mockResolvedValue({ query: '', shows: [], episodes: [], projects: [], companies: [] });
+    mockApi.markets.stocks.mockResolvedValue({ items: [], source: 'demo', disclaimer: 'Not investment advice.', demoNotice: null });
+    mockApi.markets.radar.mockResolvedValue({ windowDays: 7, items: [], methodology: 'Buzz.', source: 'demo', demoNotice: null });
   });
 
   it('renders the hybrid layout: rail, markets tape, hero, live desk and sections', async () => {
@@ -33,12 +35,13 @@ describe('HomePage (hybrid A + B)', () => {
     expect(screen.getByText('Pre-market: what moved overnight')).toBeInTheDocument();
   });
 
-  it('labels demo content and shows no market prices', async () => {
+  it('labels demo content and never invents market prices', async () => {
     mockApi.content.home.mockResolvedValue(DEMO_HOME);
     renderApp('/');
     expect(await screen.findByText(/preview content/i)).toBeInTheDocument();
+    // The tape only shows prices the API labels; with no tracked stocks it shows none and never invents any.
     const tape = screen.getByRole('region', { name: /markets ticker/i });
-    expect(tape).toHaveTextContent(/market data provider connects at launch/i);
+    expect(await within(tape).findByText(/no tracked stocks yet/i)).toBeInTheDocument();
     expect(tape.textContent).not.toMatch(/\$\s?\d|\d+\.\d+%/);
     expect(screen.getAllByText(/not financial or investment advice/i).length).toBeGreaterThan(0);
   });
