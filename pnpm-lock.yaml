@@ -339,6 +339,9 @@ importers:
       '@stocktank/podcast':
         specifier: workspace:*
         version: link:../../packages/podcast
+      '@stocktank/radio':
+        specifier: workspace:*
+        version: link:../../packages/radio
       '@stocktank/types':
         specifier: workspace:*
         version: link:../../packages/types

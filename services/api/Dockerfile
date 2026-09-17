@@ -18,6 +18,7 @@ COPY packages/config ./packages/config
 COPY packages/database ./packages/database
 COPY packages/media ./packages/media
 COPY packages/podcast ./packages/podcast
+COPY packages/radio ./packages/radio
 COPY services/api ./services/api
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --filter @stocktank/api...
@@ -28,6 +29,7 @@ RUN DATABASE_URL=postgresql://build:build@localhost:5432/build pnpm --filter @st
  && pnpm --filter @stocktank/database build \
  && pnpm --filter @stocktank/media build \
  && pnpm --filter @stocktank/podcast build \
+ && pnpm --filter @stocktank/radio build \
  && pnpm --filter @stocktank/api build
 # Self-contained production tree for the API (workspace packages + prod node_modules only)
 RUN pnpm --filter @stocktank/api deploy --prod --legacy /out

@@ -120,9 +120,9 @@ export const ADMIN_NAV: readonly (AdminNavItem | AdminNavGroup)[] = [
     icon: Radio,
     permission: 'content.publish',
     items: [
-      { label: 'Stations', to: '/live/stations', milestone: 5 },
+      { label: 'Stations', to: '/live/stations' },
       { label: 'Schedule', to: '/live/streams', icon: Radio },
-      { label: 'Now Playing', to: '/live/now-playing', milestone: 5 },
+      { label: 'Now Playing', to: '/live/now-playing' },
     ],
   },
   {

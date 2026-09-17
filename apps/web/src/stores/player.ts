@@ -8,7 +8,7 @@ export interface PlayerMedia {
 
 export interface PlayerItem {
   id: string;
-  kind: 'episode' | 'clip';
+  kind: 'episode' | 'clip' | 'radio';
   title: string;
   showTitle: string;
   showSlug: string;
@@ -19,6 +19,8 @@ export interface PlayerItem {
    * Known media. `undefined` means "look it up from the episode"; `null` means the item has no playable media.
    */
   media?: PlayerMedia | null;
+  /** Radio items: the station slug, used to refresh now playing. */
+  stationSlug?: string;
   /** Clip bounds within the source media, in seconds. */
   startAt?: number;
   endAt?: number;

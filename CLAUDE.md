@@ -19,6 +19,10 @@
 - StockTank owns the feed: `/podcasts/<slug>/feed.xml` (only published shows with the feed enabled; items need processed audio). DEMO shows get `itunes:block`.
 - Castopod (optional) is reached only through `packages/podcast` REST v1. It cannot create/update podcasts or update episodes, so each episode syncs once (`castopod_episode_id`).
 
+## Live radio
+- AzuraCast only through `packages/radio`. Never send listeners to AzuraCast pages or expose its shortcodes/ids publicly; never read individual listener records (IPs).
+- Now playing is cached per station (`NowPlayingService`); the site must keep working when AzuraCast is down.
+
 ## Conventions
 - pnpm workspaces + Turborepo. Workspace globs: `apps/*`, `services/*`, `packages/*` (never `reference/`).
 - TypeScript strict everywhere. Zod for all API input/output. API is versioned under `/api/v1`.

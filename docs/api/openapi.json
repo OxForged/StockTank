@@ -2759,6 +2759,341 @@
           ],
           "notes": "Rate is the issuer’s published figure; disclaimer added."
         }
+      },
+      "RadioStationList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "isDemo": {
+                  "type": "boolean"
+                },
+                "nowPlaying": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "properties": {
+                    "isOnline": {
+                      "type": "boolean"
+                    },
+                    "listeners": {
+                      "type": "integer"
+                    },
+                    "live": {
+                      "type": "object",
+                      "properties": {
+                        "isLive": {
+                          "type": "boolean"
+                        },
+                        "streamerName": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "startedAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "isLive",
+                        "streamerName",
+                        "startedAt"
+                      ]
+                    },
+                    "current": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "artist": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "album": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "artUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "playlist": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "playedAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "durationSeconds": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "elapsedSeconds": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "remainingSeconds": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "title",
+                        "artist",
+                        "album",
+                        "artUrl",
+                        "playlist",
+                        "playedAt",
+                        "durationSeconds",
+                        "elapsedSeconds",
+                        "remainingSeconds"
+                      ]
+                    },
+                    "next": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "artist": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "album": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "artUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "playlist": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "playedAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "durationSeconds": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "title",
+                        "artist",
+                        "album",
+                        "artUrl",
+                        "playlist",
+                        "playedAt",
+                        "durationSeconds"
+                      ]
+                    },
+                    "recent": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string"
+                          },
+                          "artist": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "album": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "artUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "playlist": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "playedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "durationSeconds": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "title",
+                          "artist",
+                          "album",
+                          "artUrl",
+                          "playlist",
+                          "playedAt",
+                          "durationSeconds"
+                        ]
+                      }
+                    },
+                    "stream": {
+                      "type": "object",
+                      "properties": {
+                        "hlsUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "mounts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "url": {
+                                "type": "string"
+                              },
+                              "bitrate": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "format": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "isDefault": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "url",
+                              "bitrate",
+                              "format",
+                              "isDefault"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "hlsUrl",
+                        "mounts"
+                      ]
+                    },
+                    "fetchedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "isOnline",
+                    "listeners",
+                    "live",
+                    "current",
+                    "next",
+                    "recent",
+                    "stream",
+                    "fetchedAt"
+                  ]
+                },
+                "stale": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "slug",
+                "name",
+                "description",
+                "isDemo",
+                "nowPlaying",
+                "stale"
+              ]
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "description": "Published StockTank radio stations with now playing from AzuraCast (cached ~10s). nowPlaying is null when AzuraCast is unreachable; stale=true when the last good snapshot is served."
       }
     },
     "parameters": {}
@@ -21996,6 +22331,2629 @@
           },
           "503": {
             "description": "Castopod or the processing queue is not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/radio": {
+      "get": {
+        "tags": [
+          "Content"
+        ],
+        "summary": "Radio stations",
+        "description": "Published stations with now playing, stream mounts and recent tracks. AzuraCast identifiers are never exposed.",
+        "responses": {
+          "200": {
+            "description": "Radio stations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RadioStationList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/radio/{slug}": {
+      "get": {
+        "tags": [
+          "Content"
+        ],
+        "summary": "Radio station",
+        "description": "One published station with now playing.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Radio station",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "slug": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "isDemo": {
+                      "type": "boolean"
+                    },
+                    "nowPlaying": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "isOnline": {
+                          "type": "boolean"
+                        },
+                        "listeners": {
+                          "type": "integer"
+                        },
+                        "live": {
+                          "type": "object",
+                          "properties": {
+                            "isLive": {
+                              "type": "boolean"
+                            },
+                            "streamerName": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "startedAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "isLive",
+                            "streamerName",
+                            "startedAt"
+                          ]
+                        },
+                        "current": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "title": {
+                              "type": "string"
+                            },
+                            "artist": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "album": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "artUrl": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "playlist": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "playedAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "durationSeconds": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            },
+                            "elapsedSeconds": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            },
+                            "remainingSeconds": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "title",
+                            "artist",
+                            "album",
+                            "artUrl",
+                            "playlist",
+                            "playedAt",
+                            "durationSeconds",
+                            "elapsedSeconds",
+                            "remainingSeconds"
+                          ]
+                        },
+                        "next": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "title": {
+                              "type": "string"
+                            },
+                            "artist": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "album": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "artUrl": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "playlist": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "playedAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "durationSeconds": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "title",
+                            "artist",
+                            "album",
+                            "artUrl",
+                            "playlist",
+                            "playedAt",
+                            "durationSeconds"
+                          ]
+                        },
+                        "recent": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "title": {
+                                "type": "string"
+                              },
+                              "artist": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "album": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "artUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "playlist": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "playedAt": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "durationSeconds": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "title",
+                              "artist",
+                              "album",
+                              "artUrl",
+                              "playlist",
+                              "playedAt",
+                              "durationSeconds"
+                            ]
+                          }
+                        },
+                        "stream": {
+                          "type": "object",
+                          "properties": {
+                            "hlsUrl": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "mounts": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "url": {
+                                    "type": "string"
+                                  },
+                                  "bitrate": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "format": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "isDefault": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "name",
+                                  "url",
+                                  "bitrate",
+                                  "format",
+                                  "isDefault"
+                                ]
+                              }
+                            }
+                          },
+                          "required": [
+                            "hlsUrl",
+                            "mounts"
+                          ]
+                        },
+                        "fetchedAt": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "isOnline",
+                        "listeners",
+                        "live",
+                        "current",
+                        "next",
+                        "recent",
+                        "stream",
+                        "fetchedAt"
+                      ]
+                    },
+                    "stale": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "slug",
+                    "name",
+                    "description",
+                    "isDemo",
+                    "nowPlaying",
+                    "stale"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Station not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/radio/status": {
+      "get": {
+        "tags": [
+          "Admin: Live"
+        ],
+        "summary": "Radio configuration",
+        "description": "Requires `content.publish`.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Radio configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "azuracastConfigured": {
+                      "type": "boolean"
+                    },
+                    "apiKeyConfigured": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "azuracastConfigured",
+                    "apiKeyConfigured"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/radio/stations": {
+      "get": {
+        "tags": [
+          "Admin: Live"
+        ],
+        "summary": "List stations",
+        "description": "Requires `content.publish`. Includes now playing and fetch errors.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List stations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "slug": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "azuracastShortcode": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "draft",
+                              "review",
+                              "approved",
+                              "rejected",
+                              "published",
+                              "archived"
+                            ]
+                          },
+                          "sortOrder": {
+                            "type": "integer"
+                          },
+                          "isDemo": {
+                            "type": "boolean"
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          },
+                          "nowPlaying": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "properties": {
+                              "isOnline": {
+                                "type": "boolean"
+                              },
+                              "listeners": {
+                                "type": "integer"
+                              },
+                              "live": {
+                                "type": "object",
+                                "properties": {
+                                  "isLive": {
+                                    "type": "boolean"
+                                  },
+                                  "streamerName": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "startedAt": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "isLive",
+                                  "streamerName",
+                                  "startedAt"
+                                ]
+                              },
+                              "current": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "title": {
+                                    "type": "string"
+                                  },
+                                  "artist": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "album": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "artUrl": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "playlist": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "playedAt": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "durationSeconds": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "elapsedSeconds": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "remainingSeconds": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "title",
+                                  "artist",
+                                  "album",
+                                  "artUrl",
+                                  "playlist",
+                                  "playedAt",
+                                  "durationSeconds",
+                                  "elapsedSeconds",
+                                  "remainingSeconds"
+                                ]
+                              },
+                              "next": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "title": {
+                                    "type": "string"
+                                  },
+                                  "artist": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "album": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "artUrl": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "playlist": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "playedAt": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "durationSeconds": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "title",
+                                  "artist",
+                                  "album",
+                                  "artUrl",
+                                  "playlist",
+                                  "playedAt",
+                                  "durationSeconds"
+                                ]
+                              },
+                              "recent": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "title": {
+                                      "type": "string"
+                                    },
+                                    "artist": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    },
+                                    "album": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    },
+                                    "artUrl": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    },
+                                    "playlist": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    },
+                                    "playedAt": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    },
+                                    "durationSeconds": {
+                                      "type": [
+                                        "number",
+                                        "null"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "title",
+                                    "artist",
+                                    "album",
+                                    "artUrl",
+                                    "playlist",
+                                    "playedAt",
+                                    "durationSeconds"
+                                  ]
+                                }
+                              },
+                              "stream": {
+                                "type": "object",
+                                "properties": {
+                                  "hlsUrl": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "mounts": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "name": {
+                                          "type": [
+                                            "string",
+                                            "null"
+                                          ]
+                                        },
+                                        "url": {
+                                          "type": "string"
+                                        },
+                                        "bitrate": {
+                                          "type": [
+                                            "number",
+                                            "null"
+                                          ]
+                                        },
+                                        "format": {
+                                          "type": [
+                                            "string",
+                                            "null"
+                                          ]
+                                        },
+                                        "isDefault": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": [
+                                        "name",
+                                        "url",
+                                        "bitrate",
+                                        "format",
+                                        "isDefault"
+                                      ]
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "hlsUrl",
+                                  "mounts"
+                                ]
+                              },
+                              "fetchedAt": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "isOnline",
+                              "listeners",
+                              "live",
+                              "current",
+                              "next",
+                              "recent",
+                              "stream",
+                              "fetchedAt"
+                            ]
+                          },
+                          "error": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "slug",
+                          "name",
+                          "description",
+                          "azuracastShortcode",
+                          "status",
+                          "sortOrder",
+                          "isDemo",
+                          "updatedAt",
+                          "nowPlaying",
+                          "error"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: Live"
+        ],
+        "summary": "Create station",
+        "description": "Requires `content.publish`. The AzuraCast shortcode is verified when AzuraCast is reachable. Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "slug": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                  },
+                  "description": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 2000
+                  },
+                  "azuracastShortcode": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9_-]{1,100}$/i"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "review",
+                      "approved",
+                      "rejected",
+                      "published",
+                      "archived"
+                    ],
+                    "default": "draft"
+                  },
+                  "sortOrder": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000,
+                    "default": 0
+                  }
+                },
+                "required": [
+                  "name",
+                  "azuracastShortcode"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Create station",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "slug": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "azuracastShortcode": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "review",
+                        "approved",
+                        "rejected",
+                        "published",
+                        "archived"
+                      ]
+                    },
+                    "sortOrder": {
+                      "type": "integer"
+                    },
+                    "isDemo": {
+                      "type": "boolean"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "nowPlaying": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "isOnline": {
+                          "type": "boolean"
+                        },
+                        "listeners": {
+                          "type": "integer"
+                        },
+                        "live": {
+                          "type": "object",
+                          "properties": {
+                            "isLive": {
+                              "type": "boolean"
+                            },
+                            "streamerName": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "startedAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "isLive",
+                            "streamerName",
+                            "startedAt"
+                          ]
+                        },
+                        "current": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "title": {
+                              "type": "string"
+                            },
+                            "artist": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "album": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "artUrl": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "playlist": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "playedAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "durationSeconds": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            },
+                            "elapsedSeconds": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            },
+                            "remainingSeconds": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "title",
+                            "artist",
+                            "album",
+                            "artUrl",
+                            "playlist",
+                            "playedAt",
+                            "durationSeconds",
+                            "elapsedSeconds",
+                            "remainingSeconds"
+                          ]
+                        },
+                        "next": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "title": {
+                              "type": "string"
+                            },
+                            "artist": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "album": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "artUrl": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "playlist": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "playedAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "durationSeconds": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "title",
+                            "artist",
+                            "album",
+                            "artUrl",
+                            "playlist",
+                            "playedAt",
+                            "durationSeconds"
+                          ]
+                        },
+                        "recent": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "title": {
+                                "type": "string"
+                              },
+                              "artist": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "album": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "artUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "playlist": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "playedAt": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "durationSeconds": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "title",
+                              "artist",
+                              "album",
+                              "artUrl",
+                              "playlist",
+                              "playedAt",
+                              "durationSeconds"
+                            ]
+                          }
+                        },
+                        "stream": {
+                          "type": "object",
+                          "properties": {
+                            "hlsUrl": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "mounts": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "url": {
+                                    "type": "string"
+                                  },
+                                  "bitrate": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "format": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "isDefault": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "name",
+                                  "url",
+                                  "bitrate",
+                                  "format",
+                                  "isDefault"
+                                ]
+                              }
+                            }
+                          },
+                          "required": [
+                            "hlsUrl",
+                            "mounts"
+                          ]
+                        },
+                        "fetchedAt": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "isOnline",
+                        "listeners",
+                        "live",
+                        "current",
+                        "next",
+                        "recent",
+                        "stream",
+                        "fetchedAt"
+                      ]
+                    },
+                    "error": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "slug",
+                    "name",
+                    "description",
+                    "azuracastShortcode",
+                    "status",
+                    "sortOrder",
+                    "isDemo",
+                    "updatedAt",
+                    "nowPlaying",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Slug or shortcode already used (CONFLICT)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/radio/stations/{id}": {
+      "put": {
+        "tags": [
+          "Admin: Live"
+        ],
+        "summary": "Update station",
+        "description": "Requires `content.publish`. Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "slug": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                  },
+                  "description": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 2000
+                  },
+                  "azuracastShortcode": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9_-]{1,100}$/i"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "review",
+                      "approved",
+                      "rejected",
+                      "published",
+                      "archived"
+                    ],
+                    "default": "draft"
+                  },
+                  "sortOrder": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000,
+                    "default": 0
+                  }
+                },
+                "required": [
+                  "name",
+                  "azuracastShortcode"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Update station",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "slug": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "azuracastShortcode": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "review",
+                        "approved",
+                        "rejected",
+                        "published",
+                        "archived"
+                      ]
+                    },
+                    "sortOrder": {
+                      "type": "integer"
+                    },
+                    "isDemo": {
+                      "type": "boolean"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "nowPlaying": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "isOnline": {
+                          "type": "boolean"
+                        },
+                        "listeners": {
+                          "type": "integer"
+                        },
+                        "live": {
+                          "type": "object",
+                          "properties": {
+                            "isLive": {
+                              "type": "boolean"
+                            },
+                            "streamerName": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "startedAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "isLive",
+                            "streamerName",
+                            "startedAt"
+                          ]
+                        },
+                        "current": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "title": {
+                              "type": "string"
+                            },
+                            "artist": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "album": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "artUrl": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "playlist": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "playedAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "durationSeconds": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            },
+                            "elapsedSeconds": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            },
+                            "remainingSeconds": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "title",
+                            "artist",
+                            "album",
+                            "artUrl",
+                            "playlist",
+                            "playedAt",
+                            "durationSeconds",
+                            "elapsedSeconds",
+                            "remainingSeconds"
+                          ]
+                        },
+                        "next": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "title": {
+                              "type": "string"
+                            },
+                            "artist": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "album": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "artUrl": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "playlist": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "playedAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "durationSeconds": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "title",
+                            "artist",
+                            "album",
+                            "artUrl",
+                            "playlist",
+                            "playedAt",
+                            "durationSeconds"
+                          ]
+                        },
+                        "recent": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "title": {
+                                "type": "string"
+                              },
+                              "artist": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "album": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "artUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "playlist": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "playedAt": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "durationSeconds": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "title",
+                              "artist",
+                              "album",
+                              "artUrl",
+                              "playlist",
+                              "playedAt",
+                              "durationSeconds"
+                            ]
+                          }
+                        },
+                        "stream": {
+                          "type": "object",
+                          "properties": {
+                            "hlsUrl": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "mounts": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "url": {
+                                    "type": "string"
+                                  },
+                                  "bitrate": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "format": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "isDefault": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "name",
+                                  "url",
+                                  "bitrate",
+                                  "format",
+                                  "isDefault"
+                                ]
+                              }
+                            }
+                          },
+                          "required": [
+                            "hlsUrl",
+                            "mounts"
+                          ]
+                        },
+                        "fetchedAt": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "isOnline",
+                        "listeners",
+                        "live",
+                        "current",
+                        "next",
+                        "recent",
+                        "stream",
+                        "fetchedAt"
+                      ]
+                    },
+                    "error": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "slug",
+                    "name",
+                    "description",
+                    "azuracastShortcode",
+                    "status",
+                    "sortOrder",
+                    "isDemo",
+                    "updatedAt",
+                    "nowPlaying",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Station not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Slug or shortcode already used (CONFLICT)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Admin: Live"
+        ],
+        "summary": "Station health",
+        "description": "Requires `content.publish`. Now playing plus AzuraCast backend/frontend status and playlists (needs AZURACAST_API_KEY).",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Station health",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "station": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "slug": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "azuracastShortcode": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "draft",
+                            "review",
+                            "approved",
+                            "rejected",
+                            "published",
+                            "archived"
+                          ]
+                        },
+                        "sortOrder": {
+                          "type": "integer"
+                        },
+                        "isDemo": {
+                          "type": "boolean"
+                        },
+                        "updatedAt": {
+                          "type": "string"
+                        },
+                        "nowPlaying": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "isOnline": {
+                              "type": "boolean"
+                            },
+                            "listeners": {
+                              "type": "integer"
+                            },
+                            "live": {
+                              "type": "object",
+                              "properties": {
+                                "isLive": {
+                                  "type": "boolean"
+                                },
+                                "streamerName": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "startedAt": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "isLive",
+                                "streamerName",
+                                "startedAt"
+                              ]
+                            },
+                            "current": {
+                              "type": [
+                                "object",
+                                "null"
+                              ],
+                              "properties": {
+                                "title": {
+                                  "type": "string"
+                                },
+                                "artist": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "album": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "artUrl": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "playlist": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "playedAt": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "durationSeconds": {
+                                  "type": [
+                                    "number",
+                                    "null"
+                                  ]
+                                },
+                                "elapsedSeconds": {
+                                  "type": [
+                                    "number",
+                                    "null"
+                                  ]
+                                },
+                                "remainingSeconds": {
+                                  "type": [
+                                    "number",
+                                    "null"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "title",
+                                "artist",
+                                "album",
+                                "artUrl",
+                                "playlist",
+                                "playedAt",
+                                "durationSeconds",
+                                "elapsedSeconds",
+                                "remainingSeconds"
+                              ]
+                            },
+                            "next": {
+                              "type": [
+                                "object",
+                                "null"
+                              ],
+                              "properties": {
+                                "title": {
+                                  "type": "string"
+                                },
+                                "artist": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "album": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "artUrl": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "playlist": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "playedAt": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "durationSeconds": {
+                                  "type": [
+                                    "number",
+                                    "null"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "title",
+                                "artist",
+                                "album",
+                                "artUrl",
+                                "playlist",
+                                "playedAt",
+                                "durationSeconds"
+                              ]
+                            },
+                            "recent": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "title": {
+                                    "type": "string"
+                                  },
+                                  "artist": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "album": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "artUrl": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "playlist": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "playedAt": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "durationSeconds": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "title",
+                                  "artist",
+                                  "album",
+                                  "artUrl",
+                                  "playlist",
+                                  "playedAt",
+                                  "durationSeconds"
+                                ]
+                              }
+                            },
+                            "stream": {
+                              "type": "object",
+                              "properties": {
+                                "hlsUrl": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "mounts": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "name": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      },
+                                      "url": {
+                                        "type": "string"
+                                      },
+                                      "bitrate": {
+                                        "type": [
+                                          "number",
+                                          "null"
+                                        ]
+                                      },
+                                      "format": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      },
+                                      "isDefault": {
+                                        "type": "boolean"
+                                      }
+                                    },
+                                    "required": [
+                                      "name",
+                                      "url",
+                                      "bitrate",
+                                      "format",
+                                      "isDefault"
+                                    ]
+                                  }
+                                }
+                              },
+                              "required": [
+                                "hlsUrl",
+                                "mounts"
+                              ]
+                            },
+                            "fetchedAt": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "isOnline",
+                            "listeners",
+                            "live",
+                            "current",
+                            "next",
+                            "recent",
+                            "stream",
+                            "fetchedAt"
+                          ]
+                        },
+                        "error": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "slug",
+                        "name",
+                        "description",
+                        "azuracastShortcode",
+                        "status",
+                        "sortOrder",
+                        "isDemo",
+                        "updatedAt",
+                        "nowPlaying",
+                        "error"
+                      ]
+                    },
+                    "status": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "backendRunning": {
+                          "type": "boolean"
+                        },
+                        "frontendRunning": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "backendRunning",
+                        "frontendRunning"
+                      ]
+                    },
+                    "playlists": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "isEnabled": {
+                            "type": "boolean"
+                          },
+                          "type": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "songCount": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "isEnabled",
+                          "type",
+                          "songCount"
+                        ]
+                      }
+                    },
+                    "managementError": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "station",
+                    "status",
+                    "playlists",
+                    "managementError"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Station not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/radio/azuracast/stations": {
+      "get": {
+        "tags": [
+          "Admin: Live"
+        ],
+        "summary": "List AzuraCast stations",
+        "description": "Requires `content.publish`. For linking.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List AzuraCast stations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "shortcode": {
+                            "type": "string"
+                          },
+                          "isPublic": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "shortcode",
+                          "isPublic"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "AzuraCast returned an error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AzuraCast is not configured",
             "content": {
               "application/json": {
                 "schema": {

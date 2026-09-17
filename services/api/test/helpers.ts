@@ -13,6 +13,7 @@ import { SESSION_COOKIE } from '../src/lib/session.js';
 import type { EmailProvider } from '../src/lib/email.js';
 import type { MediaService } from '../src/lib/media.js';
 import type { PodcastHostAdapter } from '@stocktank/podcast';
+import type { RadioProvider } from '@stocktank/radio';
 import type { RateLimitConfig } from '../src/middleware/rate-limit.js';
 
 /** Header every state-changing request must carry (CSRF guard). */
@@ -35,6 +36,7 @@ export interface TestContextOptions {
   envOverrides?: Partial<ApiEnv>;
   media?: MediaService;
   podcastHost?: PodcastHostAdapter | null;
+  radio?: RadioProvider | null;
 }
 
 /** Generous public-form limits so suites are not throttled; rate limiting has its own tests. */
@@ -49,7 +51,7 @@ export async function createTestContext(options: TestContextOptions = {}): Promi
   const logger = createLogger({ level: 'silent' });
   const redis = options.redis !== false && env.REDIS_URL ? createRedis(env.REDIS_URL, logger) : null;
   if (redis) await redis.connect();
-  const app = createApp({ env, prisma, redis, logger, rateLimits: options.rateLimits, email: options.email, media: options.media, podcastHost: options.podcastHost, formLimits: RELAXED_FORM_LIMITS });
+  const app = createApp({ env, prisma, redis, logger, rateLimits: options.rateLimits, email: options.email, media: options.media, podcastHost: options.podcastHost, radio: options.radio, formLimits: RELAXED_FORM_LIMITS });
   return {
     app,
     prisma,
@@ -143,6 +145,7 @@ export async function resetContent(prisma: PrismaClient): Promise<void> {
   await prisma.episode.deleteMany({});
   await prisma.show.deleteMany({});
   await prisma.mediaAsset.deleteMany({});
+  await prisma.radioStation.deleteMany({});
   await prisma.project.deleteMany({});
   await prisma.company.deleteMany({});
 }

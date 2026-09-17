@@ -33,6 +33,8 @@ export const mockApi = {
     articles: vi.fn(),
     article: vi.fn(),
     flags: vi.fn(),
+    radioStations: vi.fn(),
+    radioStation: vi.fn(),
   },
   ads: {
     mediaKit: vi.fn(),

@@ -6,6 +6,7 @@ import type { Redis } from 'ioredis';
 import type { Logger } from 'pino';
 import type { PrismaClient } from '@stocktank/database';
 import { CastopodAdapter, castopodConfigFromEnv, type PodcastHostAdapter } from '@stocktank/podcast';
+import { AzuraCastAdapter, azuracastConfigFromEnv, type RadioProvider } from '@stocktank/radio';
 import type { ApiEnv } from './env.js';
 import { createEmailProvider, type EmailProvider } from './lib/email.js';
 import { createMediaService, type MediaService } from './lib/media.js';
@@ -22,6 +23,8 @@ import { adminMarketingRouter } from './routes/admin-marketing.js';
 import { adminMediaRouter } from './routes/admin-media.js';
 import { adminPodcastRouter } from './routes/admin-podcasts.js';
 import { podcastFeedRouter } from './routes/podcasts.js';
+import { adminRadioRouter, radioRouter } from './routes/radio.js';
+import { NowPlayingService } from './lib/radio.js';
 import { adminRouter } from './routes/admin.js';
 import { advertisingRouter } from './routes/advertising.js';
 import { authRouter } from './routes/auth.js';
@@ -46,6 +49,8 @@ export interface AppDeps {
   media?: MediaService;
   /** Castopod adapter; defaults to the CASTOPOD_* settings, or null when they are incomplete. */
   podcastHost?: PodcastHostAdapter | null;
+  /** AzuraCast adapter; defaults to AZURACAST_URL, or null when unset. */
+  radio?: RadioProvider | null;
   /** Public form limits (advertising inquiries, newsletter sign-ups); overridable for tests. */
   formLimits?: {
     inquiry?: { windowMs: number; limit: number };
@@ -64,6 +69,9 @@ export function createApp(deps: AppDeps): Express {
   const media = deps.media ?? createMediaService(env, logger);
   const castopodConfig = castopodConfigFromEnv(env);
   const podcastHost = deps.podcastHost !== undefined ? deps.podcastHost : castopodConfig ? new CastopodAdapter(castopodConfig) : null;
+  const azuracastConfig = azuracastConfigFromEnv(env);
+  const radio = deps.radio !== undefined ? deps.radio : azuracastConfig ? new AzuraCastAdapter(azuracastConfig) : null;
+  const nowPlaying = new NowPlayingService(radio, redis, logger);
   const search =
     deps.search ??
     createSearchService(prisma, logger, redis, { url: env.MEILISEARCH_URL, key: env.MEILISEARCH_KEY, prefix: env.MEILISEARCH_INDEX_PREFIX });
@@ -111,6 +119,8 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api/v1/admin/content', adminContentRouter({ prisma, search }));
   app.use('/api/v1/admin/media', adminMediaRouter({ prisma, media }));
   app.use('/api/v1/admin/podcasts', adminPodcastRouter({ env, prisma, media, podcastHost }));
+  app.use('/api/v1/admin/radio', adminRadioRouter({ prisma, nowPlaying, provider: radio, apiKeyConfigured: Boolean(env.AZURACAST_API_KEY) }));
+  app.use('/api/v1', radioRouter({ prisma, nowPlaying }));
   // Public feeds live on the site origin (/podcasts/<slug>/feed.xml) and under the versioned API.
   app.use(podcastFeedRouter({ env, prisma, media }));
   app.use('/api/v1', podcastFeedRouter({ env, prisma, media }));

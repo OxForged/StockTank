@@ -50,8 +50,16 @@ Verified live on localhost: an 8s 720p upload went through presigned PUT → com
 
 Verified live on localhost: the demo "Founder Floor" feed is well-formed XML through the web origin, labeled DEMO with `itunes:block`, and its enclosure length matches the MP3's real Content-Length. Castopod is not running locally, so its adapter is covered by contract tests against Castopod's documented REST API (create episode multipart + publish), not a live instance.
 
+### Done: Milestone 5, live radio
+| Commit | What |
+|---|---|
+| (this commit) | `packages/radio` AzuraCast adapter (§12 methods; API key only for management endpoints; listener counts only, never listener records); `radio_stations` table; public `/api/v1/live/radio` with a shared now-playing cache (10s fresh, 5 min stale-while-down, deduped fetches); admin Stations + Now Playing (health, playlists, setup notices); web StockTank Radio on /live and live listening in the mini player |
+
+Not verified against a live AzuraCast: none runs locally and AzuraCast's public demo returned HTTP 521 during this session. Coverage is contract tests built from AzuraCast's documented now-playing payload, plus API/web/admin tests. First real station setup should confirm the payload mapping.
+
 ### Next
-- Owner decisions: prices and packages, legal review of drafts, production email provider, hosting/domain, PODCAST_OWNER_EMAIL, cover art for shows
+- Owner decisions: prices and packages, legal review of drafts, production email provider, hosting/domain, PODCAST_OWNER_EMAIL, cover art for shows, AzuraCast server
+- Milestone 6: analytics, roles/permissions UI, API keys, audit log viewer
 - Milestone 5: AzuraCast live radio; 6: analytics, roles, API keys, audit viewer; 7: AI services
 
 ### Run locally

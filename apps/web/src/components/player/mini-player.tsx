@@ -24,7 +24,7 @@ interface Resolved {
 
 /** Finds playable media for an item opened from a list that did not carry media URLs. */
 function useResolvedMedia(item: PlayerItem): { resolved: Resolved | null; loading: boolean } {
-  const needsLookup = item.media === undefined;
+  const needsLookup = item.media === undefined && item.kind !== 'radio';
   const q = useQuery({
     queryKey: ['episode', item.showSlug, item.episodeSlug],
     queryFn: () => api.content.episode(item.showSlug, item.episodeSlug),
@@ -60,6 +60,14 @@ export function MiniPlayer() {
 function MiniPlayerBar({ item }: { item: PlayerItem }) {
   const close = usePlayer((s) => s.close);
   const { resolved, loading } = useResolvedMedia(item);
+  const isRadio = item.kind === 'radio';
+  const station = useQuery({
+    queryKey: ['radio', 'station', item.stationSlug],
+    queryFn: () => api.content.radioStation(item.stationSlug!),
+    enabled: isRadio && Boolean(item.stationSlug),
+    refetchInterval: 15_000,
+  });
+  const nowTrack = isRadio ? station.data?.nowPlaying?.current : null;
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
@@ -91,6 +99,8 @@ function MiniPlayerBar({ item }: { item: PlayerItem }) {
     if (!el) return;
     if (el.paused) {
       claimPlayback(el);
+      // A live stream resumes at the live edge, not where it was paused.
+      if (isRadio && src) el.src = src;
       el.play().catch(() => setFailed(true));
     } else {
       el.pause();
@@ -132,15 +142,26 @@ function MiniPlayerBar({ item }: { item: PlayerItem }) {
         )}
         <div className="flex min-w-0 flex-1 flex-col gap-1 md:max-w-[420px]">
           <span className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] text-primary-hi">
-            <Link to={`/shows/${item.showSlug}`} className="truncate hover:underline">
-              {item.showTitle}
-            </Link>
+            {isRadio ? (
+              <span className="truncate">{item.showTitle}</span>
+            ) : (
+              <Link to={`/shows/${item.showSlug}`} className="truncate hover:underline">
+                {item.showTitle}
+              </Link>
+            )}
             {item.kind === 'clip' ? <Badge variant="mono">CLIP</Badge> : null}
+            {isRadio ? <span className="text-[#ff4d5e]">● LIVE</span> : null}
             {item.isDemo ? <Badge variant="mono">DEMO</Badge> : null}
           </span>
-          <Link to={`/shows/${item.showSlug}/${item.episodeSlug}`} className="truncate text-[15px] font-semibold hover:underline">
+          <Link to={isRadio ? '/live' : `/shows/${item.showSlug}/${item.episodeSlug}`} className="truncate text-[15px] font-semibold hover:underline">
             {item.title}
           </Link>
+          {nowTrack ? (
+            <span className="truncate text-xs text-muted" aria-live="polite">
+              {nowTrack.title}
+              {nowTrack.artist ? ` · ${nowTrack.artist}` : ''}
+            </span>
+          ) : null}
         </div>
         <Button size="icon" className="size-12 shrink-0 rounded-full" disabled={!playable} aria-label={label} title={label} onClick={toggle}>
           {loading ? (
@@ -151,7 +172,11 @@ function MiniPlayerBar({ item }: { item: PlayerItem }) {
             <Play className="size-4 fill-current" aria-hidden="true" />
           )}
         </Button>
-        {playable ? (
+        {playable && isRadio ? (
+          <p className="hidden flex-1 font-mono text-xs text-muted lg:block">
+            {station.data?.nowPlaying ? `${station.data.nowPlaying.listeners} listening` : 'Live stream'}
+          </p>
+        ) : playable ? (
           <div className="hidden flex-1 items-center gap-3 lg:flex">
             <span className="w-12 text-right font-mono text-xs tabular-nums text-muted">{formatClock(Math.max(0, time - rangeStart))}</span>
             <input

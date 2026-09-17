@@ -99,6 +99,14 @@ import {
   podcastEpisodeTypeInputSchema,
   podcastStatusResponseSchema,
   showPodcastSettingsInputSchema,
+  adminRadioStationDetailSchema,
+  adminRadioStationListSchema,
+  adminRadioStationSchema,
+  azuracastStationListSchema,
+  radioStationInputSchema,
+  radioStationListSchema,
+  radioStationSchema,
+  radioStatusResponseSchema,
 } from '@stocktank/types';
 import { component } from './document.js';
 
@@ -610,4 +618,34 @@ export function registerGrowthPaths(registry: OpenAPIRegistry, h: GrowthPathHelp
     ok: { status: 200, schema: castopodPodcastListSchema },
     extra: castopodDown,
   });
+  // ───── Live radio (Milestone 5) ─────
+  const RadioList = component('RadioStationList', radioStationListSchema, {
+    description: 'Published StockTank radio stations with now playing from AzuraCast (cached ~10s). nowPlaying is null when AzuraCast is unreachable; stale=true when the last good snapshot is served.',
+  });
+  publicGet('/api/v1/live/radio', 'Radio stations', 'Published stations with now playing, stream mounts and recent tracks. AzuraCast identifiers are never exposed.', RadioList);
+  publicGet('/api/v1/live/radio/{slug}', 'Radio station', 'One published station with now playing.', radioStationSchema, { params: slugParams }, notFound('Station'));
+  const RADIO = '/api/v1/admin/radio';
+  const azuraDown = { 502: errorResponse('AzuraCast returned an error'), 503: errorResponse('AzuraCast is not configured') };
+  admin('get', `${RADIO}/status`, 'Radio configuration', 'Requires `content.publish`.', { tag: 'Admin: Live', ok: { status: 200, schema: radioStatusResponseSchema } });
+  admin('get', `${RADIO}/stations`, 'List stations', 'Requires `content.publish`. Includes now playing and fetch errors.', { tag: 'Admin: Live', ok: { status: 200, schema: adminRadioStationListSchema } });
+  admin('post', `${RADIO}/stations`, 'Create station', 'Requires `content.publish`. The AzuraCast shortcode is verified when AzuraCast is reachable. Audited.', {
+    tag: 'Admin: Live',
+    body: radioStationInputSchema,
+    ok: { status: 201, schema: adminRadioStationSchema },
+    extra: conflict('Slug or shortcode already used'),
+  });
+  admin('put', `${RADIO}/stations/{id}`, 'Update station', 'Requires `content.publish`. Audited.', {
+    tag: 'Admin: Live',
+    params: idParams,
+    body: radioStationInputSchema,
+    ok: { status: 200, schema: adminRadioStationSchema },
+    extra: { ...notFound('Station'), ...conflict('Slug or shortcode already used') },
+  });
+  admin('get', `${RADIO}/stations/{id}`, 'Station health', 'Requires `content.publish`. Now playing plus AzuraCast backend/frontend status and playlists (needs AZURACAST_API_KEY).', {
+    tag: 'Admin: Live',
+    params: idParams,
+    ok: { status: 200, schema: adminRadioStationDetailSchema },
+    extra: notFound('Station'),
+  });
+  admin('get', `${RADIO}/azuracast/stations`, 'List AzuraCast stations', 'Requires `content.publish`. For linking.', { tag: 'Admin: Live', ok: { status: 200, schema: azuracastStationListSchema }, extra: azuraDown });
 }

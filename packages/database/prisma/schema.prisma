@@ -940,6 +940,26 @@ model NewsletterSubscriber {
   @@map("newsletter_subscribers")
 }
 
+// ───────── Live radio (§12) ─────────
+
+/// A StockTank radio station. Playback and now-playing come from AzuraCast; StockTank owns the listing and UI.
+model RadioStation {
+  id                 String        @id @default(cuid())
+  slug               String        @unique
+  name               String
+  description        String?
+  /// AzuraCast station shortcode (e.g. stocktank_radio). The API resolves stream URLs and now playing from it.
+  azuracastShortcode String        @unique @map("azuracast_shortcode")
+  status             PublishStatus @default(draft)
+  sortOrder          Int           @default(0) @map("sort_order")
+  isDemo             Boolean       @default(false) @map("is_demo")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+
+  @@index([status, sortOrder])
+  @@map("radio_stations")
+}
+
 // ───────── Podcast distribution (§11) ─────────
 
 enum PodcastEpisodeType {

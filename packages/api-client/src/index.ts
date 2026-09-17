@@ -1,5 +1,18 @@
 import { z } from 'zod';
 import {
+  adminRadioStationDetailSchema,
+  adminRadioStationListSchema,
+  adminRadioStationSchema,
+  azuracastStationListSchema,
+  radioStationListSchema,
+  radioStationSchema,
+  radioStatusResponseSchema,
+  type AdminRadioStation,
+  type AdminRadioStationDetail,
+  type AzuracastStationOption,
+  type RadioStation,
+  type RadioStationInput,
+  type RadioStatusResponse,
   adminPodcastEpisodeListSchema,
   adminPodcastEpisodeSchema,
   adminPodcastShowListSchema,
@@ -247,6 +260,7 @@ export function createApiClient(options: ApiClientOptions = {}) {
   const CMS = '/api/v1/admin/content';
   const MEDIA = '/api/v1/admin/media';
   const PODS = '/api/v1/admin/podcasts';
+  const RADIO = '/api/v1/admin/radio';
 
   return {
     auth: {
@@ -285,6 +299,8 @@ export function createApiClient(options: ApiClientOptions = {}) {
         request('GET', `/api/v1/articles${qs({ page, pageSize })}`, articleListResponseSchema),
       article: (slug: string): Promise<ArticleDetailResponse> =>
         request('GET', `/api/v1/articles/${encodeURIComponent(slug)}`, articleDetailResponseSchema),
+      radioStations: async (): Promise<RadioStation[]> => (await request('GET', '/api/v1/live/radio', radioStationListSchema)).items,
+      radioStation: (slug: string): Promise<RadioStation> => request('GET', `/api/v1/live/radio/${encodeURIComponent(slug)}`, radioStationSchema),
       flags: (): Promise<PublicFlagsResponse> => request('GET', '/api/v1/flags', publicFlagsResponseSchema),
     },
     ads: {
@@ -353,6 +369,16 @@ export function createApiClient(options: ApiClientOptions = {}) {
         saveGuest: (input: PersonInput, id?: string): Promise<AdminPerson> =>
           id ? request('PUT', `${CMS}/guests/${encodeURIComponent(id)}`, adminPersonSchema, input) : request('POST', `${CMS}/guests`, adminPersonSchema, input),
         reindexSearch: (): Promise<ReindexResponse> => request('POST', `${CMS}/search/reindex`, reindexResponseSchema),
+      },
+      radio: {
+        status: (): Promise<RadioStatusResponse> => request('GET', `${RADIO}/status`, radioStatusResponseSchema),
+        listStations: async (): Promise<AdminRadioStation[]> => (await request('GET', `${RADIO}/stations`, adminRadioStationListSchema)).items,
+        station: (id: string): Promise<AdminRadioStationDetail> => request('GET', `${RADIO}/stations/${encodeURIComponent(id)}`, adminRadioStationDetailSchema),
+        saveStation: (input: RadioStationInput, id?: string): Promise<AdminRadioStation> =>
+          id
+            ? request('PUT', `${RADIO}/stations/${encodeURIComponent(id)}`, adminRadioStationSchema, input)
+            : request('POST', `${RADIO}/stations`, adminRadioStationSchema, input),
+        azuracastStations: async (): Promise<AzuracastStationOption[]> => (await request('GET', `${RADIO}/azuracast/stations`, azuracastStationListSchema)).items,
       },
       podcasts: {
         status: (): Promise<PodcastStatusResponse> => request('GET', `${PODS}/status`, podcastStatusResponseSchema),

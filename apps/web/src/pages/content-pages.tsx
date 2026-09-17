@@ -38,6 +38,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 
 import { AdSlot } from '../components/ads/ad-slot';
 import { LiveDesk } from '../components/desk/live-desk';
+import { RadioStations } from '../components/radio/radio-stations';
 import { NewsletterSignup } from '../components/marketing/newsletter-signup';
 import { api } from '../lib/api';
 import { useMe } from '../lib/auth';
@@ -545,10 +546,13 @@ export function LivePage() {
       <Header
         kicker="LIVE DESK"
         title={live ? 'On air now' : 'Live'}
-        description="Live shows and the day’s broadcast schedule. Streaming playback connects with the live infrastructure."
+        description="StockTank Radio, live shows and the day’s broadcast schedule."
       />
       <div className="grid gap-8 px-4 py-8 md:px-8 xl:grid-cols-[minmax(0,1fr)_380px]">
-        {q.isPending ? <Skeleton className="min-h-[420px] rounded-[22px]" /> : <LiveDesk live={live} next={next} />}
+        <div className="flex min-w-0 flex-col gap-8">
+          <RadioStations />
+          {q.isPending ? <Skeleton className="min-h-[420px] rounded-[22px]" /> : <LiveDesk live={live} next={next} />}
+        </div>
         <section aria-labelledby="schedule-h" className="flex flex-col gap-3">
           <h2 id="schedule-h" className="font-display text-2xl font-extrabold">
             Schedule
