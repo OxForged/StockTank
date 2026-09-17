@@ -16,7 +16,8 @@ COPY packages/media ./packages/media
 COPY services/media-worker ./services/media-worker
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --filter @stocktank/media-worker...
-RUN pnpm --filter @stocktank/database generate \
+# prisma.config.ts requires DATABASE_URL; generate never connects, so a placeholder is enough at build time.
+RUN DATABASE_URL=postgresql://build:build@localhost:5432/build pnpm --filter @stocktank/database generate \
  && pnpm --filter @stocktank/types build \
  && pnpm --filter @stocktank/database build \
  && pnpm --filter @stocktank/media build \

@@ -20,10 +20,12 @@ COPY packages/media ./packages/media
 COPY services/api ./services/api
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --filter @stocktank/api...
-RUN pnpm --filter @stocktank/database generate \
+# prisma.config.ts requires DATABASE_URL; generate never connects, so a placeholder is enough at build time.
+RUN DATABASE_URL=postgresql://build:build@localhost:5432/build pnpm --filter @stocktank/database generate \
  && pnpm --filter @stocktank/types build \
  && pnpm --filter @stocktank/config build \
  && pnpm --filter @stocktank/database build \
+ && pnpm --filter @stocktank/media build \
  && pnpm --filter @stocktank/api build
 # Self-contained production tree for the API (workspace packages + prod node_modules only)
 RUN pnpm --filter @stocktank/api deploy --prod --legacy /out
