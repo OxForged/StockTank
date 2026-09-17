@@ -19,6 +19,7 @@ export default defineConfig({
       '/sitemap.xml': { target: API_ORIGIN, changeOrigin: true, rewrite: () => '/api/v1/seo/sitemap.xml' },
       '/rss.xml': { target: API_ORIGIN, changeOrigin: true, rewrite: () => '/api/v1/seo/rss.xml' },
       '^/podcasts/[^/]+/feed\\.xml$': { target: API_ORIGIN, changeOrigin: true },
+      '^/podcasts/dl/': { target: API_ORIGIN, changeOrigin: true },
       '/robots.txt': { target: API_ORIGIN, changeOrigin: true, rewrite: () => '/api/v1/seo/robots.txt' },
     },
   },

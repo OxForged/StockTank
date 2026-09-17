@@ -4,6 +4,7 @@ import { Loader2, Pause, Play, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 
+import { createPlaybackTracker } from '../../lib/analytics';
 import { api } from '../../lib/api';
 import { claimPlayback, formatClock, useMediaSource } from '../../lib/media';
 import { usePlayer, type PlayerItem, type PlayerMedia } from '../../stores/player';
@@ -69,6 +70,14 @@ function MiniPlayerBar({ item }: { item: PlayerItem }) {
   });
   const nowTrack = isRadio ? station.data?.nowPlaying?.current : null;
   const audioRef = useRef<HTMLAudioElement>(null);
+  // One tracker per item (the bar is keyed by item), created lazily on first use.
+  const tracker = useRef<ReturnType<typeof createPlaybackTracker> | null>(null);
+  const tracked = () =>
+    (tracker.current ??= createPlaybackTracker({
+      entityType: item.kind,
+      entityId: item.kind === 'radio' ? item.id.replace(/^radio:/, '') : item.id,
+      mediaKind: item.kind === 'radio' ? 'radio' : 'audio',
+    }));
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -121,15 +130,28 @@ function MiniPlayerBar({ item }: { item: PlayerItem }) {
       <audio
         ref={audioRef}
         preload="metadata"
-        onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
-        onEnded={() => setPlaying(false)}
+        onPlay={(e) => {
+          setPlaying(true);
+          tracked().onPlay(e.currentTarget.currentTime);
+        }}
+        onPause={() => {
+          setPlaying(false);
+          tracked().onPause();
+        }}
+        onEnded={() => {
+          setPlaying(false);
+          tracked().onComplete();
+        }}
         onError={() => setFailed(true)}
         onDurationChange={(e) => setDuration(e.currentTarget.duration)}
         onTimeUpdate={(e) => {
           const t = e.currentTarget.currentTime;
           setTime(t);
-          if (endAt !== undefined && t >= endAt) e.currentTarget.pause();
+          tracked().onTimeUpdate(t);
+          if (endAt !== undefined && t >= endAt) {
+            e.currentTarget.pause();
+            tracked().onComplete();
+          }
         }}
       />
       <div className="flex h-[84px] items-center gap-4 rounded-2xl border border-hairline-strong bg-surface/95 px-4 shadow-raised backdrop-blur-md md:gap-5 md:px-5">

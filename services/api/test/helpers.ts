@@ -43,6 +43,7 @@ export interface TestContextOptions {
 const RELAXED_FORM_LIMITS = {
   inquiry: { windowMs: 60_000, limit: 1_000 },
   subscribe: { windowMs: 60_000, limit: 1_000 },
+  analytics: { windowMs: 60_000, limit: 1_000 },
 };
 
 export async function createTestContext(options: TestContextOptions = {}): Promise<TestContext> {
@@ -146,6 +147,7 @@ export async function resetContent(prisma: PrismaClient): Promise<void> {
   await prisma.show.deleteMany({});
   await prisma.mediaAsset.deleteMany({});
   await prisma.radioStation.deleteMany({});
+  await prisma.analyticsEvent.deleteMany({});
   await prisma.project.deleteMany({});
   await prisma.company.deleteMany({});
 }

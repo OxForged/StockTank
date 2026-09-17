@@ -8,6 +8,7 @@ import { Link, useParams } from 'react-router';
 
 import { AdSlot } from '../components/ads/ad-slot';
 import { NewsletterSignup } from '../components/marketing/newsletter-signup';
+import { ShareButton } from '../components/share-button';
 import { api } from '../lib/api';
 import { ORGANIZATION_LD, useSeo } from '../lib/seo';
 import { EpisodeVideoPlayer } from '../components/player/episode-player';
@@ -138,6 +139,8 @@ export function EpisodePage() {
   const data = q.data;
   useSeo({
     title: data ? `${data.episode.title} · ${data.episode.show.title}` : 'Episode',
+    loading: q.isPending,
+    entity: data ? { entityType: 'episode', entityId: data.episode.id } : null,
     description: data?.episode.summary,
     type: 'video.episode',
     jsonLd: data
@@ -191,11 +194,12 @@ export function EpisodePage() {
         ) : (
           <p className="mt-2 font-mono text-xs text-muted">Playback becomes available once this episode’s media is published.</p>
         )}
+        <ShareButton title={episode.title} url={`${window.location.origin}/shows/${episode.show.slug}/${episode.slug}`} entity={{ entityType: 'episode', entityId: episode.id }} />
       </Hero>
 
       <div className="grid gap-8 px-4 py-8 md:px-8 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="flex min-w-0 flex-col gap-8">
-          {data.media?.hlsUrl ? <EpisodeVideoPlayer media={data.media} title={episode.title} /> : null}
+          {data.media?.hlsUrl ? <EpisodeVideoPlayer media={data.media} title={episode.title} episodeId={episode.id} /> : null}
           {episode.summary ? <p className="text-lg text-muted">{episode.summary}</p> : null}
           {episode.description ? (
             <section aria-labelledby="notes-h" className="flex flex-col gap-3">
@@ -313,6 +317,8 @@ export function ProjectPage() {
   const p = q.data?.project;
   useSeo({
     title: p?.name ?? 'Project',
+    loading: q.isPending,
+    entity: p ? { entityType: 'project', entityId: p.id } : null,
     description: p?.description,
     jsonLd: p ? { '@context': 'https://schema.org', '@type': 'Organization', name: p.name, url: p.website ?? undefined, description: p.description ?? undefined } : null,
   });
@@ -386,6 +392,8 @@ export function CompanyPage() {
   const c = q.data?.company;
   useSeo({
     title: c?.name ?? 'Company',
+    loading: q.isPending,
+    entity: c ? { entityType: 'company', entityId: c.id } : null,
     description: c?.description,
     jsonLd: c
       ? {
@@ -459,6 +467,8 @@ export function PersonPage() {
   const p = q.data?.person;
   useSeo({
     title: p?.name ?? 'Person',
+    loading: q.isPending,
+    entity: p ? { entityType: 'person', entityId: p.id } : null,
     description: p?.bio,
     type: 'profile',
     jsonLd: p ? { '@context': 'https://schema.org', '@type': 'Person', name: p.name, jobTitle: p.title ?? undefined, url: p.website ?? undefined } : null,
@@ -556,6 +566,8 @@ export function ArticlePage() {
   const a = q.data?.article;
   useSeo({
     title: a?.title ?? 'Article',
+    loading: q.isPending,
+    entity: a ? { entityType: 'article', entityId: a.id } : null,
     description: a?.summary,
     type: 'article',
     jsonLd: a

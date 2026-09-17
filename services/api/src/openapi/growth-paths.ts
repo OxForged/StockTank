@@ -115,6 +115,12 @@ import {
   auditLogQuerySchema,
   createApiKeyInputSchema,
   createdApiKeySchema,
+  analyticsBatchSchema,
+  analyticsRangeQuerySchema,
+  audienceAnalyticsSchema,
+  contentAnalyticsSchema,
+  projectAnalyticsSchema,
+  showAnalyticsSchema,
 } from '@stocktank/types';
 import { component } from './document.js';
 
@@ -681,5 +687,46 @@ export function registerGrowthPaths(registry: OpenAPIRegistry, h: GrowthPathHelp
     params: idParams,
     ok: { status: 200, schema: apiKeySchema },
     extra: { ...notFound('API key'), ...conflict('Already revoked') },
+  });
+  // ───── Analytics (Milestone 6) ─────
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/analytics/events',
+    tags: ['Analytics'],
+    summary: 'Record analytics events',
+    description:
+      'Anonymous first-party events (page views, playback, search, shares), up to 25 per batch. Visitors are salted hashes of a first-party cookie; no IP addresses are stored. Requests with Sec-GPC: 1 or DNT: 1 are accepted and discarded. Rate limited per IP.',
+    request: { headers: csrfHeaders, body: { required: true, content: json(analyticsBatchSchema) } },
+    responses: { 204: { description: 'Accepted' }, ...validationError, ...commonErrors },
+  });
+  registry.registerPath({
+    method: 'get',
+    path: '/podcasts/dl/{episodeId}.mp3',
+    tags: ['Podcasts'],
+    summary: 'Podcast download (tracked)',
+    description: 'Enclosure URL used in podcast feeds. Counts one download per listener per episode per day (hash of IP, user agent and day; the IP is not stored), then redirects to the MP3 on the CDN.',
+    request: { params: z.object({ episodeId: z.string() }) },
+    responses: { 302: { description: 'Redirect to the audio file' }, ...notFound('Episode audio') },
+  });
+  const ANALYTICS = '/api/v1/admin/analytics';
+  admin('get', `${ANALYTICS}/audience`, 'Audience analytics', 'Requires `analytics.read`. Unique visitors, MAU, daily visitors and page views, followers, traffic sources, weekly retention cohorts, top searches.', {
+    tag: 'Admin: Analytics',
+    query: analyticsRangeQuerySchema,
+    ok: { status: 200, schema: audienceAnalyticsSchema },
+  });
+  admin('get', `${ANALYTICS}/content`, 'Content analytics', 'Requires `analytics.read`. Views, plays, completion, listening/watch/radio time, downloads, shares, top episodes and clips. Likes and comments are listed as not tracked.', {
+    tag: 'Admin: Analytics',
+    query: analyticsRangeQuerySchema,
+    ok: { status: 200, schema: contentAnalyticsSchema },
+  });
+  admin('get', `${ANALYTICS}/shows`, 'Show analytics', 'Requires `analytics.read`. Engagement and followers per show.', {
+    tag: 'Admin: Analytics',
+    query: analyticsRangeQuerySchema,
+    ok: { status: 200, schema: showAnalyticsSchema },
+  });
+  admin('get', `${ANALYTICS}/projects`, 'Project analytics', 'Requires `analytics.read`. Profile views, followers, episode mentions and views of those episodes.', {
+    tag: 'Admin: Analytics',
+    query: analyticsRangeQuerySchema,
+    ok: { status: 200, schema: projectAnalyticsSchema },
   });
 }

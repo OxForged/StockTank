@@ -17,6 +17,9 @@ export const mockApi = {
     devLoginStatus: vi.fn(),
     devLogin: vi.fn(),
   },
+  analytics: {
+    send: vi.fn(() => Promise.resolve()),
+  },
   content: {
     home: vi.fn(),
     shows: vi.fn(),

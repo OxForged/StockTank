@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router';
 
+import { usePageView, type TrackedEntity } from './analytics';
+
 const BASE_TITLE = 'StockTank';
 const DEFAULT_DESCRIPTION =
   'StockTank is a media network covering on-chain stocks and crypto: shows, a live desk, clips and explainers. Information and entertainment only, not financial advice.';
@@ -18,6 +20,9 @@ export interface SeoOptions {
   /** RSS/podcast feed advertised with <link rel="alternate">, so podcast apps and readers can discover it. */
   feedUrl?: string | null;
   feedTitle?: string;
+  /** Analytics: wait until the page has loaded, and attribute the view to what it shows. */
+  loading?: boolean;
+  entity?: TrackedEntity | null;
 }
 
 function setMeta(attr: 'name' | 'property', key: string, content: string | null | undefined) {
@@ -51,7 +56,8 @@ const trimDescription = (d: string) => (d.length > 200 ? `${d.slice(0, 197).trim
  * Crawlers that render JavaScript read these; server-side rendering or prerendering is the production follow-up.
  */
 export function useSeo(options: SeoOptions = {}): void {
-  const { title, description, path, image, type = 'website', jsonLd, noindex, feedUrl, feedTitle } = options;
+  const { title, description, path, image, type = 'website', jsonLd, noindex, feedUrl, feedTitle, loading, entity } = options;
+  usePageView({ loading, entity });
   const { pathname } = useLocation();
   const canonicalPath = path ?? pathname;
   const jsonLdText = jsonLd ? JSON.stringify(jsonLd) : null;

@@ -1,5 +1,15 @@
 import { z } from 'zod';
 import {
+  audienceAnalyticsSchema,
+  contentAnalyticsSchema,
+  projectAnalyticsSchema,
+  showAnalyticsSchema,
+  type AnalyticsBatch,
+  type AnalyticsRangeQuery,
+  type AudienceAnalytics,
+  type ContentAnalytics,
+  type ProjectAnalytics,
+  type ShowAnalytics,
   adminPermissionListSchema,
   adminRoleListSchema,
   apiKeyListSchema,
@@ -288,6 +298,10 @@ export function createApiClient(options: ApiClientOptions = {}) {
       /** Local development only: signs in as the seeded super admin. */
       devLogin: (): Promise<AuthResponse> => request('POST', '/api/v1/auth/dev-login', authResponseSchema),
     },
+    analytics: {
+      /** Sent with keepalive so batches survive page unloads. */
+      send: (batch: AnalyticsBatch): Promise<void> => noContent(request('POST', '/api/v1/analytics/events', null, batch, { keepalive: true })),
+    },
     content: {
       home: (): Promise<HomeResponse> => request('GET', '/api/v1/home', homeResponseSchema),
       shows: (page = 1, pageSize = 24): Promise<ShowListResponse> =>
@@ -382,6 +396,12 @@ export function createApiClient(options: ApiClientOptions = {}) {
         saveGuest: (input: PersonInput, id?: string): Promise<AdminPerson> =>
           id ? request('PUT', `${CMS}/guests/${encodeURIComponent(id)}`, adminPersonSchema, input) : request('POST', `${CMS}/guests`, adminPersonSchema, input),
         reindexSearch: (): Promise<ReindexResponse> => request('POST', `${CMS}/search/reindex`, reindexResponseSchema),
+      },
+      analytics: {
+        audience: (q: AnalyticsRangeQuery = {}): Promise<AudienceAnalytics> => request('GET', `/api/v1/admin/analytics/audience${qs(q)}`, audienceAnalyticsSchema),
+        content: (q: AnalyticsRangeQuery = {}): Promise<ContentAnalytics> => request('GET', `/api/v1/admin/analytics/content${qs(q)}`, contentAnalyticsSchema),
+        shows: (q: AnalyticsRangeQuery = {}): Promise<ShowAnalytics> => request('GET', `/api/v1/admin/analytics/shows${qs(q)}`, showAnalyticsSchema),
+        projects: (q: AnalyticsRangeQuery = {}): Promise<ProjectAnalytics> => request('GET', `/api/v1/admin/analytics/projects${qs(q)}`, projectAnalyticsSchema),
       },
       system: {
         auditLogs: (q: Partial<AuditLogQuery> = {}): Promise<AuditLogPage> => request('GET', `/api/v1/admin/audit-logs${qs(q)}`, auditLogPageSchema),

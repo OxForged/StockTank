@@ -128,11 +128,12 @@ export const ADMIN_NAV: readonly (AdminNavItem | AdminNavGroup)[] = [
   {
     label: 'Analytics',
     icon: ChartBar,
+    permission: 'analytics.read',
     items: [
-      { label: 'Audience', to: '/analytics/audience', milestone: 6 },
-      { label: 'Content', to: '/analytics/content', milestone: 6 },
-      { label: 'Projects', to: '/analytics/projects', milestone: 6 },
-      { label: 'Shows', to: '/analytics/shows', milestone: 6 },
+      { label: 'Audience', to: '/analytics/audience' },
+      { label: 'Content', to: '/analytics/content' },
+      { label: 'Projects', to: '/analytics/projects' },
+      { label: 'Shows', to: '/analytics/shows' },
       { label: 'Revenue', to: '/analytics/revenue', icon: Coins, milestone: 11 },
     ],
   },

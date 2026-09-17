@@ -86,6 +86,16 @@ describe('Media graph pages', () => {
     });
   });
 
+  it('shares an episode link and records the share', async () => {
+    mockApi.content.episode.mockResolvedValue({ ...EPISODE_DETAIL_BASE });
+    renderApp('/shows/the-tank/bear-market');
+    const user = userEvent.setup();
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText');
+    await user.click(await screen.findByRole('button', { name: 'Share' }));
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith(expect.stringMatching(/\/shows\/the-tank\/bear-market$/)));
+    expect(await screen.findByText('Link copied')).toBeInTheDocument();
+  });
+
   it('discloses AI hosts on their profile', async () => {
     mockApi.content.person.mockResolvedValue({ person: { ...person({ name: 'Desk Anchor', isAi: true }), website: null }, episodes: [] });
     renderApp('/people/desk-anchor');

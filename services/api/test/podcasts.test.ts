@@ -116,7 +116,7 @@ describe('podcast feeds and Castopod distribution', () => {
     expect(feed.status).toBe(200);
     expect(feed.headers['content-type']).toMatch(/application\/rss\+xml/);
     expect(feed.text).toContain('<title>The Tank &amp; Co</title>');
-    expect(feed.text).toContain('<enclosure url="https://cdn.test/renditions/a1/audio.mp3" length="12345" type="audio/mpeg"/>');
+    expect(feed.text).toContain(`<enclosure url="https://stocktank.test/podcasts/dl/${episodeId}.mp3" length="12345" type="audio/mpeg"/>`);
     expect(feed.text).toContain('<itunes:duration>00:30:05</itunes:duration>');
     expect(feed.text).toContain('<itunes:email>pods@stocktank.test</itunes:email>');
     expect(feed.text).not.toContain('No audio yet');

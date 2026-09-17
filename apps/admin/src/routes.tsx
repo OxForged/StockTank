@@ -29,6 +29,7 @@ import {
   ProjectsCmsPage,
   ShowsCmsPage,
 } from './pages/cms-pages';
+import { AudienceAnalyticsPage, ContentAnalyticsPage, ProjectAnalyticsPage, ShowAnalyticsPage } from './pages/analytics/analytics-pages';
 import { PodcastsPage } from './pages/distribution/podcasts-page';
 import { NowPlayingPage, StationsPage } from './pages/live/radio-pages';
 import { ClipsPage, ShortsPage } from './pages/media/clips-page';
@@ -44,6 +45,10 @@ const WORKING: Record<string, () => JSX.Element> = {
   '/content/shorts': ShortsPage,
   '/distribution/rss': PodcastsPage,
   '/live/stations': StationsPage,
+  '/analytics/audience': AudienceAnalyticsPage,
+  '/analytics/content': ContentAnalyticsPage,
+  '/analytics/shows': ShowAnalyticsPage,
+  '/analytics/projects': ProjectAnalyticsPage,
   '/live/now-playing': NowPlayingPage,
   '/content/articles': ArticlesCmsPage,
   '/network/shows': ShowsCmsPage,

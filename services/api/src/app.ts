@@ -27,6 +27,8 @@ import { adminRadioRouter, radioRouter } from './routes/radio.js';
 import { NowPlayingService } from './lib/radio.js';
 import { adminRouter } from './routes/admin.js';
 import { adminSystemRouter } from './routes/admin-system.js';
+import { adminAnalyticsRouter } from './routes/admin-analytics.js';
+import { analyticsRouter } from './routes/analytics.js';
 import { advertisingRouter } from './routes/advertising.js';
 import { authRouter } from './routes/auth.js';
 import { contentRouter } from './routes/content.js';
@@ -56,6 +58,7 @@ export interface AppDeps {
   formLimits?: {
     inquiry?: { windowMs: number; limit: number };
     subscribe?: { windowMs: number; limit: number };
+    analytics?: { windowMs: number; limit: number };
   };
 }
 
@@ -122,12 +125,16 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api/v1/admin/podcasts', adminPodcastRouter({ env, prisma, media, podcastHost }));
   app.use('/api/v1/admin/radio', adminRadioRouter({ prisma, nowPlaying, provider: radio, apiKeyConfigured: Boolean(env.AZURACAST_API_KEY) }));
   app.use('/api/v1', radioRouter({ prisma, nowPlaying }));
+  app.use('/api/v1', analyticsRouter({ env, prisma, media, ingestLimit: deps.formLimits?.analytics }));
+  // Podcast enclosure downloads live on the site origin like the feeds.
+  app.use(analyticsRouter({ env, prisma, media, ingestLimit: deps.formLimits?.analytics }));
   // Public feeds live on the site origin (/podcasts/<slug>/feed.xml) and under the versioned API.
   app.use(podcastFeedRouter({ env, prisma, media }));
   app.use('/api/v1', podcastFeedRouter({ env, prisma, media }));
   app.use('/api/v1/admin/advertising', adminAdvertisingRouter({ prisma }));
   app.use('/api/v1/admin', adminRouter({ prisma }));
   app.use('/api/v1/admin', adminSystemRouter({ prisma }));
+  app.use('/api/v1/admin/analytics', adminAnalyticsRouter({ prisma }));
   app.use('/api/v1/admin', adminMarketingRouter({ prisma }));
 
   app.use(notFoundHandler);

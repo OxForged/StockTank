@@ -26034,6 +26034,1050 @@
           }
         }
       }
+    },
+    "/api/v1/analytics/events": {
+      "post": {
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Record analytics events",
+        "description": "Anonymous first-party events (page views, playback, search, shares), up to 25 per batch. Visitors are salted hashes of a first-party cookie; no IP addresses are stored. Requests with Sec-GPC: 1 or DNT: 1 are accepted and discarded. Rate limited per IP.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "events": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "page_view",
+                            "play_start",
+                            "play_progress",
+                            "play_complete",
+                            "share",
+                            "search"
+                          ]
+                        },
+                        "path": {
+                          "type": "string",
+                          "maxLength": 300
+                        },
+                        "entityType": {
+                          "type": "string",
+                          "enum": [
+                            "show",
+                            "episode",
+                            "clip",
+                            "radio",
+                            "article",
+                            "project",
+                            "company",
+                            "person"
+                          ]
+                        },
+                        "entityId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "mediaKind": {
+                          "type": "string",
+                          "enum": [
+                            "video",
+                            "audio",
+                            "radio"
+                          ]
+                        },
+                        "seconds": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 300
+                        },
+                        "query": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "channel": {
+                          "type": "string",
+                          "enum": [
+                            "native",
+                            "copy_link",
+                            "x",
+                            "linkedin",
+                            "email"
+                          ]
+                        },
+                        "occurredAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "type"
+                      ]
+                    },
+                    "minItems": 1,
+                    "maxItems": 25
+                  },
+                  "referrer": {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  "utm": {
+                    "type": "object",
+                    "properties": {
+                      "source": {
+                        "type": "string",
+                        "maxLength": 100
+                      },
+                      "medium": {
+                        "type": "string",
+                        "maxLength": 100
+                      },
+                      "campaign": {
+                        "type": "string",
+                        "maxLength": 100
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "events"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Accepted"
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/podcasts/dl/{episodeId}.mp3": {
+      "get": {
+        "tags": [
+          "Podcasts"
+        ],
+        "summary": "Podcast download (tracked)",
+        "description": "Enclosure URL used in podcast feeds. Counts one download per listener per episode per day (hash of IP, user agent and day; the IP is not stored), then redirects to the MP3 on the CDN.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "episodeId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to the audio file"
+          },
+          "404": {
+            "description": "Episode audio not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/analytics/audience": {
+      "get": {
+        "tags": [
+          "Admin: Analytics"
+        ],
+        "summary": "Audience analytics",
+        "description": "Requires `analytics.read`. Unique visitors, MAU, daily visitors and page views, followers, traffic sources, weekly retention cohorts, top searches.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "required": false,
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "required": false,
+            "name": "to",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audience analytics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "range": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string"
+                        },
+                        "to": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "from",
+                        "to"
+                      ]
+                    },
+                    "uniqueVisitors": {
+                      "type": "integer"
+                    },
+                    "mau": {
+                      "type": "integer"
+                    },
+                    "pageViews": {
+                      "type": "integer"
+                    },
+                    "daily": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "date": {
+                            "type": "string"
+                          },
+                          "visitors": {
+                            "type": "integer"
+                          },
+                          "pageViews": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "date",
+                          "visitors",
+                          "pageViews"
+                        ]
+                      }
+                    },
+                    "followers": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "new": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "total",
+                        "new"
+                      ]
+                    },
+                    "trafficSources": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "source": {
+                            "type": "string"
+                          },
+                          "visitors": {
+                            "type": "integer"
+                          },
+                          "pageViews": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "source",
+                          "visitors",
+                          "pageViews"
+                        ]
+                      }
+                    },
+                    "retention": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "cohortWeek": {
+                            "type": "string"
+                          },
+                          "visitors": {
+                            "type": "integer"
+                          },
+                          "returned": {
+                            "type": "integer"
+                          },
+                          "rate": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "cohortWeek",
+                          "visitors",
+                          "returned",
+                          "rate"
+                        ]
+                      }
+                    },
+                    "topSearches": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "query": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "query",
+                          "count"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "range",
+                    "uniqueVisitors",
+                    "mau",
+                    "pageViews",
+                    "daily",
+                    "followers",
+                    "trafficSources",
+                    "retention",
+                    "topSearches"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/analytics/content": {
+      "get": {
+        "tags": [
+          "Admin: Analytics"
+        ],
+        "summary": "Content analytics",
+        "description": "Requires `analytics.read`. Views, plays, completion, listening/watch/radio time, downloads, shares, top episodes and clips. Likes and comments are listed as not tracked.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "required": false,
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "required": false,
+            "name": "to",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Content analytics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "range": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string"
+                        },
+                        "to": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "from",
+                        "to"
+                      ]
+                    },
+                    "totals": {
+                      "type": "object",
+                      "properties": {
+                        "views": {
+                          "type": "integer"
+                        },
+                        "plays": {
+                          "type": "integer"
+                        },
+                        "completions": {
+                          "type": "integer"
+                        },
+                        "completionRate": {
+                          "type": "number"
+                        },
+                        "listenSeconds": {
+                          "type": "integer"
+                        },
+                        "watchSeconds": {
+                          "type": "integer"
+                        },
+                        "downloads": {
+                          "type": "integer"
+                        },
+                        "shares": {
+                          "type": "integer"
+                        },
+                        "radioSeconds": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "views",
+                        "plays",
+                        "completions",
+                        "completionRate",
+                        "listenSeconds",
+                        "watchSeconds",
+                        "downloads",
+                        "shares",
+                        "radioSeconds"
+                      ]
+                    },
+                    "topEpisodes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "showTitle": {
+                            "type": "string"
+                          },
+                          "views": {
+                            "type": "integer"
+                          },
+                          "plays": {
+                            "type": "integer"
+                          },
+                          "completions": {
+                            "type": "integer"
+                          },
+                          "completionRate": {
+                            "type": "number"
+                          },
+                          "listenSeconds": {
+                            "type": "integer"
+                          },
+                          "watchSeconds": {
+                            "type": "integer"
+                          },
+                          "downloads": {
+                            "type": "integer"
+                          },
+                          "shares": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "title",
+                          "showTitle",
+                          "views",
+                          "plays",
+                          "completions",
+                          "completionRate",
+                          "listenSeconds",
+                          "watchSeconds",
+                          "downloads",
+                          "shares"
+                        ]
+                      }
+                    },
+                    "clips": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "plays": {
+                            "type": "integer"
+                          },
+                          "completions": {
+                            "type": "integer"
+                          },
+                          "shares": {
+                            "type": "integer"
+                          },
+                          "views": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "title",
+                          "plays",
+                          "completions",
+                          "shares",
+                          "views"
+                        ]
+                      }
+                    },
+                    "notTracked": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "range",
+                    "totals",
+                    "topEpisodes",
+                    "clips",
+                    "notTracked"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/analytics/shows": {
+      "get": {
+        "tags": [
+          "Admin: Analytics"
+        ],
+        "summary": "Show analytics",
+        "description": "Requires `analytics.read`. Engagement and followers per show.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "required": false,
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "required": false,
+            "name": "to",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Show analytics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "range": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string"
+                        },
+                        "to": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "from",
+                        "to"
+                      ]
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "slug": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "isDemo": {
+                            "type": "boolean"
+                          },
+                          "views": {
+                            "type": "integer"
+                          },
+                          "plays": {
+                            "type": "integer"
+                          },
+                          "completions": {
+                            "type": "integer"
+                          },
+                          "completionRate": {
+                            "type": "number"
+                          },
+                          "listenSeconds": {
+                            "type": "integer"
+                          },
+                          "watchSeconds": {
+                            "type": "integer"
+                          },
+                          "downloads": {
+                            "type": "integer"
+                          },
+                          "shares": {
+                            "type": "integer"
+                          },
+                          "followers": {
+                            "type": "integer"
+                          },
+                          "newFollowers": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "slug",
+                          "title",
+                          "isDemo",
+                          "views",
+                          "plays",
+                          "completions",
+                          "completionRate",
+                          "listenSeconds",
+                          "watchSeconds",
+                          "downloads",
+                          "shares",
+                          "followers",
+                          "newFollowers"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "range",
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/analytics/projects": {
+      "get": {
+        "tags": [
+          "Admin: Analytics"
+        ],
+        "summary": "Project analytics",
+        "description": "Requires `analytics.read`. Profile views, followers, episode mentions and views of those episodes.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "required": false,
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "required": false,
+            "name": "to",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project analytics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "range": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string"
+                        },
+                        "to": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "from",
+                        "to"
+                      ]
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "slug": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "isDemo": {
+                            "type": "boolean"
+                          },
+                          "views": {
+                            "type": "integer"
+                          },
+                          "followers": {
+                            "type": "integer"
+                          },
+                          "newFollowers": {
+                            "type": "integer"
+                          },
+                          "episodeMentions": {
+                            "type": "integer"
+                          },
+                          "mentionViews": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "slug",
+                          "name",
+                          "isDemo",
+                          "views",
+                          "followers",
+                          "newFollowers",
+                          "episodeMentions",
+                          "mentionViews"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "range",
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "webhooks": {}

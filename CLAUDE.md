@@ -23,6 +23,10 @@
 - AzuraCast only through `packages/radio`. Never send listeners to AzuraCast pages or expose its shortcodes/ids publicly; never read individual listener records (IPs).
 - Now playing is cached per station (`NowPlayingService`); the site must keep working when AzuraCast is down.
 
+## Analytics
+- First-party only (`analytics_events`). Never store IPs, raw cookies or user ids; honour GPC/DNT on client and server. Never report unmeasured metrics as zero (use `notTracked`).
+- Podcast feed enclosures go through `/podcasts/dl/<episodeId>.mp3` (counted, then 302 to the CDN).
+
 ## Conventions
 - pnpm workspaces + Turborepo. Workspace globs: `apps/*`, `services/*`, `packages/*` (never `reference/`).
 - TypeScript strict everywhere. Zod for all API input/output. API is versioned under `/api/v1`.

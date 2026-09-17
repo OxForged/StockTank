@@ -74,7 +74,8 @@ export function podcastFeedRouter({ env, prisma, media }: PodcastFeedDeps): Rout
         durationSeconds: row.mediaAsset?.durationSeconds ?? row.durationSeconds,
         number: row.number,
         type: row.episodeType,
-        audioUrl,
+        // Tracked redirect to the CDN file (counts downloads without storing IPs).
+        audioUrl: `${site}/podcasts/dl/${row.id}.mp3`,
         audioBytes: audioBytes ?? 0,
         imageUrl: row.coverUrl,
         isDemo: row.isDemo,

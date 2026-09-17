@@ -62,9 +62,11 @@ Not verified against a live AzuraCast: none runs locally and AzuraCast's public 
 |---|---|
 | (this commit) | System admin: audit log viewer (filters, cursor paging), read-only role and permission catalogue (roles stay defined in code), read-only scoped API keys (hashed, shown once, narrowed to the owner's current permissions, GET only, audited); new `analytics.read` permission |
 
+| (this commit) | First-party analytics: anonymous event ingestion (salted visitor hashes, no IPs, GPC/DNT honoured, server-derived show ids, clamped clocks), tracked podcast downloads (one per listener/episode/day), web tracker (page views, real playback time, completion, search, share button), admin Audience / Content / Shows / Projects dashboards; likes and comments reported as not tracked |
+
 ### Next
 - Owner decisions: prices and packages, legal review of drafts, production email provider, hosting/domain, PODCAST_OWNER_EMAIL, cover art for shows, AzuraCast server
-- Milestone 6: first-party analytics (events, dashboards)
+- Milestone 7: AI services (LLM provider, transcription, RAG with citations, personalities, AI clipping with human review, cost tracking)
 - Milestone 5: AzuraCast live radio; 6: analytics, roles, API keys, audit viewer; 7: AI services
 
 ### Run locally

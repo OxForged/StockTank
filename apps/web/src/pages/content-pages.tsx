@@ -3,7 +3,7 @@ import type { CompanySummary, EpisodeSummary, ProjectSummary, ShowSummary } from
 import { Button, EmptyState, Skeleton, cn } from '@stocktank/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bookmark, Boxes, Building2, Play, Radio, Rss, Search as SearchIcon, Star, Tv } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 
 const RECENT_KEY = 'stocktank.recentSearches';
 
@@ -40,6 +40,7 @@ import { AdSlot } from '../components/ads/ad-slot';
 import { LiveDesk } from '../components/desk/live-desk';
 import { RadioStations } from '../components/radio/radio-stations';
 import { NewsletterSignup } from '../components/marketing/newsletter-signup';
+import { track } from '../lib/analytics';
 import { api } from '../lib/api';
 import { useMe } from '../lib/auth';
 import { LIBRARY_QUERY_KEY, useLibrary } from '../lib/library';
@@ -202,6 +203,8 @@ export function ShowDetailPage() {
   const savedIds = new Set((library.data?.bookmarks ?? []).map((b) => b.id));
   useSeo({
     title: q.data?.show.title ?? 'Show',
+    loading: q.isPending,
+    entity: q.data ? { entityType: 'show', entityId: q.data.show.id } : null,
     description: q.data?.show.description ?? q.data?.show.tagline,
     jsonLd: q.data
       ? {
@@ -411,6 +414,10 @@ export function SearchPage() {
   const q = (params.get('q') ?? '').trim();
   useDocumentTitle(q ? `Search: ${q}` : 'Search');
   const results = useQuery({ queryKey: ['search', q], queryFn: () => api.content.search(q), enabled: q.length > 0 });
+  const searched = results.isSuccess ? q : null;
+  useEffect(() => {
+    if (searched) track({ type: 'search', query: searched });
+  }, [searched]);
   const trending = useQuery({ queryKey: ['search', 'trending'], queryFn: () => api.content.trending(), enabled: q.length === 0 });
   const [recent, setRecent] = useState<string[]>(() => readRecent());
 

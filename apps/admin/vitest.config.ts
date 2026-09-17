@@ -8,5 +8,7 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
     css: false,
+    // Suites run in parallel under turbo; the first test in a file also pays for cold imports.
+    testTimeout: 15_000,
   },
 });
