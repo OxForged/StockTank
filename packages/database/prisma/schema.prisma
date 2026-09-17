@@ -296,6 +296,8 @@ model Episode {
   podcastSyncError  String?            @map("podcast_sync_error")
   podcastSyncedAt   DateTime?          @map("podcast_synced_at")
   mediaAsset        MediaAsset?        @relation("EpisodeMedia", fields: [mediaAssetId], references: [id], onDelete: SetNull)
+  transcript        Transcript?
+  aiDrafts          AiDraft[]
 
   @@unique([showId, slug])
   @@index([status, publishedAt])
@@ -1034,6 +1036,121 @@ model AiBudget {
 
   @@unique([scope, scopeKey])
   @@map("ai_budgets")
+}
+
+// ───────── AI content factory (§14, §15, §20, §27, §56) ─────────
+
+enum TranscriptStatus {
+  queued
+  processing
+  ready
+  failed
+}
+
+/// One transcript per episode, produced by a TranscriptionProvider (§15). Segments keep timestamps and confidence.
+model Transcript {
+  id              String           @id @default(cuid())
+  episodeId       String           @unique @map("episode_id")
+  status          TranscriptStatus @default(queued)
+  provider        String?
+  model           String?
+  language        String?
+  text            String?
+  /// [{ start, end, text, speaker, confidence }]
+  segments        Json?
+  speakers        String[]
+  confidence      Float?
+  durationSeconds Float?           @map("duration_seconds")
+  error           String?
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  episode Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+
+  @@map("transcripts")
+}
+
+enum AiDraftKind {
+  summary
+  show_notes
+  seo
+  chapters
+  quotes
+  clip_candidates
+  social_posts
+  newsletter
+  article
+  entities
+  topics
+}
+
+enum AiDraftStatus {
+  draft
+  review
+  approved
+  rejected
+  published
+}
+
+/// Everything the content factory produces (§20). Nothing here reaches the public until a human approves it (§56).
+model AiDraft {
+  id              String        @id @default(cuid())
+  episodeId       String        @map("episode_id")
+  kind            AiDraftKind
+  status          AiDraftStatus @default(review)
+  /// Shape depends on `kind`; validated by zod in @stocktank/types.
+  content         Json
+  provider        String
+  model           String
+  promptVersion   String        @map("prompt_version")
+  /// Source references the generator used (transcript segments, sources), for the reviewer.
+  citations       Json?
+  /// Deterministic moderation flags a reviewer must acknowledge (§27).
+  moderationFlags String[]      @map("moderation_flags")
+  reviewerId      String?       @map("reviewer_id")
+  reviewNote      String?       @map("review_note")
+  reviewedAt      DateTime?     @map("reviewed_at")
+  /// Set when approval wrote the draft into the episode/clips/article.
+  appliedAt       DateTime?     @map("applied_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  episode Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([episodeId, kind])
+  @@map("ai_drafts")
+}
+
+enum AiJobType {
+  transcribe
+  content_factory
+}
+
+enum AiJobStatus {
+  queued
+  running
+  succeeded
+  failed
+}
+
+/// Tracked AI work (§28 "AI jobs"), one row per queued job.
+model AiJob {
+  id          String      @id @default(cuid())
+  type        AiJobType
+  status      AiJobStatus @default(queued)
+  episodeId   String?     @map("episode_id")
+  /// Which factory outputs to (re)generate; empty means all.
+  kinds       String[]
+  requestedBy String?     @map("requested_by")
+  error       String?
+  startedAt   DateTime?   @map("started_at")
+  finishedAt  DateTime?   @map("finished_at")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  @@index([status, createdAt])
+  @@index([episodeId, createdAt])
+  @@map("ai_jobs")
 }
 
 // ───────── First-party analytics (§29) ─────────

@@ -26,6 +26,7 @@ import {
   type ObjectStorage,
 } from '@stocktank/media';
 import { CastopodError, FINANCIAL_DISCLAIMER, type PodcastHostAdapter } from '@stocktank/podcast';
+import { aiDraftKindSchema, type AiDraftKind } from '@stocktank/types';
 import { runTool, ToolError, type Tools } from './ffmpeg-runner.js';
 
 export interface ProcessorDeps {
@@ -39,6 +40,8 @@ export interface ProcessorDeps {
   toolTimeoutMs?: number;
   /** Castopod adapter; null when Castopod is not configured. */
   podcastHost?: PodcastHostAdapter | null;
+  /** AI jobs (transcription, content factory); undefined when the worker runs without AI. */
+  ai?: { transcribe: (jobId: string, episodeId: string) => Promise<void>; contentFactory: (jobId: string, episodeId: string, kinds: AiDraftKind[]) => Promise<void> };
 }
 
 /** A failure the uploader can fix (bad file); retrying the same input will not help. */
@@ -319,6 +322,12 @@ export function createProcessor(deps: ProcessorDeps) {
         return renderClip(job.clipId);
       case 'podcast-sync':
         return podcastSync(job.episodeId);
+      case 'transcribe':
+        if (!deps.ai) throw new PermanentMediaError('AI is not configured on this worker');
+        return deps.ai.transcribe(job.jobId, job.episodeId);
+      case 'content-factory':
+        if (!deps.ai) throw new PermanentMediaError('AI is not configured on this worker');
+        return deps.ai.contentFactory(job.jobId, job.episodeId, job.kinds.map((k) => aiDraftKindSchema.parse(k)));
     }
   };
 }

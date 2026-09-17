@@ -19,7 +19,10 @@ export const transcodeJobSchema = z.object({ type: z.literal('transcode'), asset
 export const renderClipJobSchema = z.object({ type: z.literal('render-clip'), clipId: z.string().min(1) });
 /** Sends a published episode's MP3 to Castopod (§11). */
 export const podcastSyncJobSchema = z.object({ type: z.literal('podcast-sync'), episodeId: z.string().min(1) });
-export const mediaJobSchema = z.discriminatedUnion('type', [transcodeJobSchema, renderClipJobSchema, podcastSyncJobSchema]);
+/** AI work (§15, §20) shares the queue; `jobId` is the ai_jobs row. */
+export const transcribeJobSchema = z.object({ type: z.literal('transcribe'), jobId: z.string().min(1), episodeId: z.string().min(1) });
+export const contentFactoryJobSchema = z.object({ type: z.literal('content-factory'), jobId: z.string().min(1), episodeId: z.string().min(1), kinds: z.array(z.string()) });
+export const mediaJobSchema = z.discriminatedUnion('type', [transcodeJobSchema, renderClipJobSchema, podcastSyncJobSchema, transcribeJobSchema, contentFactoryJobSchema]);
 export type MediaJob = z.infer<typeof mediaJobSchema>;
 
 /** Deterministic job ids make enqueueing idempotent (a double click never starts two transcodes). */
@@ -31,6 +34,9 @@ export function jobIdFor(job: MediaJob, attempt: number): string {
       return `clip-${job.clipId}-${attempt}`;
     case 'podcast-sync':
       return `podcast-${job.episodeId}-${attempt}`;
+    case 'transcribe':
+    case 'content-factory':
+      return `${job.type}-${job.jobId}`;
   }
 }
 

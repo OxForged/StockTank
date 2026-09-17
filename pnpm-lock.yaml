@@ -132,6 +132,9 @@ importers:
       react-router:
         specifier: ^8.4.0
         version: 8.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      simple-icons:
+        specifier: ^16.31.0
+        version: 16.31.0
       zustand:
         specifier: ^5.0.15
         version: 5.0.15(@types/react@19.3.0)(react@19.3.0)
@@ -188,6 +191,9 @@ importers:
       '@stocktank/database':
         specifier: workspace:*
         version: link:../database
+      '@stocktank/types':
+        specifier: workspace:*
+        version: link:../types
       zod:
         specifier: ^4.6.5
         version: 4.6.5
@@ -451,6 +457,12 @@ importers:
 
   services/media-worker:
     dependencies:
+      '@stocktank/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
+      '@stocktank/ai-runtime':
+        specifier: workspace:*
+        version: link:../../packages/ai-runtime
       '@stocktank/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -460,6 +472,9 @@ importers:
       '@stocktank/podcast':
         specifier: workspace:*
         version: link:../../packages/podcast
+      '@stocktank/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       bullmq:
         specifier: ^6.3.6
         version: 6.3.6(ioredis@6.0.0)(pg@8.23.0)
@@ -3564,6 +3579,10 @@ packages:
   signal-exit@4.1.0:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
+
+  simple-icons@16.31.0:
+    resolution: {integrity: sha512-dDEqvQrmxL7ZnqQtGHGjCNW6CfiwzAif+83Hol9JXAnAB6wh2zsZD7Sc1kWT0O/RRAKt7xfG8W6UZhYBPD+GAA==}
+    engines: {node: '>=0.12.18'}
 
   sonic-boom@4.2.1:
     resolution: {integrity: sha512-w6AxtubXa2wTXAUsZMMWERrsIRAdrK0Sc+FUytWvYAhBJLyuI4llrMIC1DtlNSdI99EI86KZum2MMq3EAZlF9Q==}
@@ -7005,6 +7024,8 @@ snapshots:
   signal-exit@3.0.7: {}
 
   signal-exit@4.1.0: {}
+
+  simple-icons@16.31.0: {}
 
   sonic-boom@4.2.1:
     dependencies:

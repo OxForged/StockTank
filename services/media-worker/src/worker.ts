@@ -5,6 +5,9 @@ import { z } from 'zod';
 import { createPrismaClient } from '@stocktank/database';
 import { isStorageConfigured, loadMediaEnv, MEDIA_QUEUE, mediaJobSchema, S3Storage } from '@stocktank/media';
 import { CastopodAdapter, castopodConfigFromEnv, castopodEnvSchema } from '@stocktank/podcast';
+import { aiEnvSchema, createAiProviders } from '@stocktank/ai';
+import { AiMeter } from '@stocktank/ai-runtime';
+import { createAiJobs } from './ai-jobs.js';
 import { resolveTools, runTool } from './ffmpeg-runner.js';
 import { createProcessor, PermanentMediaError } from './processor.js';
 
@@ -47,6 +50,9 @@ if (env.NODE_ENV !== 'production') {
 }
 const castopod = castopodConfigFromEnv(castopodEnvSchema.parse(process.env));
 if (!castopod) logger.info('Castopod not configured; podcast-sync jobs will fail with a clear message');
+const providers = createAiProviders(aiEnvSchema.parse(process.env));
+logger.info({ llm: providers.llm?.name ?? null, transcription: providers.transcription?.name ?? null }, 'AI providers');
+const ai = createAiJobs({ prisma, storage, logger, providers, meter: new AiMeter(prisma, providers.pricing), workRoot: env.MEDIA_WORK_DIR });
 const processJob = createProcessor({
   prisma,
   storage,
@@ -54,6 +60,7 @@ const processJob = createProcessor({
   logger,
   workRoot: env.MEDIA_WORK_DIR,
   podcastHost: castopod ? new CastopodAdapter(castopod) : null,
+  ai,
 });
 
 const connection = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null });

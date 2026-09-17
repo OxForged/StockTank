@@ -13,6 +13,7 @@
   "dependencies": {
     "@stocktank/ai": "workspace:*",
     "@stocktank/database": "workspace:*",
+    "@stocktank/types": "workspace:*",
     "zod": "^4.6.5"
   },
   "devDependencies": {
