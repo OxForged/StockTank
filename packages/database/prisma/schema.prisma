@@ -467,6 +467,8 @@ model Company {
   website            String?
   country            String?
   marketDataProvider String?       @map("market_data_provider")
+  /// Retail-driven, high-volatility names covered on the Meme Stock Radar.
+  memeStock          Boolean       @default(false) @map("meme_stock")
   status             PublishStatus @default(draft)
   isDemo             Boolean       @default(false) @map("is_demo")
   createdAt          DateTime      @default(now()) @map("created_at")

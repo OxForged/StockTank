@@ -1,4 +1,5 @@
 import { loadServerEnv, type ServerEnv } from '@stocktank/config';
+import { marketDataEnvSchema, type MarketDataEnv } from '@stocktank/market-data';
 import { mediaEnvSchema, type MediaEnv } from '@stocktank/media';
 import { castopodEnvSchema, type CastopodEnv } from '@stocktank/podcast';
 import { azuracastEnvSchema, type AzuraCastEnv } from '@stocktank/radio';
@@ -49,7 +50,7 @@ const apiOnlyEnvSchema = z.object({
     .transform((v) => (v && v.trim() !== '' ? v.trim() : null)),
 });
 
-export type ApiEnv = ServerEnv & z.infer<typeof apiOnlyEnvSchema> & MediaEnv & CastopodEnv & AzuraCastEnv;
+export type ApiEnv = ServerEnv & z.infer<typeof apiOnlyEnvSchema> & MediaEnv & CastopodEnv & AzuraCastEnv & MarketDataEnv;
 
 /** Parses the shared server env plus API-specific settings. Throws on invalid config. */
 export function loadEnv(source: Record<string, string | undefined> = process.env): ApiEnv {
@@ -58,6 +59,14 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
   const mediaParsed = mediaEnvSchema.safeParse(source);
   const castopodParsed = castopodEnvSchema.safeParse(source);
   const azuracastParsed = azuracastEnvSchema.safeParse(source);
+  const marketParsed = marketDataEnvSchema.safeParse(source);
+  if (!marketParsed.success) {
+    const issues = marketParsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
+    throw new Error(`Invalid API environment:\n${issues}`);
+  }
+  if (marketParsed.data.MARKET_DATA_PROVIDER === 'polygon' && !marketParsed.data.MARKET_DATA_API_KEY) {
+    throw new Error('MARKET_DATA_PROVIDER=polygon requires MARKET_DATA_API_KEY');
+  }
   if (!azuracastParsed.success) {
     const issues = azuracastParsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Invalid API environment:\n${issues}`);
@@ -85,5 +94,5 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
   if (parsed.data.DEV_LOGIN_ENABLED && shared.NODE_ENV === 'production') {
     throw new Error('DEV_LOGIN_ENABLED must not be set in production');
   }
-  return { ...shared, ...parsed.data, ...mediaParsed.data, ...castopodParsed.data, ...azuracastParsed.data };
+  return { ...shared, ...parsed.data, ...mediaParsed.data, ...castopodParsed.data, ...azuracastParsed.data, ...marketParsed.data };
 }

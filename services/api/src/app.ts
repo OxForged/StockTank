@@ -7,6 +7,8 @@ import type { Logger } from 'pino';
 import type { PrismaClient } from '@stocktank/database';
 import { CastopodAdapter, castopodConfigFromEnv, type PodcastHostAdapter } from '@stocktank/podcast';
 import { AzuraCastAdapter, azuracastConfigFromEnv, type RadioProvider } from '@stocktank/radio';
+import { createMarketDataProvider, type MarketDataProvider } from '@stocktank/market-data';
+import { marketsRouter } from './routes/markets.js';
 import type { ApiEnv } from './env.js';
 import { createEmailProvider, type EmailProvider } from './lib/email.js';
 import { createMediaService, type MediaService } from './lib/media.js';
@@ -54,6 +56,8 @@ export interface AppDeps {
   podcastHost?: PodcastHostAdapter | null;
   /** AzuraCast adapter; defaults to AZURACAST_URL, or null when unset. */
   radio?: RadioProvider | null;
+  /** Defaults to MARKET_DATA_PROVIDER (demo data unless a real provider is configured). */
+  marketData?: MarketDataProvider;
   /** Public form limits (advertising inquiries, newsletter sign-ups); overridable for tests. */
   formLimits?: {
     inquiry?: { windowMs: number; limit: number };
@@ -76,6 +80,8 @@ export function createApp(deps: AppDeps): Express {
   const azuracastConfig = azuracastConfigFromEnv(env);
   const radio = deps.radio !== undefined ? deps.radio : azuracastConfig ? new AzuraCastAdapter(azuracastConfig) : null;
   const nowPlaying = new NowPlayingService(radio, redis, logger);
+  // Demo data treats companies flagged as meme stocks as volatile; the set is refreshed from the database lazily.
+  const marketData = deps.marketData ?? createMarketDataProvider(env, new Set(['SQZM', 'DHND', 'RKTR', 'TNDY', 'APEG', 'MNWK', 'HODL', 'YOLO']));
   const search =
     deps.search ??
     createSearchService(prisma, logger, redis, { url: env.MEILISEARCH_URL, key: env.MEILISEARCH_KEY, prefix: env.MEILISEARCH_INDEX_PREFIX });
@@ -125,6 +131,7 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api/v1/admin/podcasts', adminPodcastRouter({ env, prisma, media, podcastHost }));
   app.use('/api/v1/admin/radio', adminRadioRouter({ prisma, nowPlaying, provider: radio, apiKeyConfigured: Boolean(env.AZURACAST_API_KEY) }));
   app.use('/api/v1', radioRouter({ prisma, nowPlaying }));
+  app.use('/api/v1', marketsRouter({ prisma, redis, logger, provider: marketData, media }));
   app.use('/api/v1', analyticsRouter({ env, prisma, media, ingestLimit: deps.formLimits?.analytics }));
   // Podcast enclosure downloads live on the site origin like the feeds.
   app.use(analyticsRouter({ env, prisma, media, ingestLimit: deps.formLimits?.analytics }));

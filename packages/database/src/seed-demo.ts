@@ -106,12 +106,17 @@ const PROJECTS: Array<[string, 'crypto_project' | 'protocol' | 'dao' | 'infrastr
   ['Wren Identity', 'application', 'Polygon'], ['Granite Estates', 'rwa', 'Polygon'], ['Tessellate', 'ecosystem', 'Solana'], ['Lanternfish', 'crypto_project', 'Arbitrum One'],
 ];
 
-const COMPANIES: Array<[string, string, string]> = [
-  ['Meridian Robotics', 'Industrials', 'US'], ['Atlas Grid Energy', 'Utilities', 'Canada'], ['Vela Biosystems', 'Healthcare', 'UK'], ['Orbital Logistics', 'Transport', 'Singapore'],
-  ['Cinder Semiconductor', 'Technology', 'US'], ['Fjord Payments', 'Financials', 'Norway'], ['Solace Foods', 'Consumer', 'Brazil'], ['Pinnacle Media Group', 'Communications', 'Japan'],
-  ['Harrow Materials', 'Materials', 'Australia'], ['Brightwater Health', 'Healthcare', 'US'], ['Keystone Rail', 'Transport', 'Germany'], ['Lumina Retail', 'Consumer', 'France'],
-  ['Northgate Insurance', 'Financials', 'UK'], ['Sierra Cloudworks', 'Technology', 'US'], ['Tidal Power', 'Utilities', 'Denmark'], ['Oakridge Pharma', 'Healthcare', 'Switzerland'],
-  ['Vantage Aerospace', 'Industrials', 'US'], ['Coral Telecom', 'Communications', 'Mexico'], ['Summit Agriculture', 'Consumer', 'Kenya'], ['Ironbark Mining', 'Materials', 'Canada'],
+/** Fictional companies on the fictional DEMO exchange, so synthetic prices are never mistaken for real tickers. */
+const COMPANIES: Array<[name: string, sector: string, country: string, ticker: string, meme: boolean]> = [
+  ['Meridian Robotics', 'Industrials', 'US', 'MRDX', false], ['Atlas Grid Energy', 'Utilities', 'Canada', 'AGRD', false], ['Vela Biosystems', 'Healthcare', 'UK', 'VELB', false], ['Orbital Logistics', 'Transport', 'Singapore', 'ORBL', false],
+  ['Cinder Semiconductor', 'Technology', 'US', 'CNDR', false], ['Fjord Payments', 'Financials', 'Norway', 'FJRD', false], ['Solace Foods', 'Consumer', 'Brazil', 'SOLF', false], ['Pinnacle Media Group', 'Communications', 'Japan', 'PNMG', false],
+  ['Harrow Materials', 'Materials', 'Australia', 'HRWM', false], ['Brightwater Health', 'Healthcare', 'US', 'BWTH', false], ['Keystone Rail', 'Transport', 'Germany', 'KYRL', false], ['Lumina Retail', 'Consumer', 'France', 'LUMR', false],
+  ['Northgate Insurance', 'Financials', 'UK', 'NGIN', false], ['Sierra Cloudworks', 'Technology', 'US', 'SRCW', false], ['Tidal Power', 'Utilities', 'Denmark', 'TDLP', false], ['Oakridge Pharma', 'Healthcare', 'Switzerland', 'OKRP', false],
+  ['Vantage Aerospace', 'Industrials', 'US', 'VNTA', false], ['Coral Telecom', 'Communications', 'Mexico', 'CRLT', false], ['Summit Agriculture', 'Consumer', 'Kenya', 'SMAG', false], ['Ironbark Mining', 'Materials', 'Canada', 'IRBK', false],
+  // Fictional meme-stock style names for the Meme Stock Radar preview.
+  ['Squeeze Motors', 'Consumer', 'US', 'SQZM', true], ['Diamond Hands Media', 'Communications', 'US', 'DHND', true], ['Rocket Retail Co', 'Consumer', 'US', 'RKTR', true],
+  ['Tendie Foods', 'Consumer', 'US', 'TNDY', true], ['Ape Arcade Games', 'Technology', 'US', 'APEG', true], ['Moonwalk Biotech', 'Healthcare', 'US', 'MNWK', true],
+  ['Hodl Cinemas', 'Communications', 'US', 'HODL', true], ['Yolo Airlines', 'Transport', 'US', 'YOLO', true],
 ];
 
 const ARTICLES = [
@@ -181,7 +186,7 @@ async function main() {
   }
 
   const companies = [];
-  for (const [name, sector, country] of COMPANIES) {
+  for (const [name, sector, country, ticker, meme] of COMPANIES) {
     companies.push(
       await prisma.company.create({
         data: {
@@ -189,7 +194,11 @@ async function main() {
           slug: slug(name),
           sector,
           country,
-          description: `${name} is a fictional DEMO company used to preview StockTank company pages. No market data.`,
+          ticker,
+          exchange: 'DEMO',
+          memeStock: meme,
+          marketDataProvider: 'demo',
+          description: `${name} is a fictional DEMO company on a fictional exchange, used to preview StockTank stock pages. Its prices are synthetic.`,
           status: 'published',
           isDemo: true,
         },

@@ -16,6 +16,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY packages/types ./packages/types
 COPY packages/config ./packages/config
 COPY packages/database ./packages/database
+COPY packages/market-data ./packages/market-data
 COPY packages/media ./packages/media
 COPY packages/podcast ./packages/podcast
 COPY packages/radio ./packages/radio
@@ -27,6 +28,7 @@ RUN DATABASE_URL=postgresql://build:build@localhost:5432/build pnpm --filter @st
  && pnpm --filter @stocktank/types build \
  && pnpm --filter @stocktank/config build \
  && pnpm --filter @stocktank/database build \
+ && pnpm --filter @stocktank/market-data build \
  && pnpm --filter @stocktank/media build \
  && pnpm --filter @stocktank/podcast build \
  && pnpm --filter @stocktank/radio build \
