@@ -11,3 +11,6 @@ playwright-report/
 test-results/
 .DS_Store
 *.tsbuildinfo
+
+# Agent worktrees
+.claude/worktrees/
