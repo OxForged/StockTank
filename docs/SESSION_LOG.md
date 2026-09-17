@@ -28,6 +28,8 @@ Interactive design canvas: https://claude.ai/artifact/9vcvfKgo6qNxKdTthrfgT3
 | `a6223b0` | `docs/marketing/GO_TO_MARKET_AND_AD_SALES.md` playbook |
 | `6506dd5` | API: content CMS (shows, episodes, projects, companies, articles, live schedule) + viewer library (follows, bookmarks); 90 API tests |
 | `16fb34f` | Admin CMS pages (config-driven editor) + account-synced watchlist and `/library` on the site |
+| `ac80d6c` | API: Meilisearch search (fallback to Postgres), suggest/trending, media-graph detail endpoints, hosts/guests CMS, sitemap/RSS/robots; 98 API tests |
+| `1f3d95c` | Web: episode/project/company/person/news pages, SEO metadata + JSON-LD, richer search; admin hosts/guests + reindex; web 22, admin 9 tests |
 
 ### Next
 - Owner decisions: prices and packages, legal review of drafts, production email provider, hosting/domain
