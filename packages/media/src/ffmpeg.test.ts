@@ -121,6 +121,7 @@ describe('jobs and config', () => {
 
   it('uses deterministic job ids and stable keys', () => {
     expect(jobIdFor({ type: 'transcode', assetId: 'x' }, 2)).toBe('transcode-x-2');
+    expect(jobIdFor({ type: 'podcast-sync', episodeId: 'e' }, 1)).toBe('podcast-e-1');
     expect(keys.original('x', 'mov')).toBe('originals/x/source.mov');
     expect(keys.hlsMaster('x')).toBe('renditions/x/hls/master.m3u8');
   });

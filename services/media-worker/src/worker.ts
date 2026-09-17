@@ -4,6 +4,7 @@ import pino from 'pino';
 import { z } from 'zod';
 import { createPrismaClient } from '@stocktank/database';
 import { isStorageConfigured, loadMediaEnv, MEDIA_QUEUE, mediaJobSchema, S3Storage } from '@stocktank/media';
+import { CastopodAdapter, castopodConfigFromEnv, castopodEnvSchema } from '@stocktank/podcast';
 import { resolveTools, runTool } from './ffmpeg-runner.js';
 import { createProcessor, PermanentMediaError } from './processor.js';
 
@@ -44,7 +45,16 @@ const storage = new S3Storage(mediaEnv);
 if (env.NODE_ENV !== 'production') {
   await storage.ensureBucket().catch((err: unknown) => logger.warn({ err }, 'Could not ensure the development bucket'));
 }
-const processJob = createProcessor({ prisma, storage, tools, logger, workRoot: env.MEDIA_WORK_DIR });
+const castopod = castopodConfigFromEnv(castopodEnvSchema.parse(process.env));
+if (!castopod) logger.info('Castopod not configured; podcast-sync jobs will fail with a clear message');
+const processJob = createProcessor({
+  prisma,
+  storage,
+  tools,
+  logger,
+  workRoot: env.MEDIA_WORK_DIR,
+  podcastHost: castopod ? new CastopodAdapter(castopod) : null,
+});
 
 const connection = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null });
 const worker = new Worker(

@@ -1,5 +1,17 @@
 import { z } from 'zod';
 import {
+  adminPodcastEpisodeListSchema,
+  adminPodcastEpisodeSchema,
+  adminPodcastShowListSchema,
+  adminPodcastShowSchema,
+  castopodPodcastListSchema,
+  podcastStatusResponseSchema,
+  type AdminPodcastEpisode,
+  type AdminPodcastShow,
+  type CastopodPodcastOption,
+  type PodcastEpisodeType,
+  type PodcastStatusResponse,
+  type ShowPodcastSettingsInput,
   adminClipListSchema,
   adminClipSchema,
   adminMediaAssetListSchema,
@@ -234,6 +246,7 @@ export function createApiClient(options: ApiClientOptions = {}) {
   const AD = '/api/v1/admin/advertising';
   const CMS = '/api/v1/admin/content';
   const MEDIA = '/api/v1/admin/media';
+  const PODS = '/api/v1/admin/podcasts';
 
   return {
     auth: {
@@ -340,6 +353,19 @@ export function createApiClient(options: ApiClientOptions = {}) {
         saveGuest: (input: PersonInput, id?: string): Promise<AdminPerson> =>
           id ? request('PUT', `${CMS}/guests/${encodeURIComponent(id)}`, adminPersonSchema, input) : request('POST', `${CMS}/guests`, adminPersonSchema, input),
         reindexSearch: (): Promise<ReindexResponse> => request('POST', `${CMS}/search/reindex`, reindexResponseSchema),
+      },
+      podcasts: {
+        status: (): Promise<PodcastStatusResponse> => request('GET', `${PODS}/status`, podcastStatusResponseSchema),
+        listShows: async (): Promise<AdminPodcastShow[]> => (await request('GET', `${PODS}/shows`, adminPodcastShowListSchema)).items,
+        saveShow: (id: string, input: ShowPodcastSettingsInput): Promise<AdminPodcastShow> =>
+          request('PUT', `${PODS}/shows/${encodeURIComponent(id)}`, adminPodcastShowSchema, input),
+        listEpisodes: async (showId: string): Promise<AdminPodcastEpisode[]> =>
+          (await request('GET', `${PODS}/shows/${encodeURIComponent(showId)}/episodes`, adminPodcastEpisodeListSchema)).items,
+        setEpisodeType: (id: string, episodeType: PodcastEpisodeType): Promise<AdminPodcastEpisode> =>
+          request('PUT', `${PODS}/episodes/${encodeURIComponent(id)}/type`, adminPodcastEpisodeSchema, { episodeType }),
+        sendToCastopod: (id: string): Promise<AdminPodcastEpisode> =>
+          request('POST', `${PODS}/episodes/${encodeURIComponent(id)}/castopod`, adminPodcastEpisodeSchema),
+        castopodPodcasts: async (): Promise<CastopodPodcastOption[]> => (await request('GET', `${PODS}/castopod/podcasts`, castopodPodcastListSchema)).items,
       },
       media: {
         status: (): Promise<MediaStatusResponse> => request('GET', `${MEDIA}/status`, mediaStatusResponseSchema),

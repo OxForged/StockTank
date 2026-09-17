@@ -1,9 +1,11 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { openAsBlob } from 'node:fs';
+import { mkdir, mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import type { Logger } from 'pino';
 import type { Prisma, PrismaClient } from '@stocktank/database';
 import {
+  assetRenditionsSchema,
   clipAudioArgs,
   clipVideoArgs,
   evenWidthFor,
@@ -23,6 +25,7 @@ import {
   type MediaJob,
   type ObjectStorage,
 } from '@stocktank/media';
+import { CastopodError, FINANCIAL_DISCLAIMER, type PodcastHostAdapter } from '@stocktank/podcast';
 import { runTool, ToolError, type Tools } from './ffmpeg-runner.js';
 
 export interface ProcessorDeps {
@@ -34,6 +37,8 @@ export interface ProcessorDeps {
   workRoot?: string;
   /** Per FFmpeg invocation; defaults to 6 hours. */
   toolTimeoutMs?: number;
+  /** Castopod adapter; null when Castopod is not configured. */
+  podcastHost?: PodcastHostAdapter | null;
 }
 
 /** A failure the uploader can fix (bad file); retrying the same input will not help. */
@@ -53,7 +58,7 @@ const EXTENSION_BY_MIME: Record<string, string> = {
 
 /** Stored errors are shown to staff; keep them short and free of local file paths. */
 export function publicErrorMessage(err: unknown): string {
-  if (err instanceof PermanentMediaError) return err.message;
+  if (err instanceof PermanentMediaError || err instanceof CastopodError) return err.message.slice(0, 500);
   if (err instanceof ToolError) {
     const lastLine = err.stderrTail.trim().split(/\r?\n/).filter(Boolean).pop() ?? '';
     return `${err.message}: ${lastLine.replace(/[A-Za-z]:\\[^\s:]+|\/[^\s:]*\/[^\s:]+/g, '<file>')}`.slice(0, 500);
@@ -157,7 +162,8 @@ export function createProcessor(deps: ProcessorDeps) {
         if (!info.hasAudio && ladder.length === 0) throw new PermanentMediaError('The file has no usable audio or video streams');
 
         const uploaded = await storage.uploadDirectory(keys.renditionPrefix(assetId), out);
-        const renditions: AssetRenditions = { hls, audio: info.hasAudio ? keys.audio(assetId) : null, poster, variants };
+        const audioBytes = info.hasAudio ? (await stat(path.join(out, 'audio.mp3'))).size : undefined;
+        const renditions: AssetRenditions = { hls, audio: info.hasAudio ? keys.audio(assetId) : null, ...(audioBytes !== undefined ? { audioBytes } : {}), poster, variants };
 
         await prisma.$transaction(async (tx) => {
           await tx.mediaAsset.update({
@@ -244,8 +250,75 @@ export function createProcessor(deps: ProcessorDeps) {
     }
   }
 
+  async function podcastSync(episodeId: string): Promise<void> {
+    const episode = await prisma.episode.findUnique({
+      where: { id: episodeId },
+      include: { show: true, mediaAsset: true },
+    });
+    if (!episode) {
+      logger.warn({ episodeId }, 'Podcast sync requested for a missing episode; skipping');
+      return;
+    }
+    if (episode.castopodEpisodeId !== null) {
+      // Castopod's REST API cannot update episodes, so a synced episode is never sent twice.
+      await prisma.episode.update({ where: { id: episodeId }, data: { podcastSyncStatus: 'synced', podcastSyncError: null } });
+      return;
+    }
+    await prisma.episode.update({ where: { id: episodeId }, data: { podcastSyncStatus: 'syncing', podcastSyncError: null } });
+
+    try {
+      const host = deps.podcastHost;
+      if (!host) {
+        throw new PermanentMediaError('Castopod is not configured on the media worker (CASTOPOD_URL, CASTOPOD_API_USERNAME, CASTOPOD_API_PASSWORD, CASTOPOD_USER_ID)');
+      }
+      if (episode.status !== 'published' || episode.show.status !== 'published') {
+        throw new PermanentMediaError('Only published episodes of published shows can be sent to Castopod');
+      }
+      const podcastId = episode.show.castopodPodcastId;
+      if (podcastId === null) throw new PermanentMediaError('Link the show to a Castopod podcast first');
+      const parsed = episode.mediaAsset?.status === 'ready' ? assetRenditionsSchema.safeParse(episode.mediaAsset.renditions) : null;
+      const audioKey = parsed?.success ? parsed.data.audio : null;
+      if (!audioKey) throw new PermanentMediaError('The episode has no processed audio yet');
+
+      const castopodEpisodeId = await withWorkDir(async (dir) => {
+        const file = path.join(dir, 'audio.mp3');
+        await storage.download(audioKey, file);
+        const audio = await openAsBlob(file, { type: 'audio/mpeg' });
+        const result = await host.publishEpisode({
+          podcastId,
+          title: episode.title,
+          slug: episode.slug,
+          description: [episode.summary, episode.description, FINANCIAL_DISCLAIMER].filter(Boolean).join('\n\n'),
+          type: episode.episodeType,
+          episodeNumber: episode.number,
+          explicit: episode.show.podcastExplicit,
+          audio,
+          audioFilename: `${episode.slug}.mp3`,
+        });
+        return result.episodeId;
+      });
+      await prisma.episode.update({
+        where: { id: episodeId },
+        data: { castopodEpisodeId, podcastSyncStatus: 'synced', podcastSyncError: null, podcastSyncedAt: new Date() },
+      });
+      logger.info({ episodeId, castopodEpisodeId }, 'Episode published to Castopod');
+    } catch (err) {
+      logger.error({ err, episodeId }, 'Podcast sync failed');
+      await prisma.episode.update({ where: { id: episodeId }, data: { podcastSyncStatus: 'failed', podcastSyncError: publicErrorMessage(err) } });
+      // Castopod rejecting the request (4xx other than rate limiting) will not succeed on retry.
+      if (err instanceof CastopodError && err.status >= 400 && err.status < 500 && err.status !== 429) throw new PermanentMediaError(err.message);
+      throw err;
+    }
+  }
+
   return async function process(job: MediaJob): Promise<void> {
-    if (job.type === 'transcode') await transcode(job.assetId);
-    else await renderClip(job.clipId);
+    switch (job.type) {
+      case 'transcode':
+        return transcode(job.assetId);
+      case 'render-clip':
+        return renderClip(job.clipId);
+      case 'podcast-sync':
+        return podcastSync(job.episodeId);
+    }
   };
 }

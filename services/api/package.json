@@ -17,6 +17,7 @@
     "@stocktank/config": "workspace:*",
     "@stocktank/database": "workspace:*",
     "@stocktank/media": "workspace:*",
+    "@stocktank/podcast": "workspace:*",
     "@stocktank/types": "workspace:*",
     "argon2": "^0.45.1",
     "bullmq": "^6.3.6",

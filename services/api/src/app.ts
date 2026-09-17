@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import type { Redis } from 'ioredis';
 import type { Logger } from 'pino';
 import type { PrismaClient } from '@stocktank/database';
+import { CastopodAdapter, castopodConfigFromEnv, type PodcastHostAdapter } from '@stocktank/podcast';
 import type { ApiEnv } from './env.js';
 import { createEmailProvider, type EmailProvider } from './lib/email.js';
 import { createMediaService, type MediaService } from './lib/media.js';
@@ -19,6 +20,8 @@ import { adminAdvertisingRouter } from './routes/admin-advertising.js';
 import { adminContentRouter } from './routes/admin-content.js';
 import { adminMarketingRouter } from './routes/admin-marketing.js';
 import { adminMediaRouter } from './routes/admin-media.js';
+import { adminPodcastRouter } from './routes/admin-podcasts.js';
+import { podcastFeedRouter } from './routes/podcasts.js';
 import { adminRouter } from './routes/admin.js';
 import { advertisingRouter } from './routes/advertising.js';
 import { authRouter } from './routes/auth.js';
@@ -41,6 +44,8 @@ export interface AppDeps {
   email?: EmailProvider;
   /** Object storage, processing queue and public media URLs; defaults to the configured S3/Redis settings. */
   media?: MediaService;
+  /** Castopod adapter; defaults to the CASTOPOD_* settings, or null when they are incomplete. */
+  podcastHost?: PodcastHostAdapter | null;
   /** Public form limits (advertising inquiries, newsletter sign-ups); overridable for tests. */
   formLimits?: {
     inquiry?: { windowMs: number; limit: number };
@@ -57,6 +62,8 @@ export function createApp(deps: AppDeps): Express {
   const openApiDocument = buildOpenApiDocument({ version: env.APP_VERSION });
   const email = deps.email ?? createEmailProvider(env, logger);
   const media = deps.media ?? createMediaService(env, logger);
+  const castopodConfig = castopodConfigFromEnv(env);
+  const podcastHost = deps.podcastHost !== undefined ? deps.podcastHost : castopodConfig ? new CastopodAdapter(castopodConfig) : null;
   const search =
     deps.search ??
     createSearchService(prisma, logger, redis, { url: env.MEILISEARCH_URL, key: env.MEILISEARCH_KEY, prefix: env.MEILISEARCH_INDEX_PREFIX });
@@ -97,12 +104,16 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api', attachSession(prisma, env));
   app.use('/api/v1/auth', authRouter({ env, prisma, rateLimits }));
   app.use('/api/v1/seo', seoRouter({ env, prisma }));
-  app.use('/api/v1', contentRouter({ prisma, search, media }));
+  app.use('/api/v1', contentRouter({ env, prisma, search, media }));
   app.use('/api/v1', advertisingRouter({ env, prisma, redis, logger, email, inquiryLimit: deps.formLimits?.inquiry }));
   app.use('/api/v1/newsletter', newsletterRouter({ env, prisma, logger, email, subscribeLimit: deps.formLimits?.subscribe }));
   app.use('/api/v1/me', meRouter({ prisma }));
   app.use('/api/v1/admin/content', adminContentRouter({ prisma, search }));
   app.use('/api/v1/admin/media', adminMediaRouter({ prisma, media }));
+  app.use('/api/v1/admin/podcasts', adminPodcastRouter({ env, prisma, media, podcastHost }));
+  // Public feeds live on the site origin (/podcasts/<slug>/feed.xml) and under the versioned API.
+  app.use(podcastFeedRouter({ env, prisma, media }));
+  app.use('/api/v1', podcastFeedRouter({ env, prisma, media }));
   app.use('/api/v1/admin/advertising', adminAdvertisingRouter({ prisma }));
   app.use('/api/v1/admin', adminRouter({ prisma }));
   app.use('/api/v1/admin', adminMarketingRouter({ prisma }));

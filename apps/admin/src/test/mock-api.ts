@@ -35,6 +35,15 @@ export const mockApi = {
       saveGuest: vi.fn(),
       reindexSearch: vi.fn(),
     },
+    podcasts: {
+      status: vi.fn(),
+      listShows: vi.fn(),
+      saveShow: vi.fn(),
+      listEpisodes: vi.fn(),
+      setEpisodeType: vi.fn(),
+      sendToCastopod: vi.fn(),
+      castopodPodcasts: vi.fn(),
+    },
     media: {
       status: vi.fn(),
       listAssets: vi.fn(),
@@ -85,6 +94,7 @@ export const mockApi = {
   admin: { [K in keyof ApiClient['admin']]: ReturnType<typeof vi.fn> } & {
     content: { [K in keyof ApiClient['admin']['content']]: ReturnType<typeof vi.fn> };
     media: { [K in keyof ApiClient['admin']['media']]: ReturnType<typeof vi.fn> };
+    podcasts: { [K in keyof ApiClient['admin']['podcasts']]: ReturnType<typeof vi.fn> };
   };
   system: { [K in keyof ApiClient['system']]: ReturnType<typeof vi.fn> };
 };

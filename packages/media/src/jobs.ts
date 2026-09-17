@@ -17,12 +17,21 @@ export const acceptedMimeSchema = z.enum(Object.keys(ACCEPTED_MEDIA) as [Accepte
 
 export const transcodeJobSchema = z.object({ type: z.literal('transcode'), assetId: z.string().min(1) });
 export const renderClipJobSchema = z.object({ type: z.literal('render-clip'), clipId: z.string().min(1) });
-export const mediaJobSchema = z.discriminatedUnion('type', [transcodeJobSchema, renderClipJobSchema]);
+/** Sends a published episode's MP3 to Castopod (§11). */
+export const podcastSyncJobSchema = z.object({ type: z.literal('podcast-sync'), episodeId: z.string().min(1) });
+export const mediaJobSchema = z.discriminatedUnion('type', [transcodeJobSchema, renderClipJobSchema, podcastSyncJobSchema]);
 export type MediaJob = z.infer<typeof mediaJobSchema>;
 
 /** Deterministic job ids make enqueueing idempotent (a double click never starts two transcodes). */
 export function jobIdFor(job: MediaJob, attempt: number): string {
-  return job.type === 'transcode' ? `transcode-${job.assetId}-${attempt}` : `clip-${job.clipId}-${attempt}`;
+  switch (job.type) {
+    case 'transcode':
+      return `transcode-${job.assetId}-${attempt}`;
+    case 'render-clip':
+      return `clip-${job.clipId}-${attempt}`;
+    case 'podcast-sync':
+      return `podcast-${job.episodeId}-${attempt}`;
+  }
 }
 
 // ───────── Object layout ─────────
@@ -40,6 +49,8 @@ export const keys = {
 export const assetRenditionsSchema = z.object({
   hls: z.string().nullable(),
   audio: z.string().nullable(),
+  /** MP3 size in bytes, used for podcast RSS enclosures. Absent on assets processed before Milestone 4. */
+  audioBytes: z.number().int().nonnegative().optional(),
   poster: z.string().nullable(),
   variants: z.array(z.object({ name: z.string(), height: z.number().int(), bandwidth: z.number().int() })),
 });

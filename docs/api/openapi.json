@@ -1245,6 +1245,20 @@
               "isDemo"
             ]
           },
+          "podcast": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "feedUrl": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "feedUrl"
+            ]
+          },
           "hosts": {
             "type": "array",
             "items": {
@@ -1384,6 +1398,7 @@
         },
         "required": [
           "show",
+          "podcast",
           "hosts",
           "episodes"
         ]
@@ -20594,6 +20609,1393 @@
           },
           "503": {
             "description": "Object storage or the processing queue is not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/podcasts/{slug}/feed.xml": {
+      "get": {
+        "tags": [
+          "Podcasts"
+        ],
+        "summary": "Podcast RSS feed",
+        "description": "Apple Podcasts / Podcasting 2.0 feed for a published show with its feed enabled. Items are published episodes with processed audio (MP3 enclosures). DEMO shows are labeled and carry itunes:block. Also served at /api/v1/podcasts/{slug}/feed.xml. Cached 5 minutes.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RSS 2.0 XML",
+            "content": {
+              "application/rss+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Podcast feed not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/podcasts/status": {
+      "get": {
+        "tags": [
+          "Admin: Podcasts"
+        ],
+        "summary": "Podcast distribution status",
+        "description": "Requires `content.read_drafts`. Whether Castopod, the queue and the feed owner email are configured.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Podcast distribution status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "castopodConfigured": {
+                      "type": "boolean"
+                    },
+                    "queueConfigured": {
+                      "type": "boolean"
+                    },
+                    "ownerEmailConfigured": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "castopodConfigured",
+                    "queueConfigured",
+                    "ownerEmailConfigured"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/podcasts/shows": {
+      "get": {
+        "tags": [
+          "Admin: Podcasts"
+        ],
+        "summary": "List shows with podcast settings",
+        "description": "Requires `content.read_drafts`. Includes feed URL, feed episode counts and directory warnings.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List shows with podcast settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "slug": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "draft",
+                              "review",
+                              "approved",
+                              "rejected",
+                              "published",
+                              "archived"
+                            ]
+                          },
+                          "isDemo": {
+                            "type": "boolean"
+                          },
+                          "coverUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "podcastEnabled": {
+                            "type": "boolean"
+                          },
+                          "podcastAuthor": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "podcastCategory": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "podcastSubcategory": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "podcastExplicit": {
+                            "type": "boolean"
+                          },
+                          "podcastLanguage": {
+                            "type": "string"
+                          },
+                          "castopodPodcastId": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "feedUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "publishedEpisodes": {
+                            "type": "integer"
+                          },
+                          "feedEpisodes": {
+                            "type": "integer"
+                          },
+                          "warnings": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "slug",
+                          "title",
+                          "status",
+                          "isDemo",
+                          "coverUrl",
+                          "podcastEnabled",
+                          "podcastAuthor",
+                          "podcastCategory",
+                          "podcastSubcategory",
+                          "podcastExplicit",
+                          "podcastLanguage",
+                          "castopodPodcastId",
+                          "feedUrl",
+                          "publishedEpisodes",
+                          "feedEpisodes",
+                          "warnings"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/podcasts/shows/{id}": {
+      "put": {
+        "tags": [
+          "Admin: Podcasts"
+        ],
+        "summary": "Update show podcast settings",
+        "description": "Requires `distribution.publish`. Linking a Castopod podcast verifies it exists. Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "podcastEnabled": {
+                    "type": "boolean"
+                  },
+                  "podcastAuthor": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 120
+                  },
+                  "podcastCategory": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "Business",
+                      "News",
+                      "Technology",
+                      "Education",
+                      "Society & Culture",
+                      null
+                    ]
+                  },
+                  "podcastSubcategory": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 60
+                  },
+                  "podcastExplicit": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "podcastLanguage": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+                    "default": "en"
+                  },
+                  "castopodPodcastId": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "podcastEnabled"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Update show podcast settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "slug": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "review",
+                        "approved",
+                        "rejected",
+                        "published",
+                        "archived"
+                      ]
+                    },
+                    "isDemo": {
+                      "type": "boolean"
+                    },
+                    "coverUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "podcastEnabled": {
+                      "type": "boolean"
+                    },
+                    "podcastAuthor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "podcastCategory": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "podcastSubcategory": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "podcastExplicit": {
+                      "type": "boolean"
+                    },
+                    "podcastLanguage": {
+                      "type": "string"
+                    },
+                    "castopodPodcastId": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "feedUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "publishedEpisodes": {
+                      "type": "integer"
+                    },
+                    "feedEpisodes": {
+                      "type": "integer"
+                    },
+                    "warnings": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "slug",
+                    "title",
+                    "status",
+                    "isDemo",
+                    "coverUrl",
+                    "podcastEnabled",
+                    "podcastAuthor",
+                    "podcastCategory",
+                    "podcastSubcategory",
+                    "podcastExplicit",
+                    "podcastLanguage",
+                    "castopodPodcastId",
+                    "feedUrl",
+                    "publishedEpisodes",
+                    "feedEpisodes",
+                    "warnings"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Show not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Castopod returned an error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/podcasts/shows/{id}/episodes": {
+      "get": {
+        "tags": [
+          "Admin: Podcasts"
+        ],
+        "summary": "List a show’s podcast episodes",
+        "description": "Requires `content.read_drafts`. Whether each episode is in the feed and its Castopod sync state.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List a show’s podcast episodes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "slug": {
+                            "type": "string"
+                          },
+                          "number": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "draft",
+                              "review",
+                              "approved",
+                              "rejected",
+                              "published",
+                              "archived"
+                            ]
+                          },
+                          "publishedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "episodeType": {
+                            "type": "string",
+                            "enum": [
+                              "full",
+                              "trailer",
+                              "bonus"
+                            ]
+                          },
+                          "hasAudio": {
+                            "type": "boolean"
+                          },
+                          "inFeed": {
+                            "type": "boolean"
+                          },
+                          "castopodEpisodeId": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "podcastSyncStatus": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "enum": [
+                              "queued",
+                              "syncing",
+                              "synced",
+                              "failed",
+                              null
+                            ]
+                          },
+                          "podcastSyncError": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "podcastSyncedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "title",
+                          "slug",
+                          "number",
+                          "status",
+                          "publishedAt",
+                          "episodeType",
+                          "hasAudio",
+                          "inFeed",
+                          "castopodEpisodeId",
+                          "podcastSyncStatus",
+                          "podcastSyncError",
+                          "podcastSyncedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Show not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/podcasts/episodes/{id}/type": {
+      "put": {
+        "tags": [
+          "Admin: Podcasts"
+        ],
+        "summary": "Set podcast episode type",
+        "description": "Requires `distribution.publish`. full, trailer or bonus. Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "episodeType": {
+                    "type": "string",
+                    "enum": [
+                      "full",
+                      "trailer",
+                      "bonus"
+                    ]
+                  }
+                },
+                "required": [
+                  "episodeType"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Set podcast episode type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "slug": {
+                      "type": "string"
+                    },
+                    "number": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "review",
+                        "approved",
+                        "rejected",
+                        "published",
+                        "archived"
+                      ]
+                    },
+                    "publishedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "episodeType": {
+                      "type": "string",
+                      "enum": [
+                        "full",
+                        "trailer",
+                        "bonus"
+                      ]
+                    },
+                    "hasAudio": {
+                      "type": "boolean"
+                    },
+                    "inFeed": {
+                      "type": "boolean"
+                    },
+                    "castopodEpisodeId": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "podcastSyncStatus": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "queued",
+                        "syncing",
+                        "synced",
+                        "failed",
+                        null
+                      ]
+                    },
+                    "podcastSyncError": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "podcastSyncedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "slug",
+                    "number",
+                    "status",
+                    "publishedAt",
+                    "episodeType",
+                    "hasAudio",
+                    "inFeed",
+                    "castopodEpisodeId",
+                    "podcastSyncStatus",
+                    "podcastSyncError",
+                    "podcastSyncedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Episode not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/podcasts/episodes/{id}/castopod": {
+      "post": {
+        "tags": [
+          "Admin: Podcasts"
+        ],
+        "summary": "Send episode to Castopod",
+        "description": "Requires `distribution.publish`. Queues uploading the processed MP3 to the linked Castopod podcast and publishing it. Castopod cannot update episodes, so each episode syncs once. Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Send episode to Castopod",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "slug": {
+                      "type": "string"
+                    },
+                    "number": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "review",
+                        "approved",
+                        "rejected",
+                        "published",
+                        "archived"
+                      ]
+                    },
+                    "publishedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "episodeType": {
+                      "type": "string",
+                      "enum": [
+                        "full",
+                        "trailer",
+                        "bonus"
+                      ]
+                    },
+                    "hasAudio": {
+                      "type": "boolean"
+                    },
+                    "inFeed": {
+                      "type": "boolean"
+                    },
+                    "castopodEpisodeId": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "podcastSyncStatus": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "queued",
+                        "syncing",
+                        "synced",
+                        "failed",
+                        null
+                      ]
+                    },
+                    "podcastSyncError": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "podcastSyncedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "slug",
+                    "number",
+                    "status",
+                    "publishedAt",
+                    "episodeType",
+                    "hasAudio",
+                    "inFeed",
+                    "castopodEpisodeId",
+                    "podcastSyncStatus",
+                    "podcastSyncError",
+                    "podcastSyncedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Episode not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Already synced, in progress, or preconditions not met (CONFLICT)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Castopod returned an error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Castopod or the processing queue is not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/podcasts/castopod/podcasts": {
+      "get": {
+        "tags": [
+          "Admin: Podcasts"
+        ],
+        "summary": "List Castopod podcasts",
+        "description": "Requires `distribution.publish`. For linking a show to a Castopod podcast.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List Castopod podcasts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "handle": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "feedUrl": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "handle",
+                          "title",
+                          "feedUrl"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Castopod returned an error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Castopod or the processing queue is not configured",
             "content": {
               "application/json": {
                 "schema": {

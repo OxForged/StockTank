@@ -224,6 +224,18 @@ model Show {
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
 
+  // ── Podcast distribution (§11): StockTank owns the feed; Castopod is an optional host ──
+  /// Publishes /api/v1/podcasts/<slug>/feed.xml when the show is also published.
+  podcastEnabled     Boolean @default(false) @map("podcast_enabled")
+  podcastAuthor      String? @map("podcast_author")
+  /// Apple Podcasts category and optional subcategory, e.g. Business / Investing.
+  podcastCategory    String? @map("podcast_category")
+  podcastSubcategory String? @map("podcast_subcategory")
+  podcastExplicit    Boolean @default(false) @map("podcast_explicit")
+  podcastLanguage    String  @default("en") @map("podcast_language")
+  /// Castopod podcast this show syncs episodes to (created in Castopod; its REST API cannot create podcasts).
+  castopodPodcastId  Int?    @map("castopod_podcast_id")
+
   category    Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   seasons     Season[]
   episodes    Episode[]
@@ -266,18 +278,24 @@ model Episode {
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")
 
-  show         Show             @relation(fields: [showId], references: [id], onDelete: Cascade)
-  season       Season?          @relation(fields: [seasonId], references: [id], onDelete: SetNull)
-  hosts        EpisodeHost[]
-  guests       EpisodeGuest[]
-  projects     EpisodeProject[]
-  companies    EpisodeCompany[]
-  topics       EpisodeTopic[]
-  clips        Clip[]
-  bookmarks    Bookmark[]
+  show              Show               @relation(fields: [showId], references: [id], onDelete: Cascade)
+  season            Season?            @relation(fields: [seasonId], references: [id], onDelete: SetNull)
+  hosts             EpisodeHost[]
+  guests            EpisodeGuest[]
+  projects          EpisodeProject[]
+  companies         EpisodeCompany[]
+  topics            EpisodeTopic[]
+  clips             Clip[]
+  bookmarks         Bookmark[]
   /// The asset whose renditions play for this episode (set when processing succeeds).
-  mediaAssetId String?          @unique @map("media_asset_id")
-  mediaAsset   MediaAsset?      @relation("EpisodeMedia", fields: [mediaAssetId], references: [id], onDelete: SetNull)
+  mediaAssetId      String?            @unique @map("media_asset_id")
+  episodeType       PodcastEpisodeType @default(full) @map("episode_type")
+  /// Castopod episode created from this episode, if synced.
+  castopodEpisodeId Int?               @map("castopod_episode_id")
+  podcastSyncStatus PodcastSyncStatus? @map("podcast_sync_status")
+  podcastSyncError  String?            @map("podcast_sync_error")
+  podcastSyncedAt   DateTime?          @map("podcast_synced_at")
+  mediaAsset        MediaAsset?        @relation("EpisodeMedia", fields: [mediaAssetId], references: [id], onDelete: SetNull)
 
   @@unique([showId, slug])
   @@index([status, publishedAt])
@@ -920,6 +938,21 @@ model NewsletterSubscriber {
 
   @@index([status])
   @@map("newsletter_subscribers")
+}
+
+// ───────── Podcast distribution (§11) ─────────
+
+enum PodcastEpisodeType {
+  full
+  trailer
+  bonus
+}
+
+enum PodcastSyncStatus {
+  queued
+  syncing
+  synced
+  failed
 }
 
 // ───────── Media pipeline (§13) ─────────

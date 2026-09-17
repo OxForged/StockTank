@@ -71,6 +71,21 @@ describe('Media graph pages', () => {
     await waitFor(() => expect(screen.getByRole('region', { name: 'Player' }).querySelector('audio')?.getAttribute('src')).toBe('https://cdn.test/clips/c2/audio.mp3'));
   });
 
+  it('advertises the show podcast feed for subscribing and discovery', async () => {
+    mockApi.content.show.mockResolvedValue({
+      show: { id: 's1', slug: 'the-tank', title: 'The Tank', tagline: 'Founders pitch.', description: null, coverUrl: null, episodeCount: 1, isDemo: false },
+      podcast: { feedUrl: 'https://stocktank.test/podcasts/the-tank/feed.xml' },
+      hosts: [],
+      episodes: [],
+    });
+    renderApp('/shows/the-tank');
+    expect(await screen.findByRole('link', { name: /podcast rss/i })).toHaveAttribute('href', 'https://stocktank.test/podcasts/the-tank/feed.xml');
+    await waitFor(() => {
+      const link = document.head.querySelector('link[rel="alternate"][type="application/rss+xml"]');
+      expect(link?.getAttribute('href')).toBe('https://stocktank.test/podcasts/the-tank/feed.xml');
+    });
+  });
+
   it('discloses AI hosts on their profile', async () => {
     mockApi.content.person.mockResolvedValue({ person: { ...person({ name: 'Desk Anchor', isAi: true }), website: null }, episodes: [] });
     renderApp('/people/desk-anchor');

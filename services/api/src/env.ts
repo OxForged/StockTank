@@ -1,5 +1,6 @@
 import { loadServerEnv, type ServerEnv } from '@stocktank/config';
 import { mediaEnvSchema, type MediaEnv } from '@stocktank/media';
+import { castopodEnvSchema, type CastopodEnv } from '@stocktank/podcast';
 import { z } from 'zod';
 
 /**
@@ -38,19 +39,27 @@ const apiOnlyEnvSchema = z.object({
   SALES_NOTIFY_EMAIL: z.preprocess((v) => (v === '' ? undefined : v), z.email().optional()),
   /** Meilisearch index names are `<prefix>_<type>`; tests use their own prefix. */
   MEILISEARCH_INDEX_PREFIX: z.string().regex(/^[a-z0-9_]{1,40}$/).default('stocktank'),
+  /** itunes:owner in podcast feeds; directories send ownership verification to the email. */
+  PODCAST_OWNER_NAME: z.preprocess((v) => (v === '' ? undefined : v), z.string().max(120).default('StockTank')),
+  PODCAST_OWNER_EMAIL: z.preprocess((v) => (v === '' ? undefined : v), z.email().optional()),
   GIT_COMMIT: z
     .string()
     .optional()
     .transform((v) => (v && v.trim() !== '' ? v.trim() : null)),
 });
 
-export type ApiEnv = ServerEnv & z.infer<typeof apiOnlyEnvSchema> & MediaEnv;
+export type ApiEnv = ServerEnv & z.infer<typeof apiOnlyEnvSchema> & MediaEnv & CastopodEnv;
 
 /** Parses the shared server env plus API-specific settings. Throws on invalid config. */
 export function loadEnv(source: Record<string, string | undefined> = process.env): ApiEnv {
   const shared = loadServerEnv(source);
   const parsed = apiOnlyEnvSchema.safeParse(source);
   const mediaParsed = mediaEnvSchema.safeParse(source);
+  const castopodParsed = castopodEnvSchema.safeParse(source);
+  if (!castopodParsed.success) {
+    const issues = castopodParsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
+    throw new Error(`Invalid API environment:\n${issues}`);
+  }
   if (!mediaParsed.success) {
     const issues = mediaParsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Invalid API environment:\n${issues}`);
@@ -70,5 +79,5 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
   if (parsed.data.DEV_LOGIN_ENABLED && shared.NODE_ENV === 'production') {
     throw new Error('DEV_LOGIN_ENABLED must not be set in production');
   }
-  return { ...shared, ...parsed.data, ...mediaParsed.data };
+  return { ...shared, ...parsed.data, ...mediaParsed.data, ...castopodParsed.data };
 }

@@ -15,6 +15,7 @@
   "dependencies": {
     "@stocktank/database": "workspace:*",
     "@stocktank/media": "workspace:*",
+    "@stocktank/podcast": "workspace:*",
     "bullmq": "^6.3.6",
     "ioredis": "^6.0.0",
     "pino": "^10.3.1",

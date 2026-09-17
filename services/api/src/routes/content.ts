@@ -40,9 +40,12 @@ import { errors } from '../lib/errors.js';
 import { personSelect, toGuestSummary, toHostSummary } from '../lib/people.js';
 import { toEpisodeMedia, type MediaService } from '../lib/media.js';
 import type { SearchService } from '../lib/search.js';
+import type { ApiEnv } from '../env.js';
+import { podcastFeedUrl } from './podcasts.js';
 import { validate } from '../lib/validate.js';
 
 export interface ContentDeps {
+  env: Pick<ApiEnv, 'PUBLIC_WEB_URL'>;
   prisma: PrismaClient;
   search: SearchService;
   media: Pick<MediaService, 'publicUrl'>;
@@ -55,7 +58,7 @@ function publicCache(res: Response, seconds: number): void {
   res.set('Cache-Control', `public, max-age=${seconds}, stale-while-revalidate=${seconds * 4}`);
 }
 
-export function contentRouter({ prisma, search, media }: ContentDeps): Router {
+export function contentRouter({ env, prisma, search, media }: ContentDeps): Router {
   const toClip = (row: Parameters<typeof toClipSummary>[0]) => toClipSummary(row, media.publicUrl);
   const router = Router();
 
@@ -125,7 +128,7 @@ export function contentRouter({ prisma, search, media }: ContentDeps): Router {
 
   router.get('/shows/:slug', async (req, res) => {
     const { slug } = validate(slugParamsSchema, req.params, 'params');
-    const show = await prisma.show.findFirst({ where: { slug, status: PUBLISHED }, select: showSelect });
+    const show = await prisma.show.findFirst({ where: { slug, status: PUBLISHED }, select: { ...showSelect, podcastEnabled: true } });
     if (!show) throw errors.notFound('Show not found');
     const episodes = await prisma.episode.findMany({
       where: { show: { slug }, status: PUBLISHED },
@@ -138,7 +141,12 @@ export function contentRouter({ prisma, search, media }: ContentDeps): Router {
       select: { ...personSelect, isAi: true },
       orderBy: { name: 'asc' },
     });
-    const response: ShowDetailResponse = { show: toShowSummary(show), hosts: hosts.map(toHostSummary), episodes: episodes.map(toEpisodeSummary) };
+    const response: ShowDetailResponse = {
+      show: toShowSummary(show),
+      podcast: show.podcastEnabled ? { feedUrl: podcastFeedUrl(env, show.slug) } : null,
+      hosts: hosts.map(toHostSummary),
+      episodes: episodes.map(toEpisodeSummary),
+    };
     publicCache(res, 60);
     res.json(response);
   });

@@ -41,9 +41,17 @@ Interactive design canvas: https://claude.ai/artifact/9vcvfKgo6qNxKdTthrfgT3
 
 Verified live on localhost: an 8s 720p upload went through presigned PUT → complete → worker → HLS 720p/480p + audio-only + MP3 + poster served from MinIO; the demo episode switched to it. A clip rendered to a 1080×1920 vertical MP4. Originals return 403 publicly; renditions are readable. Tests: media 16, worker 6 (real FFmpeg), API 104, web 23, admin 15.
 
+| `952883e` | Docker builds fixed (Prisma generate placeholder URL); worker image verified running with distro FFmpeg |
+
+### Done: Milestone 4, podcast distribution
+| Commit | What |
+|---|---|
+| (this commit) | `packages/podcast`: RSS builder (Apple + Podcasting 2.0, DEMO feeds blocked, disclaimers) and Castopod REST v1 adapter; show podcast settings + episode type/sync schema; public `/podcasts/<slug>/feed.xml`; admin Podcasts & RSS (settings, feed URL, directory warnings, episode types, send to Castopod); worker `podcast-sync` job; MP3 byte size recorded for enclosures; show page RSS link + `<link rel="alternate">` |
+
+Verified live on localhost: the demo "Founder Floor" feed is well-formed XML through the web origin, labeled DEMO with `itunes:block`, and its enclosure length matches the MP3's real Content-Length. Castopod is not running locally, so its adapter is covered by contract tests against Castopod's documented REST API (create episode multipart + publish), not a live instance.
+
 ### Next
-- Owner decisions: prices and packages, legal review of drafts, production email provider, hosting/domain
-- Milestone 4: Castopod adapter, podcast RSS with MP3 enclosures (the MP3 rendition already exists)
+- Owner decisions: prices and packages, legal review of drafts, production email provider, hosting/domain, PODCAST_OWNER_EMAIL, cover art for shows
 - Milestone 5: AzuraCast live radio; 6: analytics, roles, API keys, audit viewer; 7: AI services
 
 ### Run locally

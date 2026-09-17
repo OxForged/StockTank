@@ -13,6 +13,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY packages/types ./packages/types
 COPY packages/database ./packages/database
 COPY packages/media ./packages/media
+COPY packages/podcast ./packages/podcast
 COPY services/media-worker ./services/media-worker
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --filter @stocktank/media-worker...
@@ -21,6 +22,7 @@ RUN DATABASE_URL=postgresql://build:build@localhost:5432/build pnpm --filter @st
  && pnpm --filter @stocktank/types build \
  && pnpm --filter @stocktank/database build \
  && pnpm --filter @stocktank/media build \
+ && pnpm --filter @stocktank/podcast build \
  && pnpm --filter @stocktank/media-worker build
 # Production tree only: ffmpeg-static is a dev dependency; the runtime uses the distro FFmpeg below.
 RUN pnpm --filter @stocktank/media-worker deploy --prod --legacy /out

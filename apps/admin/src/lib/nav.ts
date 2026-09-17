@@ -112,7 +112,7 @@ export const ADMIN_NAV: readonly (AdminNavItem | AdminNavGroup)[] = [
       { label: 'Instagram', to: '/distribution/instagram', milestone: 8 },
       { label: 'TikTok', to: '/distribution/tiktok', milestone: 8 },
       { label: 'Facebook', to: '/distribution/facebook', milestone: 8 },
-      { label: 'RSS', to: '/distribution/rss', icon: Rss, milestone: 4 },
+      { label: 'Podcasts & RSS', to: '/distribution/rss', icon: Rss },
     ],
   },
   {

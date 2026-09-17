@@ -15,6 +15,9 @@ export interface SeoOptions {
   /** schema.org JSON-LD object(s) describing the page (§46). */
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>> | null;
   noindex?: boolean;
+  /** RSS/podcast feed advertised with <link rel="alternate">, so podcast apps and readers can discover it. */
+  feedUrl?: string | null;
+  feedTitle?: string;
 }
 
 function setMeta(attr: 'name' | 'property', key: string, content: string | null | undefined) {
@@ -48,7 +51,7 @@ const trimDescription = (d: string) => (d.length > 200 ? `${d.slice(0, 197).trim
  * Crawlers that render JavaScript read these; server-side rendering or prerendering is the production follow-up.
  */
 export function useSeo(options: SeoOptions = {}): void {
-  const { title, description, path, image, type = 'website', jsonLd, noindex } = options;
+  const { title, description, path, image, type = 'website', jsonLd, noindex, feedUrl, feedTitle } = options;
   const { pathname } = useLocation();
   const canonicalPath = path ?? pathname;
   const jsonLdText = jsonLd ? JSON.stringify(jsonLd) : null;
@@ -73,6 +76,21 @@ export function useSeo(options: SeoOptions = {}): void {
     setMeta('name', 'twitter:description', desc);
     setMeta('name', 'twitter:image', imageUrl);
 
+    let feed = document.head.querySelector<HTMLLinkElement>('link[rel="alternate"][data-page-feed]');
+    if (feedUrl) {
+      if (!feed) {
+        feed = document.createElement('link');
+        feed.rel = 'alternate';
+        feed.type = 'application/rss+xml';
+        feed.dataset.pageFeed = '';
+        document.head.appendChild(feed);
+      }
+      feed.href = feedUrl;
+      feed.title = feedTitle ?? fullTitle;
+    } else {
+      feed?.remove();
+    }
+
     let script = document.getElementById('page-jsonld') as HTMLScriptElement | null;
     if (jsonLdText) {
       if (!script) {
@@ -85,7 +103,7 @@ export function useSeo(options: SeoOptions = {}): void {
     } else {
       script?.remove();
     }
-  }, [title, description, canonicalPath, image, type, jsonLdText, noindex]);
+  }, [title, description, canonicalPath, image, type, jsonLdText, noindex, feedUrl, feedTitle]);
 }
 
 /** Backwards-compatible title-only helper. */

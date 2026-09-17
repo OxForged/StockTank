@@ -91,6 +91,14 @@ import {
   createMediaUploadInputSchema,
   createMediaUploadResponseSchema,
   mediaStatusResponseSchema,
+  adminPodcastEpisodeListSchema,
+  adminPodcastEpisodeSchema,
+  adminPodcastShowListSchema,
+  adminPodcastShowSchema,
+  castopodPodcastListSchema,
+  podcastEpisodeTypeInputSchema,
+  podcastStatusResponseSchema,
+  showPodcastSettingsInputSchema,
 } from '@stocktank/types';
 import { component } from './document.js';
 
@@ -549,5 +557,57 @@ export function registerGrowthPaths(registry: OpenAPIRegistry, h: GrowthPathHelp
     params: idParams,
     ok: { status: 202, schema: adminClipSchema },
     extra: { ...notFound('Clip'), ...conflict('Already rendering or source media not ready'), ...unavailable },
+  });
+  // ───── Podcasts (Milestone 4) ─────
+  registry.registerPath({
+    method: 'get',
+    path: '/podcasts/{slug}/feed.xml',
+    tags: ['Podcasts'],
+    summary: 'Podcast RSS feed',
+    description:
+      'Apple Podcasts / Podcasting 2.0 feed for a published show with its feed enabled. Items are published episodes with processed audio (MP3 enclosures). DEMO shows are labeled and carry itunes:block. Also served at /api/v1/podcasts/{slug}/feed.xml. Cached 5 minutes.',
+    request: { params: slugParams },
+    responses: { 200: { description: 'RSS 2.0 XML', content: { 'application/rss+xml': { schema: z.string() } } }, ...notFound('Podcast feed') },
+  });
+  const PODS = '/api/v1/admin/podcasts';
+  const castopodDown = { 502: errorResponse('Castopod returned an error'), 503: errorResponse('Castopod or the processing queue is not configured') };
+  admin('get', `${PODS}/status`, 'Podcast distribution status', 'Requires `content.read_drafts`. Whether Castopod, the queue and the feed owner email are configured.', {
+    tag: 'Admin: Podcasts',
+    ok: { status: 200, schema: podcastStatusResponseSchema },
+  });
+  admin('get', `${PODS}/shows`, 'List shows with podcast settings', 'Requires `content.read_drafts`. Includes feed URL, feed episode counts and directory warnings.', {
+    tag: 'Admin: Podcasts',
+    ok: { status: 200, schema: adminPodcastShowListSchema },
+  });
+  admin('put', `${PODS}/shows/{id}`, 'Update show podcast settings', 'Requires `distribution.publish`. Linking a Castopod podcast verifies it exists. Audited.', {
+    tag: 'Admin: Podcasts',
+    params: idParams,
+    body: showPodcastSettingsInputSchema,
+    ok: { status: 200, schema: adminPodcastShowSchema },
+    extra: { ...notFound('Show'), 502: errorResponse('Castopod returned an error') },
+  });
+  admin('get', `${PODS}/shows/{id}/episodes`, 'List a show’s podcast episodes', 'Requires `content.read_drafts`. Whether each episode is in the feed and its Castopod sync state.', {
+    tag: 'Admin: Podcasts',
+    params: idParams,
+    ok: { status: 200, schema: adminPodcastEpisodeListSchema },
+    extra: notFound('Show'),
+  });
+  admin('put', `${PODS}/episodes/{id}/type`, 'Set podcast episode type', 'Requires `distribution.publish`. full, trailer or bonus. Audited.', {
+    tag: 'Admin: Podcasts',
+    params: idParams,
+    body: podcastEpisodeTypeInputSchema,
+    ok: { status: 200, schema: adminPodcastEpisodeSchema },
+    extra: notFound('Episode'),
+  });
+  admin('post', `${PODS}/episodes/{id}/castopod`, 'Send episode to Castopod', 'Requires `distribution.publish`. Queues uploading the processed MP3 to the linked Castopod podcast and publishing it. Castopod cannot update episodes, so each episode syncs once. Audited.', {
+    tag: 'Admin: Podcasts',
+    params: idParams,
+    ok: { status: 202, schema: adminPodcastEpisodeSchema },
+    extra: { ...notFound('Episode'), ...conflict('Already synced, in progress, or preconditions not met'), ...castopodDown },
+  });
+  admin('get', `${PODS}/castopod/podcasts`, 'List Castopod podcasts', 'Requires `distribution.publish`. For linking a show to a Castopod podcast.', {
+    tag: 'Admin: Podcasts',
+    ok: { status: 200, schema: castopodPodcastListSchema },
+    extra: castopodDown,
   });
 }

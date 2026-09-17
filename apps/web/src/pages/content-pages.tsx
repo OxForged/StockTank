@@ -2,7 +2,7 @@ import { ApiClientError } from '@stocktank/api-client';
 import type { CompanySummary, EpisodeSummary, ProjectSummary, ShowSummary } from '@stocktank/types';
 import { Button, EmptyState, Skeleton, cn } from '@stocktank/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Bookmark, Boxes, Building2, Play, Radio, Search as SearchIcon, Star, Tv } from 'lucide-react';
+import { Bookmark, Boxes, Building2, Play, Radio, Rss, Search as SearchIcon, Star, Tv } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 const RECENT_KEY = 'stocktank.recentSearches';
@@ -209,8 +209,11 @@ export function ShowDetailPage() {
           name: q.data.show.title,
           description: q.data.show.description ?? q.data.show.tagline ?? undefined,
           url: `${window.location.origin}/shows/${q.data.show.slug}`,
+          ...(q.data.podcast ? { webFeed: q.data.podcast.feedUrl } : {}),
         }
       : null,
+    feedUrl: q.data?.podcast?.feedUrl,
+    feedTitle: q.data ? `${q.data.show.title} podcast` : undefined,
   });
 
   if (q.isError && q.error instanceof ApiClientError && q.error.status === 404) return <NotFoundPage />;
@@ -234,6 +237,14 @@ export function ShowDetailPage() {
             <Star className={cn('size-4', following && 'fill-current text-primary-hi')} aria-hidden="true" />
             {following ? 'Following' : 'Follow'}
           </Button>
+          {q.data.podcast ? (
+            <Button asChild variant="ghost">
+              <a href={q.data.podcast.feedUrl} target="_blank" rel="noopener noreferrer">
+                <Rss className="size-4" aria-hidden="true" />
+                Podcast RSS
+              </a>
+            </Button>
+          ) : null}
           <Demo show={show.isDemo} />
         </div>
       </Header>

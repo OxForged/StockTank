@@ -15,6 +15,10 @@
 - An episode switches to new media only when processing succeeds (`target_episode_id`). Clips are public only when published and always keep source timestamps.
 - Worker tests use the test DB and real FFmpeg (`ffmpeg-static` in dev; distro ffmpeg in the Docker image). They run after API tests (turbo.json) because both reset shared tables.
 
+## Podcasts
+- StockTank owns the feed: `/podcasts/<slug>/feed.xml` (only published shows with the feed enabled; items need processed audio). DEMO shows get `itunes:block`.
+- Castopod (optional) is reached only through `packages/podcast` REST v1. It cannot create/update podcasts or update episodes, so each episode syncs once (`castopod_episode_id`).
+
 ## Conventions
 - pnpm workspaces + Turborepo. Workspace globs: `apps/*`, `services/*`, `packages/*` (never `reference/`).
 - TypeScript strict everywhere. Zod for all API input/output. API is versioned under `/api/v1`.

@@ -162,6 +162,8 @@ export type PersonSummary = z.infer<typeof personSummarySchema>;
 
 export const showDetailResponseSchema = z.object({
   show: showSummarySchema,
+  /** Present when the show publishes a podcast feed (§11). */
+  podcast: z.object({ feedUrl: z.string() }).nullable(),
   hosts: z.array(personSummarySchema),
   episodes: z.array(episodeSummarySchema),
 });

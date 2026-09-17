@@ -5,6 +5,7 @@ import pino from 'pino';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createPrismaClient } from '@stocktank/database';
 import type { ObjectStorage } from '@stocktank/media';
+import { CastopodError, type PodcastHostAdapter, type PublishEpisodeInput } from '@stocktank/podcast';
 import { resolveTools, runTool, ToolError } from '../src/ffmpeg-runner.js';
 import { createProcessor, PermanentMediaError, publicErrorMessage } from '../src/processor.js';
 
@@ -122,6 +123,8 @@ describe('media processor', () => {
       poster: `renditions/${asset.id}/poster.jpg`,
       variants: [{ name: '480p', height: 480 }],
     });
+    const mp3Size = (await stat(path.join(storage.root, 'renditions', asset.id, 'audio.mp3'))).size;
+    expect((ready.renditions as { audioBytes?: number }).audioBytes).toBe(mp3Size);
 
     const master = await readFile(path.join(storage.root, 'renditions', asset.id, 'hls', 'master.m3u8'), 'utf8');
     expect(master).toContain('RESOLUTION=854x480');
@@ -183,5 +186,59 @@ describe('media processor', () => {
     const msg = publicErrorMessage(new ToolError('ffmpeg exited with 1', 'C:\\Users\\x\\source.mp4: Invalid data found\n/tmp/work/source.mp4: bad'));
     expect(msg).not.toContain('/tmp/work');
     expect(msg).toContain('ffmpeg exited with 1');
+  });
+
+  describe('podcast sync', () => {
+    const fakeHost = (impl: (input: PublishEpisodeInput) => Promise<{ episodeId: number }>) => {
+      const calls: PublishEpisodeInput[] = [];
+      const host = {
+        publishEpisode: (input: PublishEpisodeInput) => {
+          calls.push(input);
+          return impl(input);
+        },
+      } as unknown as PodcastHostAdapter;
+      return { host, calls };
+    };
+
+    it('uploads the processed MP3 to Castopod once and records the remote id', async () => {
+      await prisma.show.update({ where: { id: showId }, data: { status: 'published', castopodPodcastId: 12, podcastExplicit: true } });
+      await prisma.episode.update({ where: { id: episodeId }, data: { status: 'published', publishedAt: new Date(), number: 4, summary: 'Summary' } });
+      const { host, calls } = fakeHost((input) => {
+        expect(input.audio.size).toBeGreaterThan(1000);
+        return Promise.resolve({ episodeId: 88 });
+      });
+      const process = createProcessor({ prisma, storage, tools, logger, workRoot: root, podcastHost: host });
+
+      await process({ type: 'podcast-sync', episodeId });
+      expect(calls).toHaveLength(1);
+      expect(calls[0]).toMatchObject({ podcastId: 12, title: 'Worker Episode', slug: 'worker-episode', episodeNumber: 4, explicit: true, type: 'full', audioFilename: 'worker-episode.mp3' });
+      expect(calls[0]!.description).toContain('Not financial or investment advice');
+      expect(await prisma.episode.findUniqueOrThrow({ where: { id: episodeId } })).toMatchObject({ castopodEpisodeId: 88, podcastSyncStatus: 'synced', podcastSyncError: null });
+
+      // Running again never creates a duplicate in Castopod.
+      await process({ type: 'podcast-sync', episodeId });
+      expect(calls).toHaveLength(1);
+    });
+
+    it('fails clearly without configuration and treats Castopod 4xx as permanent', async () => {
+      await prisma.episode.update({ where: { id: episodeId }, data: { castopodEpisodeId: null, podcastSyncStatus: null } });
+      const unconfigured = createProcessor({ prisma, storage, tools, logger, workRoot: root, podcastHost: null });
+      await expect(unconfigured({ type: 'podcast-sync', episodeId })).rejects.toBeInstanceOf(PermanentMediaError);
+      expect((await prisma.episode.findUniqueOrThrow({ where: { id: episodeId } })).podcastSyncError).toMatch(/not configured/);
+
+      const { host } = fakeHost(() => Promise.reject(new CastopodError('Castopod POST /episodes failed with 400: The slug field must be unique.', 400)));
+      const rejecting = createProcessor({ prisma, storage, tools, logger, workRoot: root, podcastHost: host });
+      await expect(rejecting({ type: 'podcast-sync', episodeId })).rejects.toBeInstanceOf(PermanentMediaError);
+      expect(await prisma.episode.findUniqueOrThrow({ where: { id: episodeId } })).toMatchObject({
+        podcastSyncStatus: 'failed',
+        podcastSyncError: expect.stringContaining('slug field must be unique'),
+      });
+
+      const { host: flaky } = fakeHost(() => Promise.reject(new CastopodError('Could not reach Castopod: timeout', 0)));
+      const retryable = createProcessor({ prisma, storage, tools, logger, workRoot: root, podcastHost: flaky });
+      const err = await retryable({ type: 'podcast-sync', episodeId }).catch((e: unknown) => e);
+      expect(err).toBeInstanceOf(CastopodError);
+      expect(err).not.toBeInstanceOf(PermanentMediaError);
+    });
   });
 });
