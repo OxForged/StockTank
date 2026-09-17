@@ -61,3 +61,21 @@ export {
   type LinkComponent,
   type LinkLikeProps,
 } from './components/media-cards.js';
+export { AnimatedNumber, ChangeBadge, Reveal, useReducedMotion, type AnimatedNumberProps, type ChangeBadgeProps } from './components/motion.js';
+export {
+  BuzzMeter,
+  HeatMap,
+  PriceChart,
+  Sparkline,
+  TimeSeriesChart,
+  heatColor,
+  squarify,
+  type BuzzMeterProps,
+  type HeatMapItem,
+  type HeatMapProps,
+  type OhlcBar,
+  type PriceChartProps,
+  type SeriesPoint,
+  type SparklineProps,
+  type TimeSeriesChartProps,
+} from './components/charts.js';
