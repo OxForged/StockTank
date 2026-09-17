@@ -13,6 +13,7 @@ import { Info, Play, Star } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
+import { useMe } from '../../lib/auth';
 import { usePlayer } from '../../stores/player';
 import { useWatchlist } from '../../stores/watchlist';
 
@@ -262,6 +263,7 @@ export function WatchlistPanel({ projects, companies, loading }: { projects: Pro
   const [tab, setTab] = useState<'projects' | 'companies'>('projects');
   const ids = useWatchlist((s) => s.ids);
   const toggle = useWatchlist((s) => s.toggle);
+  const { user } = useMe();
 
   const rows: WatchRow[] =
     tab === 'projects'
@@ -361,7 +363,7 @@ export function WatchlistPanel({ projects, companies, loading }: { projects: Pro
               })}
       </ul>
       <p className="mt-auto border-t border-hairline px-5 py-4 text-xs leading-relaxed text-muted">
-        Watchlist is saved on this device. Profiles are informational; StockTank is not a broker, exchange or investment
+        {user ? 'Watchlist is saved to your account.' : 'Watchlist is saved on this device; sign in to keep it everywhere.'} Profiles are informational; StockTank is not a broker, exchange or investment
         adviser. Price data connects with the market data provider.
       </p>
     </section>

@@ -61,10 +61,10 @@ export const ADMIN_NAV: readonly (AdminNavItem | AdminNavGroup)[] = [
     icon: Film,
     permission: 'content.read_drafts',
     items: [
-      { label: 'Episodes', to: '/content/episodes', icon: Tv, milestone: 2, description: 'Create, schedule and publish episodes across shows.' },
+      { label: 'Episodes', to: '/content/episodes', icon: Tv },
       { label: 'Videos', to: '/content/videos', icon: Video, milestone: 3, description: 'Uploads, transcoding status and HLS renditions.' },
       { label: 'Clips', to: '/content/clips', icon: Scissors, milestone: 3, description: 'Cut, review and publish clips from episodes and live shows.' },
-      { label: 'Articles', to: '/content/articles', icon: Newspaper, milestone: 2, description: 'Editorial articles with drafts, review and publishing.' },
+      { label: 'Articles', to: '/content/articles', icon: Newspaper },
       { label: 'Shorts', to: '/content/shorts', icon: Smartphone, milestone: 3, description: 'Vertical short-form video for social distribution.' },
     ],
   },
@@ -73,7 +73,7 @@ export const ADMIN_NAV: readonly (AdminNavItem | AdminNavGroup)[] = [
     icon: Radio,
     permission: 'content.read_drafts',
     items: [
-      { label: 'Shows', to: '/network/shows', icon: Tv, milestone: 2, description: 'Shows, formats, seasons and artwork.' },
+      { label: 'Shows', to: '/network/shows', icon: Tv },
       { label: 'Hosts', to: '/network/hosts', icon: Mic, milestone: 2, description: 'Host profiles and show assignments.' },
       { label: 'Guests', to: '/network/guests', icon: UserRound, milestone: 2, description: 'Guest profiles and appearances.' },
       { label: 'Creators', to: '/network/creators', icon: Users, milestone: 2, description: 'Creator accounts, channels and approvals.' },
@@ -84,8 +84,8 @@ export const ADMIN_NAV: readonly (AdminNavItem | AdminNavGroup)[] = [
     icon: Boxes,
     permission: 'entities.write',
     items: [
-      { label: 'Companies', to: '/entities/companies', icon: Building2, milestone: 2, description: 'Public companies, tickers and sectors.' },
-      { label: 'Projects', to: '/entities/projects', icon: Boxes, milestone: 2, description: 'On-chain projects and their relationships.' },
+      { label: 'Companies', to: '/entities/companies', icon: Building2 },
+      { label: 'Projects', to: '/entities/projects', icon: Boxes },
       { label: 'Tokens', to: '/entities/tokens', icon: Coins, milestone: 2, description: 'Tokens linked to projects and chains.' },
       { label: 'Chains', to: '/entities/chains', icon: Link2, milestone: 2, description: 'Supported chains and metadata.' },
     ],
@@ -121,7 +121,7 @@ export const ADMIN_NAV: readonly (AdminNavItem | AdminNavGroup)[] = [
     permission: 'content.publish',
     items: [
       { label: 'Stations', to: '/live/stations', milestone: 5 },
-      { label: 'Streams', to: '/live/streams', milestone: 5 },
+      { label: 'Schedule', to: '/live/streams', icon: Radio },
       { label: 'Now Playing', to: '/live/now-playing', milestone: 5 },
     ],
   },

@@ -15,6 +15,21 @@ export const mockApi = {
     devLogin: vi.fn(),
   },
   admin: {
+    content: {
+      listShows: vi.fn(),
+      saveShow: vi.fn(),
+      listEpisodes: vi.fn(),
+      saveEpisode: vi.fn(),
+      listProjects: vi.fn(),
+      saveProject: vi.fn(),
+      listCompanies: vi.fn(),
+      saveCompany: vi.fn(),
+      listArticles: vi.fn(),
+      saveArticle: vi.fn(),
+      listLivestreams: vi.fn(),
+      saveLivestream: vi.fn(),
+      listChains: vi.fn(),
+    },
     listUsers: vi.fn(),
     updateUserRoles: vi.fn(),
     advertisingOverview: vi.fn(),
@@ -50,6 +65,8 @@ export const mockApi = {
   },
 } as unknown as ApiClient & {
   auth: { [K in keyof ApiClient['auth']]: ReturnType<typeof vi.fn> };
-  admin: { [K in keyof ApiClient['admin']]: ReturnType<typeof vi.fn> };
+  admin: { [K in keyof ApiClient['admin']]: ReturnType<typeof vi.fn> } & {
+    content: { [K in keyof ApiClient['admin']['content']]: ReturnType<typeof vi.fn> };
+  };
   system: { [K in keyof ApiClient['system']]: ReturnType<typeof vi.fn> };
 };

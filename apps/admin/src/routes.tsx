@@ -18,11 +18,25 @@ import { ReviewQueuePage } from './pages/advertising/review-page';
 import { LeadsPage } from './pages/growth/leads-page';
 import { NewsletterAudiencePage } from './pages/growth/newsletter-page';
 import { FeatureFlagsPage } from './pages/system/feature-flags-page';
+import {
+  ArticlesCmsPage,
+  CompaniesCmsPage,
+  EpisodesCmsPage,
+  LivestreamsCmsPage,
+  ProjectsCmsPage,
+  ShowsCmsPage,
+} from './pages/cms-pages';
 import { UsersPage } from './pages/users-page';
 
 /** Pages that work today, keyed by path. Everything else in the nav renders a milestone placeholder. */
 const WORKING: Record<string, () => JSX.Element> = {
   '/system/users': UsersPage,
+  '/content/episodes': EpisodesCmsPage,
+  '/content/articles': ArticlesCmsPage,
+  '/network/shows': ShowsCmsPage,
+  '/entities/projects': ProjectsCmsPage,
+  '/entities/companies': CompaniesCmsPage,
+  '/live/streams': LivestreamsCmsPage,
   '/system/feature-flags': FeatureFlagsPage,
   '/advertising/overview': AdvertisingOverviewPage,
   '/advertising/advertisers': AdvertisersPage,

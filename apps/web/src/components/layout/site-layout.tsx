@@ -3,6 +3,7 @@ import { useEffect, type ReactNode } from 'react';
 import { Outlet, ScrollRestoration } from 'react-router';
 
 import { captureAttribution } from '../../lib/attribution';
+import { useWatchlistAccountSync } from '../../lib/library';
 import { MiniPlayer } from '../player/mini-player';
 import { BottomNav } from './bottom-nav';
 import { Footer } from './footer';
@@ -18,6 +19,7 @@ export function SiteLayout({ children }: { children?: ReactNode }) {
   useEffect(() => {
     captureAttribution();
   }, []);
+  useWatchlistAccountSync();
 
   return (
     <div className="min-h-dvh bg-bg text-fg transition-colors">

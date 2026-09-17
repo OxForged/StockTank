@@ -10,6 +10,7 @@ import { LoginPage } from './pages/auth/login-page';
 import { SignupPage } from './pages/auth/signup-page';
 import { HomePage } from './pages/home/home-page';
 import { LegalPage } from './pages/legal/legal-page';
+import { LibraryPage } from './pages/library-page';
 import { NewsletterConfirmPage, NewsletterPage, NewsletterUnsubscribePage } from './pages/newsletter-pages';
 import { NotFoundPage } from './pages/not-found-page';
 import { RouteErrorPage } from './pages/route-error-page';
@@ -26,7 +27,7 @@ const LEGAL_ALIASES = [
 ] as const;
 
 /** Areas backed by real data have their own pages; the rest show their milestone state. */
-const DATA_BACKED = new Set<string>(['shows', 'live', 'projects', 'companies', 'search']);
+const DATA_BACKED = new Set<string>(['shows', 'live', 'projects', 'companies', 'search', 'library']);
 
 const areaRoutes: RouteObject[] = (Object.keys(AREAS) as AreaKey[]).filter((key) => !DATA_BACKED.has(key)).map((key) => ({
   path: key,
@@ -50,6 +51,7 @@ export const routes: RouteObject[] = [
       { path: 'projects', element: <ProjectsPage /> },
       { path: 'companies', element: <CompaniesPage /> },
       { path: 'search', element: <SearchPage /> },
+      { path: 'library', element: <LibraryPage /> },
       { path: 'advertise', element: <AdvertisePage /> },
       { path: 'newsletter', element: <NewsletterPage /> },
       { path: 'newsletter/confirm', element: <NewsletterConfirmPage /> },

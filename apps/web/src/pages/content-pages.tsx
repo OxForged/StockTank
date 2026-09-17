@@ -1,8 +1,8 @@
 import { ApiClientError } from '@stocktank/api-client';
 import type { CompanySummary, EpisodeSummary, ProjectSummary, ShowSummary } from '@stocktank/types';
 import { Button, EmptyState, Skeleton, cn } from '@stocktank/ui';
-import { useQuery } from '@tanstack/react-query';
-import { Boxes, Building2, Play, Radio, Search as SearchIcon, Star, Tv } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Bookmark, Boxes, Building2, Play, Radio, Search as SearchIcon, Star, Tv } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 
@@ -10,6 +10,8 @@ import { AdSlot } from '../components/ads/ad-slot';
 import { LiveDesk } from '../components/desk/live-desk';
 import { NewsletterSignup } from '../components/marketing/newsletter-signup';
 import { api } from '../lib/api';
+import { useMe } from '../lib/auth';
+import { LIBRARY_QUERY_KEY, useLibrary } from '../lib/library';
 import { useDocumentTitle } from '../lib/seo';
 import { usePlayer } from '../stores/player';
 import { useWatchlist } from '../stores/watchlist';
@@ -117,7 +119,7 @@ export function ShowsPage() {
   );
 }
 
-function EpisodeRow({ episode, showTitle }: { episode: EpisodeSummary; showTitle: string }) {
+function EpisodeRow({ episode, showTitle, saved, onSave }: { episode: EpisodeSummary; showTitle: string; saved: boolean | null; onSave: () => void }) {
   const open = usePlayer((s) => s.open);
   return (
     <li className="flex items-center gap-4 rounded-xl border border-hairline bg-surface p-4 transition-colors hover:border-hairline-strong">
@@ -140,6 +142,12 @@ function EpisodeRow({ episode, showTitle }: { episode: EpisodeSummary; showTitle
         <h3 className="truncate font-display text-lg font-bold">{episode.title}</h3>
         {episode.summary ? <p className="line-clamp-1 text-sm text-muted">{episode.summary}</p> : null}
       </div>
+      {saved !== null ? (
+        <Button size="sm" variant={saved ? 'secondary' : 'ghost'} aria-pressed={saved} onClick={onSave}>
+          <Bookmark className={cn('size-4', saved && 'fill-current text-primary-hi')} aria-hidden="true" />
+          {saved ? 'Saved' : 'Save'}
+        </Button>
+      ) : null}
     </li>
   );
 }
@@ -149,6 +157,14 @@ export function ShowDetailPage() {
   const q = useQuery({ queryKey: ['show', slug], queryFn: () => api.content.show(slug), retry: false });
   const ids = useWatchlist((s) => s.ids);
   const toggle = useWatchlist((s) => s.toggle);
+  const { user } = useMe();
+  const library = useLibrary(Boolean(user));
+  const qc = useQueryClient();
+  const bookmark = useMutation({
+    mutationFn: ({ id, saved }: { id: string; saved: boolean }) => (saved ? api.me.removeBookmark(id) : api.me.bookmark(id)),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: LIBRARY_QUERY_KEY }),
+  });
+  const savedIds = new Set((library.data?.bookmarks ?? []).map((b) => b.id));
   useDocumentTitle(q.data?.show.title ?? 'Show');
 
   if (q.isError && q.error instanceof ApiClientError && q.error.status === 404) return <NotFoundPage />;
@@ -185,7 +201,13 @@ export function ShowDetailPage() {
           ) : (
             <ol className="flex flex-col gap-3">
               {episodes.map((e) => (
-                <EpisodeRow key={e.id} episode={e} showTitle={show.title} />
+                <EpisodeRow
+                  key={e.id}
+                  episode={e}
+                  showTitle={show.title}
+                  saved={user ? savedIds.has(e.id) : null}
+                  onSave={() => bookmark.mutate({ id: e.id, saved: savedIds.has(e.id) })}
+                />
               ))}
             </ol>
           )}

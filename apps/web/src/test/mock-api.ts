@@ -31,6 +31,13 @@ export const mockApi = {
     serve: vi.fn(),
     recordImpression: vi.fn(),
   },
+  me: {
+    library: vi.fn(),
+    follow: vi.fn(),
+    unfollow: vi.fn(),
+    bookmark: vi.fn(),
+    removeBookmark: vi.fn(),
+  },
   marketing: {
     submitInquiry: vi.fn(),
     subscribe: vi.fn(),
@@ -50,6 +57,7 @@ export const mockApi = {
   content: Mocked<ApiClient['content']>;
   ads: Mocked<ApiClient['ads']>;
   marketing: Mocked<ApiClient['marketing']>;
+  me: Mocked<ApiClient['me']>;
   admin: Mocked<ApiClient['admin']>;
   system: Mocked<ApiClient['system']>;
 };
