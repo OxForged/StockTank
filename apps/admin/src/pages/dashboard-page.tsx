@@ -1,12 +1,115 @@
 import { Avatar, Badge, Button, Card, CardDescription, CardHeader, CardTitle, Skeleton, cn, toast } from '@stocktank/ui';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Activity, RefreshCw, Search, Server } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 
 import { PageTitle } from '../components/page-title';
+import { StatCard, percentChange } from '../components/stat-card';
 import { api } from '../lib/api';
 import { can, describeApiError, useMe } from '../lib/auth';
 import { visibleNav, isGroup } from '../lib/nav';
+
+const TODAY_DAYS = 14;
+
+/**
+ * Compact KPI strip. Every tile reuses a query this page or its sibling pages already make,
+ * and each analytics/advertising call happens only when the user holds that permission.
+ */
+function TodayStrip() {
+  const { user } = useMe();
+  const canAnalytics = can(user, 'analytics.read');
+  const canAds = can(user, 'ads.manage');
+
+  const today = new Date();
+  const range = {
+    from: new Date(today.getTime() - (TODAY_DAYS - 1) * 86_400_000).toISOString().slice(0, 10),
+    to: today.toISOString().slice(0, 10),
+  };
+
+  const ready = useQuery({ queryKey: ['system', 'ready'], queryFn: () => api.system.ready(), refetchInterval: 30_000 });
+  const audience = useQuery({ queryKey: ['admin', 'analytics', 'audience', range], queryFn: () => api.admin.analytics.audience(range), enabled: canAnalytics });
+  const ads = useQuery({ queryKey: ['admin', 'ads', 'overview'], queryFn: () => api.admin.advertisingOverview(), enabled: canAds });
+
+  const checks = ready.data ? Object.values(ready.data.checks) : null;
+  const latest = audience.data?.daily.at(-1);
+  const tiles: ReactNode[] = [];
+
+  if (ready.isPending) tiles.push(<Skeleton key="ready" className="h-28" />);
+  else if (checks) {
+    tiles.push(
+      <StatCard key="ready" index={tiles.length} label="API checks passing" value={checks.filter((c) => c.ok).length} hint={`of ${checks.length} readiness check${checks.length === 1 ? '' : 's'}`} />,
+    );
+  }
+
+  if (canAnalytics) {
+    if (audience.isPending) tiles.push(<Skeleton key="visitors" className="h-28" />, <Skeleton key="views" className="h-28" />);
+    else if (audience.isError) tiles.push(<ErrorTile key="audience" label="Audience" error={audience.error} />);
+    else if (latest) {
+      const visitors = audience.data.daily.map((d) => d.visitors);
+      const views = audience.data.daily.map((d) => d.pageViews);
+      tiles.push(
+        <StatCard
+          key="visitors"
+          index={tiles.length}
+          label="Visitors today"
+          value={latest.visitors}
+          hint={`${latest.date} (UTC)`}
+          series={visitors}
+          seriesLabel={`Visitors per day, last ${TODAY_DAYS} days`}
+          to="/analytics/audience"
+        />,
+        <StatCard
+          key="views"
+          index={tiles.length + 1}
+          label="Page views today"
+          value={latest.pageViews}
+          hint={`${latest.date} (UTC)`}
+          series={views}
+          seriesLabel={`Page views per day, last ${TODAY_DAYS} days`}
+          to="/analytics/audience"
+        />,
+      );
+    }
+  }
+
+  if (canAds) {
+    if (ads.isPending) tiles.push(<Skeleton key="ads" className="h-28" />, <Skeleton key="review" className="h-28" />);
+    else if (ads.isError) tiles.push(<ErrorTile key="ads" label="Advertising" error={ads.error} />);
+    else {
+      tiles.push(
+        <StatCard
+          key="ads"
+          index={tiles.length}
+          label="Ad impressions (7 days)"
+          value={ads.data.impressionsLast7d}
+          delta={percentChange(ads.data.impressionsLast7d, ads.data.impressionsPrior7d)}
+          deltaLabel="vs prior 7 days"
+          series={ads.data.daily.map((d) => d.impressions)}
+          seriesLabel="Impressions per day, last 14 days"
+          to="/advertising/overview"
+        />,
+        <StatCard key="review" index={tiles.length + 1} label="Awaiting ad review" value={ads.data.pendingReviews} to="/advertising/review" />,
+      );
+    }
+  }
+
+  if (tiles.length === 0) return null;
+  return (
+    <section aria-label="Today" className="mb-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      {tiles}
+    </section>
+  );
+}
+
+function ErrorTile({ label, error }: { label: string; error: unknown }) {
+  return (
+    <Card className="flex flex-col gap-1">
+      <span className="text-xs uppercase tracking-[0.1em] text-muted">{label}</span>
+      <span className="text-sm text-danger">{describeApiError(error)}</span>
+    </Card>
+  );
+}
 
 function StatusDot({ ok }: { ok: boolean | null }) {
   return (
@@ -178,6 +281,7 @@ export function DashboardPage() {
   return (
     <>
       <PageTitle kicker="Control room" title="Dashboard" description="System health, your session and the state of each admin area." />
+      <TodayStrip />
       <div className="grid gap-4 lg:grid-cols-3">
         <SystemStatusCard />
         <SessionCard />

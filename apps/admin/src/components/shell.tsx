@@ -15,7 +15,7 @@ import {
 } from '@stocktank/ui';
 import { ExternalLink, LogOut, Menu } from 'lucide-react';
 import { useState } from 'react';
-import { NavLink, Outlet, ScrollRestoration } from 'react-router';
+import { NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router';
 
 import { useLogout, useMe } from '../lib/auth';
 import { isGroup, visibleNav, type AdminNavGroup, type AdminNavItem } from '../lib/nav';
@@ -24,9 +24,12 @@ const PUBLIC_SITE = import.meta.env.VITE_PUBLIC_SITE_URL ?? 'http://localhost:51
 
 function leafClass({ isActive }: { isActive: boolean }) {
   return cn(
-    'flex items-center gap-2.5 rounded-sm px-2.5 py-1.5 text-[13px] transition-colors',
+    'relative flex items-center gap-2.5 rounded-sm px-2.5 py-1.5 text-[13px] transition-colors',
     'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
-    isActive ? 'bg-primary-soft font-semibold text-primary-hi' : 'text-muted hover:bg-raised hover:text-fg',
+    // Active indicator: a small bar that scales in, so moving between pages feels continuous.
+    'before:absolute before:left-0 before:top-1/2 before:h-4 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-primary-hi',
+    'before:transition-[transform,opacity] before:duration-300 before:ease-out-expo motion-reduce:before:transition-none',
+    isActive ? 'bg-primary-soft font-semibold text-primary-hi before:scale-y-100 before:opacity-100' : 'text-muted hover:bg-raised hover:text-fg before:scale-y-0 before:opacity-0',
   );
 }
 
@@ -102,6 +105,7 @@ function UserBlock({ user }: { user: CurrentUser }) {
 /** Control-room shell: fixed sidebar on desktop, drawer on mobile. Assumes the gate has passed. */
 export function AdminShell() {
   const { user } = useMe();
+  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   if (!user) return null;
 
@@ -148,7 +152,10 @@ export function AdminShell() {
         </header>
 
         <main id="main" tabIndex={-1} className="flex-1 p-4 focus:outline-none md:p-6 lg:p-8">
-          <Outlet />
+          {/* Keyed by route so each page fades in; reduced motion turns the animation off. */}
+          <div key={pathname} className="animate-fade-in motion-reduce:animate-none">
+            <Outlet />
+          </div>
         </main>
       </div>
 
