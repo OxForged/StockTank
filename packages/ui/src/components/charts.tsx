@@ -560,7 +560,7 @@ export function HeatMap({ items, height = 320, label, className, renderLink }: H
         return (
           <div role="listitem" key={item.id} className="contents">
             {renderLink && item.href ? (
-              <div className="absolute" style={{ left: r.x, top: r.y, width: r.w, height: r.h }}>
+              <div className={cn('absolute', !reduced && 'animate-pop-in')} style={style}>
                 {renderLink(item, content, cn(tileClass, 'left-0 top-0 size-full'))}
               </div>
             ) : (

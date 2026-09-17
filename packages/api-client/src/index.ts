@@ -1,5 +1,16 @@
 import { z } from 'zod';
 import {
+  barsResponseSchema,
+  moversResponseSchema,
+  radarResponseSchema,
+  stockDetailResponseSchema,
+  stockListResponseSchema,
+  type BarsResponse,
+  type ChartRange,
+  type MoversResponse,
+  type RadarResponse,
+  type StockDetailResponse,
+  type StockListResponse,
   audienceAnalyticsSchema,
   contentAnalyticsSchema,
   projectAnalyticsSchema,
@@ -297,6 +308,14 @@ export function createApiClient(options: ApiClientOptions = {}) {
       devLoginStatus: (): Promise<DevLoginStatus> => request('GET', '/api/v1/auth/dev-login', devLoginStatusSchema),
       /** Local development only: signs in as the seeded super admin. */
       devLogin: (): Promise<AuthResponse> => request('POST', '/api/v1/auth/dev-login', authResponseSchema),
+    },
+    markets: {
+      stocks: (): Promise<StockListResponse> => request('GET', '/api/v1/markets/stocks', stockListResponseSchema),
+      movers: (): Promise<MoversResponse> => request('GET', '/api/v1/markets/movers', moversResponseSchema),
+      radar: (): Promise<RadarResponse> => request('GET', '/api/v1/markets/radar', radarResponseSchema),
+      stock: (symbol: string): Promise<StockDetailResponse> => request('GET', `/api/v1/markets/stocks/${encodeURIComponent(symbol)}`, stockDetailResponseSchema),
+      bars: (symbol: string, range: ChartRange): Promise<BarsResponse> =>
+        request('GET', `/api/v1/markets/stocks/${encodeURIComponent(symbol)}/bars${qs({ range })}`, barsResponseSchema),
     },
     analytics: {
       /** Sent with keepalive so batches survive page unloads. */

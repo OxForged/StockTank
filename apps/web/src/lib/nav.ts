@@ -27,6 +27,7 @@ export interface NavItem {
 /** Left rail (desktop), from the Hybrid A + B design. */
 export const RAIL_NAV: readonly NavItem[] = [
   { label: 'Home', to: '/', icon: House },
+  { label: 'Markets', to: '/markets', icon: TrendingUp },
   { label: 'Live', to: '/live', icon: Radio },
   { label: 'Shows', to: '/shows', icon: Tv },
   { label: 'Clips', to: '/clips', icon: Scissors, milestone: 3 },
@@ -41,7 +42,6 @@ export const PRIMARY_NAV: readonly NavItem[] = [
   { label: 'Watch', to: '/watch', icon: Play, milestone: 3 },
   { label: 'Listen', to: '/listen', icon: Headphones, milestone: 4 },
   { label: 'News', to: '/news', icon: Newspaper, milestone: 2 },
-  { label: 'Markets', to: '/markets', icon: TrendingUp },
   { label: 'Creators', to: '/creators', icon: Users, milestone: 2 },
   { label: 'Advertise', to: '/advertise', icon: Megaphone },
 ];

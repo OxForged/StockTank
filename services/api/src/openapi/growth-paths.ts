@@ -121,6 +121,12 @@ import {
   contentAnalyticsSchema,
   projectAnalyticsSchema,
   showAnalyticsSchema,
+  barsResponseSchema,
+  chartRangeSchema,
+  moversResponseSchema,
+  radarResponseSchema,
+  stockDetailResponseSchema,
+  stockListResponseSchema,
 } from '@stocktank/types';
 import { component } from './document.js';
 
@@ -729,4 +735,20 @@ export function registerGrowthPaths(registry: OpenAPIRegistry, h: GrowthPathHelp
     query: analyticsRangeQuerySchema,
     ok: { status: 200, schema: projectAnalyticsSchema },
   });
+  // ───── Markets (stocks and meme stocks) ─────
+  const marketsGet = (path: string, summary: string, description: string, schema: z.ZodType, request?: object, extra: object = {}) =>
+    registry.registerPath({
+      method: 'get',
+      path,
+      tags: ['Markets'],
+      summary,
+      description: `${description} Every response carries its data source (demo or a real provider) and a disclaimer; DEMO data is synthetic and labeled. Informational only, never investment advice.`,
+      ...(request ? { request } : {}),
+      responses: { 200: { description: summary, content: json(schema) }, ...validationError, ...extra, ...commonErrors },
+    });
+  marketsGet('/api/v1/markets/stocks', 'Tracked stocks', 'Published companies with tickers: quote, intraday sparkline and meme-stock flag.', stockListResponseSchema);
+  marketsGet('/api/v1/markets/movers', 'Movers', 'Top gainers, losers and most active among tracked stocks.', moversResponseSchema);
+  marketsGet('/api/v1/markets/radar', 'Meme Stock Radar', 'Tracked stocks ranked by StockTank buzz (first-party page views, follows, searches and episode mentions over 7 days; methodology included), meme stocks first.', radarResponseSchema);
+  marketsGet('/api/v1/markets/stocks/{symbol}', 'Stock page', 'Quote, 30-day buzz timeline, related episodes and clips.', stockDetailResponseSchema, { params: z.object({ symbol: z.string() }) }, notFound('Stock'));
+  marketsGet('/api/v1/markets/stocks/{symbol}/bars', 'Price bars', 'OHLCV bars for a range (1D, 5D, 1M, 6M, 1Y) with stats, relative volume and SMA20.', barsResponseSchema, { params: z.object({ symbol: z.string() }), query: z.object({ range: chartRangeSchema.optional() }) }, notFound('Stock'));
 }

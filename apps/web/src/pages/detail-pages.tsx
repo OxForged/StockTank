@@ -74,7 +74,7 @@ function Retry({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-function EpisodeList({ episodes, empty }: { episodes: EpisodeSummary[]; empty: string }) {
+export function EpisodeList({ episodes, empty }: { episodes: EpisodeSummary[]; empty: string }) {
   if (episodes.length === 0) return <p className="text-sm text-muted">{empty}</p>;
   return (
     <ul className="flex flex-col gap-3">

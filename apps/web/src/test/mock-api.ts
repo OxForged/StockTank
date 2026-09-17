@@ -20,6 +20,13 @@ export const mockApi = {
   analytics: {
     send: vi.fn(() => Promise.resolve()),
   },
+  markets: {
+    stocks: vi.fn(),
+    movers: vi.fn(),
+    radar: vi.fn(),
+    stock: vi.fn(),
+    bars: vi.fn(),
+  },
   content: {
     home: vi.fn(),
     shows: vi.fn(),
