@@ -37,7 +37,7 @@ jobs:
       TEST_DATABASE_URL: postgresql://stocktank:stocktank_ci@localhost:5432/stocktank_test
       REDIS_URL: redis://localhost:6379
       SESSION_SECRET: ci-only-session-secret-not-used-anywhere-else-0123456789
-      CORS_ORIGINS: http://localhost:5180,http://localhost:5181
+      CORS_ORIGINS: http://localhost:5190,http://localhost:5181
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4

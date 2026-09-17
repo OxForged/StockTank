@@ -1,0 +1,35 @@
+@import '@stocktank/ui/styles.css';
+
+/* Control-room feel: slightly denser type, mono accents, subtle scanline grid on the canvas. */
+@layer base {
+  body {
+    font-size: 0.9375rem;
+  }
+}
+
+@utility bg-control-room {
+  background-color: var(--st-bg);
+  background-image:
+    radial-gradient(60% 40% at 100% 0%, var(--st-primary-soft), transparent 70%),
+    linear-gradient(to right, rgb(255 255 255 / 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.025) 1px, transparent 1px);
+  background-size:
+    auto,
+    32px 32px,
+    32px 32px;
+}
+
+@utility skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -100%;
+  z-index: 100;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--st-primary);
+  color: var(--st-on-primary);
+  font-weight: 600;
+  &:focus {
+    top: 1rem;
+  }
+}

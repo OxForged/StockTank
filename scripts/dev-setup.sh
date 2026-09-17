@@ -11,3 +11,7 @@ docker compose -f docker-compose.dev.yml exec -T postgres psql -U stocktank -d s
 pnpm db:generate
 pnpm db:deploy
 pnpm db:seed
+# The test database needs the same migrations and RBAC seed (roles/permissions) as dev.
+TEST_URL="$(grep -E '^TEST_DATABASE_URL=' .env | cut -d= -f2-)"
+DATABASE_URL="$TEST_URL" pnpm db:deploy
+DATABASE_URL="$TEST_URL" SEED_ADMIN_EMAIL= SEED_ADMIN_PASSWORD= pnpm db:seed

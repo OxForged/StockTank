@@ -1,0 +1,344 @@
+/*
+ * StockTank design system — Tailwind v4 tokens.
+ * Consumers: `@import '@stocktank/ui/styles.css';` (this file already imports Tailwind).
+ * Dark is the default theme; `[data-theme="light"]` derives the light theme.
+ */
+@import 'tailwindcss';
+@import '@fontsource-variable/exo-2/wght.css';
+@import '@fontsource-variable/exo-2/wght-italic.css';
+@import '@fontsource-variable/inter/wght.css';
+@import '@fontsource-variable/jetbrains-mono/wght.css';
+
+/* Make Tailwind generate the classes used inside the design-system components. */
+@source '.';
+
+/* ---------------------------------------------------------------------------
+ * Theme variables (runtime-switchable)
+ * ------------------------------------------------------------------------- */
+:root {
+  color-scheme: dark;
+
+  --st-bg: #070d14;
+  --st-surface: #0d1722;
+  --st-raised: #122030;
+  --st-overlay: #17293b;
+  --st-hairline: #1b2a38;
+  --st-hairline-strong: #263a4c;
+
+  --st-text: #f2f5f7;
+  --st-text-muted: #8a9aa8;
+  --st-text-faint: #5b6b7a;
+
+  --st-primary: #00c97a;
+  --st-primary-hi: #1ef0a8;
+  --st-primary-soft: rgb(0 201 122 / 0.12);
+  --st-on-primary: #04130c;
+
+  --st-danger: #ff4d5e;
+  --st-danger-soft: rgb(255 77 94 / 0.14);
+  --st-live: #ff2d55;
+  --st-warning: #ffb547;
+  --st-warning-soft: rgb(255 181 71 / 0.14);
+  --st-info: #4cc2ff;
+
+  --st-ring: #1ef0a8;
+  --st-scrim: rgb(3 8 13 / 0.72);
+
+  --st-shadow-color: 3 8 13;
+  --st-glow: 0 0 0 1px rgb(30 240 168 / 0.25), 0 12px 40px -12px rgb(0 201 122 / 0.45);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+
+  --st-bg: #f4f7f9;
+  --st-surface: #ffffff;
+  --st-raised: #eaf0f4;
+  --st-overlay: #dfe7ed;
+  --st-hairline: #d5dee6;
+  --st-hairline-strong: #b9c6d1;
+
+  --st-text: #0b1520;
+  --st-text-muted: #51637a;
+  --st-text-faint: #8393a3;
+
+  --st-primary: #00a866;
+  --st-primary-hi: #00c97a;
+  --st-primary-soft: rgb(0 168 102 / 0.12);
+  --st-on-primary: #04130c;
+
+  --st-danger: #d92638;
+  --st-danger-soft: rgb(217 38 56 / 0.1);
+  --st-live: #e0113e;
+  --st-warning: #b86e00;
+  --st-warning-soft: rgb(184 110 0 / 0.12);
+  --st-info: #0b7fc2;
+
+  --st-ring: #00a866;
+  --st-scrim: rgb(11 21 32 / 0.55);
+
+  --st-shadow-color: 11 21 32;
+  --st-glow: 0 0 0 1px rgb(0 168 102 / 0.25), 0 12px 40px -12px rgb(0 168 102 / 0.35);
+}
+
+/* ---------------------------------------------------------------------------
+ * Tailwind theme tokens
+ * ------------------------------------------------------------------------- */
+@theme inline {
+  --color-bg: var(--st-bg);
+  --color-surface: var(--st-surface);
+  --color-raised: var(--st-raised);
+  --color-overlay: var(--st-overlay);
+  --color-hairline: var(--st-hairline);
+  --color-hairline-strong: var(--st-hairline-strong);
+
+  --color-fg: var(--st-text);
+  --color-muted: var(--st-text-muted);
+  --color-faint: var(--st-text-faint);
+
+  --color-primary: var(--st-primary);
+  --color-primary-hi: var(--st-primary-hi);
+  --color-primary-soft: var(--st-primary-soft);
+  --color-on-primary: var(--st-on-primary);
+
+  --color-danger: var(--st-danger);
+  --color-danger-soft: var(--st-danger-soft);
+  --color-live: var(--st-live);
+  --color-warning: var(--st-warning);
+  --color-warning-soft: var(--st-warning-soft);
+  --color-info: var(--st-info);
+  --color-ring: var(--st-ring);
+  --color-scrim: var(--st-scrim);
+
+  --font-display: 'Exo 2 Variable', 'Exo 2', 'Inter Variable', system-ui, sans-serif;
+  --font-sans: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.03) inset, 0 8px 24px -12px rgb(var(--st-shadow-color) / 0.6);
+  --shadow-raised: 0 18px 50px -20px rgb(var(--st-shadow-color) / 0.7);
+  --shadow-glow: var(--st-glow);
+}
+
+@theme {
+  /* Spacing scale (base 4px, Tailwind multiplies `--spacing`) */
+  --spacing: 0.25rem;
+  --spacing-gutter: 1rem;
+  --spacing-section: 4rem;
+  --spacing-masthead: 4rem;
+  --spacing-bottom-nav: 3.75rem;
+
+  /* Radius */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+  --radius-pill: 999px;
+
+  /* Motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 400ms;
+
+  /* Breakpoints */
+  --breakpoint-xs: 22.5rem;
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+  --breakpoint-2xl: 90rem;
+
+  /* Container widths */
+  --container-site: 84rem;
+  --container-prose: 44rem;
+
+  /* Type scale */
+  --text-display-xl: 4.5rem;
+  --text-display-xl--line-height: 0.95;
+  --text-display-xl--letter-spacing: -0.03em;
+  --text-display-lg: 3.25rem;
+  --text-display-lg--line-height: 1;
+  --text-display-lg--letter-spacing: -0.025em;
+  --text-display-md: 2.25rem;
+  --text-display-md--line-height: 1.05;
+  --text-display-md--letter-spacing: -0.02em;
+  --text-display-sm: 1.5rem;
+  --text-display-sm--line-height: 1.15;
+  --text-display-sm--letter-spacing: -0.01em;
+  --text-kicker: 0.6875rem;
+  --text-kicker--line-height: 1;
+  --text-kicker--letter-spacing: 0.22em;
+
+  /* Animations */
+  --animate-live-pulse: live-pulse 1.6s ease-in-out infinite;
+  --animate-ticker: ticker 60s linear infinite;
+  --animate-fade-in: fade-in var(--duration-slow) var(--ease-out-expo) both;
+  --animate-rise-in: rise-in var(--duration-slow) var(--ease-out-expo) both;
+
+  @keyframes live-pulse {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.45;
+      transform: scale(0.8);
+    }
+  }
+  @keyframes ticker {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Base
+ * ------------------------------------------------------------------------- */
+@layer base {
+  html {
+    background-color: var(--st-bg);
+    color: var(--st-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+  body {
+    min-height: 100dvh;
+    background-color: var(--st-bg);
+    color: var(--st-text);
+    overflow-x: clip;
+  }
+  ::selection {
+    background: var(--st-primary);
+    color: var(--st-on-primary);
+  }
+  :focus-visible {
+    outline: 2px solid var(--st-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  a {
+    text-underline-offset: 0.2em;
+  }
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
+  button:disabled,
+  [aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    .st-ticker-track {
+      animation: none !important;
+      transform: none !important;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Utilities
+ * ------------------------------------------------------------------------- */
+@utility text-gradient-primary {
+  background-image: linear-gradient(100deg, var(--st-primary) 0%, var(--st-primary-hi) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-gradient-primary {
+  background-image: linear-gradient(100deg, var(--st-primary) 0%, var(--st-primary-hi) 100%);
+}
+
+@utility bg-grid-fade {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 30%, transparent 100%);
+}
+
+@utility kicker {
+  font-family: var(--font-sans);
+  font-size: var(--text-kicker);
+  line-height: var(--text-kicker--line-height);
+  letter-spacing: var(--text-kicker--letter-spacing);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@utility hairline-b {
+  border-bottom: 1px solid var(--st-hairline);
+}
+
+@utility hairline-t {
+  border-top: 1px solid var(--st-hairline);
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

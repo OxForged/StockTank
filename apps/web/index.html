@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#070D14" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#F4F7F9" media="(prefers-color-scheme: light)" />
+    <meta name="color-scheme" content="dark light" />
+    <title>StockTank — On-chain stocks &amp; crypto</title>
+    <meta
+      name="description"
+      content="StockTank is a media network covering on-chain stocks and crypto: shows, live radio, clips, news, projects, companies and creators. Information and entertainment only, not financial advice."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="StockTank" />
+    <meta property="og:title" content="StockTank — On-chain stocks &amp; crypto" />
+    <meta
+      property="og:description"
+      content="Shows, live radio, clips and news on on-chain stocks and crypto. Information and entertainment only."
+    />
+    <meta property="og:image" content="/og-default.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="StockTank — On-chain stocks &amp; crypto" />
+    <meta name="twitter:image" content="/og-default.svg" />
+
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('stocktank.theme');
+          if (t !== 'light' && t !== 'dark') {
+            t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+          }
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

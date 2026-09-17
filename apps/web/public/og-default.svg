@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#00C97A"/>
+      <stop offset="1" stop-color="#1EF0A8"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.15" cy="0" r="0.9">
+      <stop offset="0" stop-color="#00C97A" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#070D14" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#070D14"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <g transform="translate(110 180) scale(1.6)">
+    <path d="M84 22.5 50 3 12 24.8v33.4h11V31.2L50 15.7l28.4 16.3Z" fill="url(#g)"/>
+    <path d="M16 77.5 50 97l38-21.8V41.8H77v27L50 84.3 21.6 68Z" fill="#F2F5F7"/>
+    <rect x="35" y="56" width="8" height="18" rx="1.2" fill="#1EF0A8"/>
+    <rect x="46" y="46" width="8" height="28" rx="1.2" fill="#1EF0A8"/>
+    <rect x="57" y="36" width="8" height="38" rx="1.2" fill="#1EF0A8"/>
+    <path d="M52 34.5 61 24l9 10.5Z" fill="#1EF0A8"/>
+  </g>
+  <text x="320" y="300" font-family="'Exo 2', 'Segoe UI', Arial, sans-serif" font-weight="900" font-style="italic" font-size="132" letter-spacing="-6" fill="#F2F5F7">STOCK<tspan fill="url(#g)">TANK</tspan></text>
+  <text x="326" y="360" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-weight="500" font-size="30" letter-spacing="12" fill="#8A9AA8">ON-CHAIN STOCKS &amp; CRYPTO</text>
+  <text x="326" y="520" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-size="20" fill="#5B6B7A">A media network. Information and entertainment only, not financial advice.</text>
+</svg>
