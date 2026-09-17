@@ -10,6 +10,7 @@ export type AuditAction =
   | 'auth.dev_login'
   | 'user.roles.update'
   | `advertising.${string}`
+  | `ai.${string}`
   | `content.${string}`
   | `api_key.${string}`
   | 'newsletter.export'

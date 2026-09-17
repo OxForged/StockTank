@@ -1,5 +1,21 @@
 import { z } from 'zod';
 import {
+  aiBudgetListSchema,
+  aiBudgetSchema,
+  aiPersonalityListSchema,
+  aiPersonalitySchema,
+  aiPromptVersionListSchema,
+  aiStatusSchema,
+  aiUsageReportSchema,
+  type AiBudget,
+  type AiBudgetInput,
+  type AiPersonality,
+  type AiPersonalityInput,
+  type AiPromptInput,
+  type AiPromptVersion,
+  type AiStatus,
+  type AiUsageQuery,
+  type AiUsageReport,
   audienceAnalyticsSchema,
   contentAnalyticsSchema,
   projectAnalyticsSchema,
@@ -284,6 +300,7 @@ export function createApiClient(options: ApiClientOptions = {}) {
   const MEDIA = '/api/v1/admin/media';
   const PODS = '/api/v1/admin/podcasts';
   const RADIO = '/api/v1/admin/radio';
+  const AI = '/api/v1/admin/ai';
 
   return {
     auth: {
@@ -420,6 +437,20 @@ export function createApiClient(options: ApiClientOptions = {}) {
             ? request('PUT', `${RADIO}/stations/${encodeURIComponent(id)}`, adminRadioStationSchema, input)
             : request('POST', `${RADIO}/stations`, adminRadioStationSchema, input),
         azuracastStations: async (): Promise<AzuracastStationOption[]> => (await request('GET', `${RADIO}/azuracast/stations`, azuracastStationListSchema)).items,
+      },
+      ai: {
+        status: (): Promise<AiStatus> => request('GET', `${AI}/status`, aiStatusSchema),
+        listPersonalities: async (): Promise<AiPersonality[]> => (await request('GET', `${AI}/personalities`, aiPersonalityListSchema)).items,
+        savePersonality: (input: AiPersonalityInput, id?: string): Promise<AiPersonality> =>
+          id ? request('PUT', `${AI}/personalities/${encodeURIComponent(id)}`, aiPersonalitySchema, input) : request('POST', `${AI}/personalities`, aiPersonalitySchema, input),
+        updatePrompt: (id: string, input: AiPromptInput): Promise<AiPersonality> =>
+          request('PUT', `${AI}/personalities/${encodeURIComponent(id)}/prompt`, aiPersonalitySchema, input),
+        listPromptVersions: async (id: string): Promise<AiPromptVersion[]> =>
+          (await request('GET', `${AI}/personalities/${encodeURIComponent(id)}/prompts`, aiPromptVersionListSchema)).items,
+        usage: (q: AiUsageQuery = {}): Promise<AiUsageReport> => request('GET', `${AI}/usage${qs(q)}`, aiUsageReportSchema),
+        listBudgets: async (): Promise<AiBudget[]> => (await request('GET', `${AI}/budgets`, aiBudgetListSchema)).items,
+        saveBudget: (input: AiBudgetInput): Promise<AiBudget> => request('PUT', `${AI}/budgets`, aiBudgetSchema, input),
+        deleteBudget: (id: string): Promise<void> => noContent(request('DELETE', `${AI}/budgets/${encodeURIComponent(id)}`, null)),
       },
       podcasts: {
         status: (): Promise<PodcastStatusResponse> => request('GET', `${PODS}/status`, podcastStatusResponseSchema),

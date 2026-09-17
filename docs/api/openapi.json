@@ -27078,6 +27078,2069 @@
           }
         }
       }
+    },
+    "/api/v1/admin/ai/status": {
+      "get": {
+        "tags": [
+          "Admin: AI"
+        ],
+        "summary": "AI provider status",
+        "description": "Requires `ai.review`. Which text, embedding and transcription providers are configured, which models have prices, and what to set. Never includes keys.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AI provider status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "llm": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "provider": {
+                          "type": "string"
+                        },
+                        "model": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "provider",
+                        "model"
+                      ]
+                    },
+                    "fastLlm": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "provider": {
+                          "type": "string"
+                        },
+                        "model": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "provider",
+                        "model"
+                      ]
+                    },
+                    "embeddings": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "provider": {
+                          "type": "string"
+                        },
+                        "model": {
+                          "type": "string"
+                        },
+                        "dimensions": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "provider",
+                        "model",
+                        "dimensions"
+                      ]
+                    },
+                    "transcription": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "provider": {
+                          "type": "string"
+                        },
+                        "model": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "provider",
+                        "model"
+                      ]
+                    },
+                    "pricedModels": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "setup": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "llm",
+                    "fastLlm",
+                    "embeddings",
+                    "transcription",
+                    "pricedModels",
+                    "setup"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/ai/personalities": {
+      "get": {
+        "tags": [
+          "Admin: AI"
+        ],
+        "summary": "List AI personalities",
+        "description": "Requires `ai.review`. Includes the server-side prompt; personality prompts are never exposed on public routes (§17).",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List AI personalities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "slug": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "tone": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "expertise": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "disclosures": {
+                            "type": "string"
+                          },
+                          "voiceId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "avatarUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "draft",
+                              "review",
+                              "approved",
+                              "rejected",
+                              "published",
+                              "archived"
+                            ]
+                          },
+                          "hostId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "isDemo": {
+                            "type": "boolean"
+                          },
+                          "personalityPrompt": {
+                            "type": "string"
+                          },
+                          "promptVersion": {
+                            "type": "integer"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "slug",
+                          "name",
+                          "description",
+                          "tone",
+                          "expertise",
+                          "disclosures",
+                          "voiceId",
+                          "avatarUrl",
+                          "status",
+                          "hostId",
+                          "isDemo",
+                          "personalityPrompt",
+                          "promptVersion",
+                          "createdAt",
+                          "updatedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: AI"
+        ],
+        "summary": "Create AI personality",
+        "description": "Requires `ai.review`; a published, archived or rejected status also needs `content.publish`. An initial prompt becomes version 1. Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "slug": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80,
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                  },
+                  "description": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 2000
+                  },
+                  "tone": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 200
+                  },
+                  "expertise": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    },
+                    "maxItems": 20,
+                    "default": []
+                  },
+                  "disclosures": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 2000
+                  },
+                  "voiceId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 200
+                  },
+                  "avatarUrl": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 2000,
+                    "format": "uri"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "review",
+                      "approved",
+                      "rejected",
+                      "published",
+                      "archived"
+                    ],
+                    "default": "draft"
+                  },
+                  "personalityPrompt": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20000
+                  }
+                },
+                "required": [
+                  "name",
+                  "slug",
+                  "disclosures"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Create AI personality",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "slug": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "tone": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "expertise": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "disclosures": {
+                      "type": "string"
+                    },
+                    "voiceId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "avatarUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "review",
+                        "approved",
+                        "rejected",
+                        "published",
+                        "archived"
+                      ]
+                    },
+                    "hostId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "isDemo": {
+                      "type": "boolean"
+                    },
+                    "personalityPrompt": {
+                      "type": "string"
+                    },
+                    "promptVersion": {
+                      "type": "integer"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "slug",
+                    "name",
+                    "description",
+                    "tone",
+                    "expertise",
+                    "disclosures",
+                    "voiceId",
+                    "avatarUrl",
+                    "status",
+                    "hostId",
+                    "isDemo",
+                    "personalityPrompt",
+                    "promptVersion",
+                    "createdAt",
+                    "updatedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Slug already exists (CONFLICT)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/ai/personalities/{id}": {
+      "put": {
+        "tags": [
+          "Admin: AI"
+        ],
+        "summary": "Update AI personality",
+        "description": "Requires `ai.review`; changing the status to published, archived or rejected also needs `content.publish`. The prompt is edited through its own endpoint. Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "slug": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80,
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                  },
+                  "description": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 2000
+                  },
+                  "tone": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 200
+                  },
+                  "expertise": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    },
+                    "maxItems": 20,
+                    "default": []
+                  },
+                  "disclosures": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 2000
+                  },
+                  "voiceId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 200
+                  },
+                  "avatarUrl": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 2000,
+                    "format": "uri"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "review",
+                      "approved",
+                      "rejected",
+                      "published",
+                      "archived"
+                    ],
+                    "default": "draft"
+                  }
+                },
+                "required": [
+                  "name",
+                  "slug",
+                  "disclosures"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Update AI personality",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "slug": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "tone": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "expertise": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "disclosures": {
+                      "type": "string"
+                    },
+                    "voiceId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "avatarUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "review",
+                        "approved",
+                        "rejected",
+                        "published",
+                        "archived"
+                      ]
+                    },
+                    "hostId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "isDemo": {
+                      "type": "boolean"
+                    },
+                    "personalityPrompt": {
+                      "type": "string"
+                    },
+                    "promptVersion": {
+                      "type": "integer"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "slug",
+                    "name",
+                    "description",
+                    "tone",
+                    "expertise",
+                    "disclosures",
+                    "voiceId",
+                    "avatarUrl",
+                    "status",
+                    "hostId",
+                    "isDemo",
+                    "personalityPrompt",
+                    "promptVersion",
+                    "createdAt",
+                    "updatedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Personality not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Slug already exists (CONFLICT)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/ai/personalities/{id}/prompt": {
+      "put": {
+        "tags": [
+          "Admin: AI"
+        ],
+        "summary": "Write a new prompt version",
+        "description": "Requires `ai.review`. Stores a new prompt version (previous + 1) and makes it current; earlier versions are kept so stored responses stay traceable. Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20000
+                  },
+                  "note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "content"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Write a new prompt version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "slug": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "tone": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "expertise": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "disclosures": {
+                      "type": "string"
+                    },
+                    "voiceId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "avatarUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "review",
+                        "approved",
+                        "rejected",
+                        "published",
+                        "archived"
+                      ]
+                    },
+                    "hostId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "isDemo": {
+                      "type": "boolean"
+                    },
+                    "personalityPrompt": {
+                      "type": "string"
+                    },
+                    "promptVersion": {
+                      "type": "integer"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "slug",
+                    "name",
+                    "description",
+                    "tone",
+                    "expertise",
+                    "disclosures",
+                    "voiceId",
+                    "avatarUrl",
+                    "status",
+                    "hostId",
+                    "isDemo",
+                    "personalityPrompt",
+                    "promptVersion",
+                    "createdAt",
+                    "updatedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Personality not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/ai/personalities/{id}/prompts": {
+      "get": {
+        "tags": [
+          "Admin: AI"
+        ],
+        "summary": "List prompt versions",
+        "description": "Requires `ai.review`. Newest first, with the editor who wrote each version.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List prompt versions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "version": {
+                            "type": "integer"
+                          },
+                          "content": {
+                            "type": "string"
+                          },
+                          "note": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "createdById": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "createdByName": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "version",
+                          "content",
+                          "note",
+                          "createdById",
+                          "createdByName",
+                          "createdAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Personality not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/ai/usage": {
+      "get": {
+        "tags": [
+          "Admin: AI"
+        ],
+        "summary": "AI usage and costs",
+        "description": "Requires `ai.review`. Totals, daily cost and call series, breakdowns by feature, model and personality for the range (default last 30 days), plus spend today and this month. Costs are estimates in micro-dollars; calls whose model has no configured price are counted separately as unknown cost, never as zero.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "required": false,
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "required": false,
+            "name": "to",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AI usage and costs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "range": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string"
+                        },
+                        "to": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "from",
+                        "to"
+                      ]
+                    },
+                    "totals": {
+                      "type": "object",
+                      "properties": {
+                        "calls": {
+                          "type": "integer"
+                        },
+                        "failures": {
+                          "type": "integer"
+                        },
+                        "inputTokens": {
+                          "type": "integer"
+                        },
+                        "outputTokens": {
+                          "type": "integer"
+                        },
+                        "costMicros": {
+                          "type": "integer"
+                        },
+                        "unknownCostCalls": {
+                          "type": "integer"
+                        },
+                        "successes": {
+                          "type": "integer"
+                        },
+                        "audioSeconds": {
+                          "type": "number"
+                        },
+                        "avgLatencyMs": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "calls",
+                        "failures",
+                        "inputTokens",
+                        "outputTokens",
+                        "costMicros",
+                        "unknownCostCalls",
+                        "successes",
+                        "audioSeconds",
+                        "avgLatencyMs"
+                      ]
+                    },
+                    "daily": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "date": {
+                            "type": "string"
+                          },
+                          "calls": {
+                            "type": "integer"
+                          },
+                          "costMicros": {
+                            "type": "integer"
+                          },
+                          "unknownCostCalls": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "date",
+                          "calls",
+                          "costMicros",
+                          "unknownCostCalls"
+                        ]
+                      }
+                    },
+                    "byFeature": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "feature": {
+                            "type": "string"
+                          },
+                          "calls": {
+                            "type": "integer"
+                          },
+                          "failures": {
+                            "type": "integer"
+                          },
+                          "inputTokens": {
+                            "type": "integer"
+                          },
+                          "outputTokens": {
+                            "type": "integer"
+                          },
+                          "costMicros": {
+                            "type": "integer"
+                          },
+                          "unknownCostCalls": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "feature",
+                          "calls",
+                          "failures",
+                          "inputTokens",
+                          "outputTokens",
+                          "costMicros",
+                          "unknownCostCalls"
+                        ]
+                      }
+                    },
+                    "byModel": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string"
+                          },
+                          "model": {
+                            "type": "string"
+                          },
+                          "calls": {
+                            "type": "integer"
+                          },
+                          "failures": {
+                            "type": "integer"
+                          },
+                          "inputTokens": {
+                            "type": "integer"
+                          },
+                          "outputTokens": {
+                            "type": "integer"
+                          },
+                          "costMicros": {
+                            "type": "integer"
+                          },
+                          "unknownCostCalls": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "provider",
+                          "model",
+                          "calls",
+                          "failures",
+                          "inputTokens",
+                          "outputTokens",
+                          "costMicros",
+                          "unknownCostCalls"
+                        ]
+                      }
+                    },
+                    "byPersonality": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "personalityId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "calls": {
+                            "type": "integer"
+                          },
+                          "failures": {
+                            "type": "integer"
+                          },
+                          "inputTokens": {
+                            "type": "integer"
+                          },
+                          "outputTokens": {
+                            "type": "integer"
+                          },
+                          "costMicros": {
+                            "type": "integer"
+                          },
+                          "unknownCostCalls": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "personalityId",
+                          "name",
+                          "calls",
+                          "failures",
+                          "inputTokens",
+                          "outputTokens",
+                          "costMicros",
+                          "unknownCostCalls"
+                        ]
+                      }
+                    },
+                    "spendTodayMicros": {
+                      "type": "integer"
+                    },
+                    "spendMonthMicros": {
+                      "type": "integer"
+                    },
+                    "unknownCostCallsToday": {
+                      "type": "integer"
+                    },
+                    "unknownCostCallsMonth": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "range",
+                    "totals",
+                    "daily",
+                    "byFeature",
+                    "byModel",
+                    "byPersonality",
+                    "spendTodayMicros",
+                    "spendMonthMicros",
+                    "unknownCostCallsToday",
+                    "unknownCostCallsMonth"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/ai/budgets": {
+      "get": {
+        "tags": [
+          "Admin: AI"
+        ],
+        "summary": "List AI budgets",
+        "description": "Requires `ai.review`. Monthly limits with spend to date and percent used.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List AI budgets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "scope": {
+                            "type": "string",
+                            "enum": [
+                              "global",
+                              "feature",
+                              "personality"
+                            ]
+                          },
+                          "scopeKey": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "monthlyLimitMicros": {
+                            "type": "integer"
+                          },
+                          "hardLimit": {
+                            "type": "boolean"
+                          },
+                          "spentMicros": {
+                            "type": "integer"
+                          },
+                          "percentUsed": {
+                            "type": "number"
+                          },
+                          "unknownCostCalls": {
+                            "type": "integer"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "scope",
+                          "scopeKey",
+                          "label",
+                          "monthlyLimitMicros",
+                          "hardLimit",
+                          "spentMicros",
+                          "percentUsed",
+                          "unknownCostCalls",
+                          "createdAt",
+                          "updatedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin: AI"
+        ],
+        "summary": "Create or update an AI budget",
+        "description": "Requires `ai.review` and `settings.manage`. Upserts by scope and key. Hard limits block new calls once reached. Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "global",
+                      "feature",
+                      "personality"
+                    ]
+                  },
+                  "scopeKey": {
+                    "type": "string",
+                    "maxLength": 64,
+                    "default": ""
+                  },
+                  "monthlyLimitMicros": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  "hardLimit": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                },
+                "required": [
+                  "scope",
+                  "monthlyLimitMicros"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Create or update an AI budget",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "scope": {
+                      "type": "string",
+                      "enum": [
+                        "global",
+                        "feature",
+                        "personality"
+                      ]
+                    },
+                    "scopeKey": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "monthlyLimitMicros": {
+                      "type": "integer"
+                    },
+                    "hardLimit": {
+                      "type": "boolean"
+                    },
+                    "spentMicros": {
+                      "type": "integer"
+                    },
+                    "percentUsed": {
+                      "type": "number"
+                    },
+                    "unknownCostCalls": {
+                      "type": "integer"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "scope",
+                    "scopeKey",
+                    "label",
+                    "monthlyLimitMicros",
+                    "hardLimit",
+                    "spentMicros",
+                    "percentUsed",
+                    "unknownCostCalls",
+                    "createdAt",
+                    "updatedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/ai/budgets/{id}": {
+      "delete": {
+        "tags": [
+          "Admin: AI"
+        ],
+        "summary": "Delete an AI budget",
+        "description": "Requires `ai.review` and `settings.manage`. Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Delete an AI budget"
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Budget not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "webhooks": {}

@@ -20,6 +20,7 @@ import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { DEFAULT_RATE_LIMITS, globalRateLimiter, type RateLimitConfig } from './middleware/rate-limit.js';
 import { buildOpenApiDocument } from './openapi/document.js';
 import { adminAdvertisingRouter } from './routes/admin-advertising.js';
+import { adminAiRouter } from './routes/admin-ai.js';
 import { adminContentRouter } from './routes/admin-content.js';
 import { adminMarketingRouter } from './routes/admin-marketing.js';
 import { adminMediaRouter } from './routes/admin-media.js';
@@ -142,6 +143,7 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api/v1/admin', adminRouter({ prisma }));
   app.use('/api/v1/admin', adminSystemRouter({ prisma }));
   app.use('/api/v1/admin/analytics', adminAnalyticsRouter({ prisma }));
+  app.use('/api/v1/admin/ai', adminAiRouter({ env, prisma }));
   app.use('/api/v1/admin', adminMarketingRouter({ prisma }));
 
   app.use(notFoundHandler);

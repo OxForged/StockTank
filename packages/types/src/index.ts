@@ -12,3 +12,4 @@ export * from './radio.js';
 export * from './system-admin.js';
 export * from './analytics.js';
 export * from './markets.js';
+export * from './ai-admin.js';

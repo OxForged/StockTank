@@ -56,6 +56,17 @@ export const mockApi = {
       saveStation: vi.fn(),
       azuracastStations: vi.fn(),
     },
+    ai: {
+      status: vi.fn(),
+      listPersonalities: vi.fn(),
+      savePersonality: vi.fn(),
+      updatePrompt: vi.fn(),
+      listPromptVersions: vi.fn(),
+      usage: vi.fn(),
+      listBudgets: vi.fn(),
+      saveBudget: vi.fn(),
+      deleteBudget: vi.fn(),
+    },
     podcasts: {
       status: vi.fn(),
       listShows: vi.fn(),
@@ -113,6 +124,7 @@ export const mockApi = {
 } as unknown as ApiClient & {
   auth: { [K in keyof ApiClient['auth']]: ReturnType<typeof vi.fn> };
   admin: { [K in keyof ApiClient['admin']]: ReturnType<typeof vi.fn> } & {
+    ai: { [K in keyof ApiClient['admin']['ai']]: ReturnType<typeof vi.fn> };
     content: { [K in keyof ApiClient['admin']['content']]: ReturnType<typeof vi.fn> };
     media: { [K in keyof ApiClient['admin']['media']]: ReturnType<typeof vi.fn> };
     podcasts: { [K in keyof ApiClient['admin']['podcasts']]: ReturnType<typeof vi.fn> };
