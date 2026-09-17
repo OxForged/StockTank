@@ -25,11 +25,13 @@ Interactive design canvas: https://claude.ai/artifact/9vcvfKgo6qNxKdTthrfgT3
 | `a6a6f96` | API: public content, ad serving and tracking, media kit, leads, newsletter, ads admin; seeds; OpenAPI (49 paths); 85 API tests |
 | `b8486ef` | Web: hybrid A + B site, ad slots, `/advertise`, newsletter pages, data-backed shows/projects/companies/search/live; 17 web tests |
 | `48d895f` | Admin: advertising overview, advertisers, campaigns, review queue, rate card, leads, newsletter audience, feature flags; 8 admin tests |
-| (this) | `docs/marketing/GO_TO_MARKET_AND_AD_SALES.md` playbook |
+| `a6223b0` | `docs/marketing/GO_TO_MARKET_AND_AD_SALES.md` playbook |
+| `6506dd5` | API: content CMS (shows, episodes, projects, companies, articles, live schedule) + viewer library (follows, bookmarks); 90 API tests |
+| `16fb34f` | Admin CMS pages (config-driven editor) + account-synced watchlist and `/library` on the site |
 
 ### Next
 - Owner decisions: prices and packages, legal review of drafts, production email provider, hosting/domain
-- Milestone 2 admin CMS (shows, episodes, projects, companies editing), Meilisearch, follows API
+- Milestone 2 remaining: hosts/guests/creators editing, Meilisearch search, SEO (sitemap, JSON-LD, OG per page)
 - Milestone 3 media pipeline (makes the mini player and pre-roll inventory real)
 
 ### Run locally
