@@ -1,5 +1,5 @@
 import { AIOutputError, AIProviderError, estimateCostMicros, type ModelPricing, type Usage } from '@stocktank/ai';
-import { Prisma, type PrismaClient } from '@stocktank/database';
+import type { Prisma, PrismaClient } from '@stocktank/database';
 
 /** Feature names used for usage rows and feature budgets. */
 export const AI_FEATURES = ['personality_chat', 'transcription', 'content_factory', 'entity_extraction', 'embedding', 'clip_candidates', 'summaries', 'social_drafts'] as const;
