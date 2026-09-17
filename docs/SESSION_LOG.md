@@ -17,20 +17,26 @@ Interactive design canvas: https://claude.ai/artifact/9vcvfKgo6qNxKdTthrfgT3
 - Concept A "Tank Floor", Concept B "The Desk", and the **Hybrid A + B**, which is the target for `apps/web`
 - The owner prefers Concept B's left navigation rail and the MARKETS ticker tape
 
-### In progress: "Hybrid build + marketing + selling ad spots"
-Remaining work, built directly with no subagents:
-1. API: public content (`/api/v1/home`, shows, projects, companies, search), feature flags, media kit, ad serving with signed impression and click tracking, advertising inquiries, newsletter double opt-in with an email provider adapter; admin endpoints for advertisers, placements/rate card, campaigns, creatives, review queue, reports, leads, subscribers, flags. Plus tests and OpenAPI.
-2. Seeds: ad placement inventory (unpriced), house advertiser and house campaigns, DEMO content (shows, episodes, clips, articles, projects, companies, rundown), all flagged `isDemo`.
-3. api-client methods for all of the above.
-4. apps/web: rebuild to match the Hybrid artboard (rail nav, header with search/clock/theme, MARKETS tape, hero + live desk, latest tabs, watchlist, rundown, lineup, mini player), plus ad slots with "Sponsored" disclosure, an `/advertise` media kit with inquiry form, newsletter signup, and UTM capture.
-5. apps/admin: Advertising (overview, advertisers, campaigns, creatives, review queue, rate card, reports), Leads, Newsletter, Feature flags.
-6. Local-only staff sign-in shortcut (the owner asked for no-auth staff login on localhost).
-7. `docs/marketing/` go-to-market marketing and ad-sales playbook.
+### Done: "Hybrid build + marketing + selling ad spots" (built solo, no subagents)
+| Commit | What |
+|---|---|
+| `2181b9f` | Local-only one-click staff sign-in (`DEV_LOGIN_ENABLED`) |
+| `a585b5d` | Fix black screen: apps read workspace packages from source in dev |
+| `a6a6f96` | API: public content, ad serving and tracking, media kit, leads, newsletter, ads admin; seeds; OpenAPI (49 paths); 85 API tests |
+| `b8486ef` | Web: hybrid A + B site, ad slots, `/advertise`, newsletter pages, data-backed shows/projects/companies/search/live; 17 web tests |
+| `48d895f` | Admin: advertising overview, advertisers, campaigns, review queue, rate card, leads, newsletter audience, feature flags; 8 admin tests |
+| (this) | `docs/marketing/GO_TO_MARKET_AND_AD_SALES.md` playbook |
+
+### Next
+- Owner decisions: prices and packages, legal review of drafts, production email provider, hosting/domain
+- Milestone 2 admin CMS (shows, episodes, projects, companies editing), Meilisearch, follows API
+- Milestone 3 media pipeline (makes the mini player and pre-roll inventory real)
 
 ### Run locally
 ```bash
 pnpm install
 bash scripts/dev-setup.sh        # infra, migrations, seeds (dev + test DB)
 pnpm dev                         # API :4000, web :5190, admin :5181
+pnpm db:seed:demo                # optional: DEMO shows, projects, companies, rundown
 ```
 Admin: `admin@stocktank.local`, password is `SEED_ADMIN_PASSWORD` in `.env` (gitignored).
