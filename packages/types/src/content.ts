@@ -140,20 +140,94 @@ export type ProjectListResponse = z.infer<typeof projectListResponseSchema>;
 export const companyListResponseSchema = paginated(companySummarySchema);
 export type CompanyListResponse = z.infer<typeof companyListResponseSchema>;
 
+export const personSummarySchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  name: z.string(),
+  title: z.string().nullable(),
+  bio: z.string().nullable(),
+  avatarUrl: z.string().nullable(),
+  twitter: z.string().nullable(),
+  /** Hosts only: AI personalities must be disclosed (§25). */
+  isAi: z.boolean(),
+  role: z.enum(['host', 'guest']),
+  ...demoFlag,
+});
+export type PersonSummary = z.infer<typeof personSummarySchema>;
+
 export const showDetailResponseSchema = z.object({
   show: showSummarySchema,
+  hosts: z.array(personSummarySchema),
   episodes: z.array(episodeSummarySchema),
 });
 export type ShowDetailResponse = z.infer<typeof showDetailResponseSchema>;
 
 export const searchQuerySchema = z.object({ q: z.string().trim().min(1).max(100) });
 
-/** Grouped search results (§10 grouping). Postgres-backed until Meilisearch lands in Milestone 2. */
-export const searchResponseSchema = z.object({
-  query: z.string(),
-  shows: z.array(showSummarySchema),
-  episodes: z.array(episodeSummarySchema),
+/** Media graph pages (§9): each entity with everything connected to it. */
+export const episodeDetailResponseSchema = z.object({
+  episode: episodeSummarySchema.extend({ description: z.string().nullable(), number: z.number().int().nullable() }),
+  hosts: z.array(personSummarySchema),
+  guests: z.array(personSummarySchema),
   projects: z.array(projectSummarySchema),
   companies: z.array(companySummarySchema),
+  clips: z.array(clipSummarySchema),
+  moreFromShow: z.array(episodeSummarySchema),
+});
+export type EpisodeDetailResponse = z.infer<typeof episodeDetailResponseSchema>;
+
+export const projectDetailResponseSchema = z.object({
+  project: projectSummarySchema.extend({
+    website: z.string().nullable(),
+    twitter: z.string().nullable(),
+    contractAddress: z.string().nullable(),
+    explorerUrl: z.string().nullable(),
+  }),
+  episodes: z.array(episodeSummarySchema),
+});
+export type ProjectDetailResponse = z.infer<typeof projectDetailResponseSchema>;
+
+export const companyDetailResponseSchema = z.object({
+  company: companySummarySchema.extend({ industry: z.string().nullable(), website: z.string().nullable() }),
+  episodes: z.array(episodeSummarySchema),
+});
+export type CompanyDetailResponse = z.infer<typeof companyDetailResponseSchema>;
+
+export const personDetailResponseSchema = z.object({
+  person: personSummarySchema.extend({ website: z.string().nullable() }),
+  episodes: z.array(episodeSummarySchema),
+});
+export type PersonDetailResponse = z.infer<typeof personDetailResponseSchema>;
+
+export const articleDetailResponseSchema = z.object({
+  article: articleSummarySchema.extend({ body: z.string().nullable(), author: z.string().nullable(), originalUrl: z.string().nullable() }),
+});
+export type ArticleDetailResponse = z.infer<typeof articleDetailResponseSchema>;
+
+/** Grouped search results (§10 grouping). Meilisearch when configured, Postgres otherwise. */
+export const searchResponseSchema = z.object({
+  query: z.string(),
+  engine: z.enum(['meilisearch', 'postgres']),
+  shows: z.array(showSummarySchema),
+  episodes: z.array(episodeSummarySchema),
+  people: z.array(personSummarySchema),
+  projects: z.array(projectSummarySchema),
+  companies: z.array(companySummarySchema),
+  articles: z.array(articleSummarySchema),
 });
 export type SearchResponse = z.infer<typeof searchResponseSchema>;
+
+export const searchSuggestionSchema = z.object({
+  type: z.enum(['show', 'episode', 'person', 'project', 'company', 'article']),
+  id: z.string(),
+  label: z.string(),
+  /** Public path on the site. */
+  path: z.string(),
+});
+export type SearchSuggestion = z.infer<typeof searchSuggestionSchema>;
+export const searchSuggestResponseSchema = z.object({ query: z.string(), suggestions: z.array(searchSuggestionSchema) });
+export type SearchSuggestResponse = z.infer<typeof searchSuggestResponseSchema>;
+
+/** Popular queries (normalised, only queries that returned results, never tied to a person). */
+export const trendingSearchesResponseSchema = z.object({ queries: z.array(z.string()) });
+export type TrendingSearchesResponse = z.infer<typeof trendingSearchesResponseSchema>;

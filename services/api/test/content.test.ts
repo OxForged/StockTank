@@ -120,6 +120,7 @@ describe('public content', () => {
 
     const res = await request(ctx.app).get('/api/v1/search').query({ q: 'TANK' });
     const body = searchResponseSchema.parse(res.body);
+    expect(body.engine).toBe('postgres');
     expect(body.shows).toHaveLength(1);
     expect(body.episodes).toHaveLength(1);
     expect(body.projects.map((p) => p.name)).toEqual(['Tankette Protocol']);

@@ -35,6 +35,8 @@ const apiOnlyEnvSchema = z.object({
   EMAIL_FROM: z.string().optional(),
   /** Where new advertising inquiries are forwarded. Optional. */
   SALES_NOTIFY_EMAIL: z.preprocess((v) => (v === '' ? undefined : v), z.email().optional()),
+  /** Meilisearch index names are `<prefix>_<type>`; tests use their own prefix. */
+  MEILISEARCH_INDEX_PREFIX: z.string().regex(/^[a-z0-9_]{1,40}$/).default('stocktank'),
   GIT_COMMIT: z
     .string()
     .optional()

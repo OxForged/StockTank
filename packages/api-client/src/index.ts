@@ -1,5 +1,25 @@
 import { z } from 'zod';
 import {
+  adminPersonListSchema,
+  adminPersonSchema,
+  articleDetailResponseSchema,
+  companyDetailResponseSchema,
+  episodeDetailResponseSchema,
+  personDetailResponseSchema,
+  projectDetailResponseSchema,
+  reindexResponseSchema,
+  searchSuggestResponseSchema,
+  trendingSearchesResponseSchema,
+  type AdminPerson,
+  type ArticleDetailResponse,
+  type CompanyDetailResponse,
+  type EpisodeDetailResponse,
+  type PersonDetailResponse,
+  type PersonInput,
+  type ProjectDetailResponse,
+  type ReindexResponse,
+  type SearchSuggestResponse,
+  type TrendingSearchesResponse,
   adminArticleListSchema,
   adminArticleSchema,
   adminCompanyListSchema,
@@ -220,6 +240,17 @@ export function createApiClient(options: ApiClientOptions = {}) {
       companies: (page = 1, pageSize = 24): Promise<CompanyListResponse> =>
         request('GET', `/api/v1/companies${qs({ page, pageSize })}`, companyListResponseSchema),
       search: (q: string): Promise<SearchResponse> => request('GET', `/api/v1/search${qs({ q })}`, searchResponseSchema),
+      suggest: (q: string): Promise<SearchSuggestResponse> => request('GET', `/api/v1/search/suggest${qs({ q })}`, searchSuggestResponseSchema),
+      trending: (): Promise<TrendingSearchesResponse> => request('GET', '/api/v1/search/trending', trendingSearchesResponseSchema),
+      episode: (showSlug: string, episodeSlug: string): Promise<EpisodeDetailResponse> =>
+        request('GET', `/api/v1/shows/${encodeURIComponent(showSlug)}/episodes/${encodeURIComponent(episodeSlug)}`, episodeDetailResponseSchema),
+      project: (slug: string): Promise<ProjectDetailResponse> =>
+        request('GET', `/api/v1/projects/${encodeURIComponent(slug)}`, projectDetailResponseSchema),
+      company: (slug: string): Promise<CompanyDetailResponse> =>
+        request('GET', `/api/v1/companies/${encodeURIComponent(slug)}`, companyDetailResponseSchema),
+      person: (slug: string): Promise<PersonDetailResponse> => request('GET', `/api/v1/people/${encodeURIComponent(slug)}`, personDetailResponseSchema),
+      article: (slug: string): Promise<ArticleDetailResponse> =>
+        request('GET', `/api/v1/articles/${encodeURIComponent(slug)}`, articleDetailResponseSchema),
       flags: (): Promise<PublicFlagsResponse> => request('GET', '/api/v1/flags', publicFlagsResponseSchema),
     },
     ads: {
@@ -279,6 +310,15 @@ export function createApiClient(options: ApiClientOptions = {}) {
             ? request('PUT', `${CMS}/livestreams/${encodeURIComponent(id)}`, adminLivestreamSchema, input)
             : request('POST', `${CMS}/livestreams`, adminLivestreamSchema, input),
         listChains: async (): Promise<ChainOption[]> => (await request('GET', `${CMS}/chains`, chainListSchema)).items,
+        listHosts: (q: { page?: number; pageSize?: number; q?: string } = {}): Promise<AdminList<AdminPerson>> =>
+          request('GET', `${CMS}/hosts${qs(q)}`, adminPersonListSchema),
+        saveHost: (input: PersonInput, id?: string): Promise<AdminPerson> =>
+          id ? request('PUT', `${CMS}/hosts/${encodeURIComponent(id)}`, adminPersonSchema, input) : request('POST', `${CMS}/hosts`, adminPersonSchema, input),
+        listGuests: (q: { page?: number; pageSize?: number; q?: string } = {}): Promise<AdminList<AdminPerson>> =>
+          request('GET', `${CMS}/guests${qs(q)}`, adminPersonListSchema),
+        saveGuest: (input: PersonInput, id?: string): Promise<AdminPerson> =>
+          id ? request('PUT', `${CMS}/guests/${encodeURIComponent(id)}`, adminPersonSchema, input) : request('POST', `${CMS}/guests`, adminPersonSchema, input),
+        reindexSearch: (): Promise<ReindexResponse> => request('POST', `${CMS}/search/reindex`, reindexResponseSchema),
       },
       advertisingOverview: (): Promise<AdvertisingOverview> => request('GET', `${AD}/overview`, advertisingOverviewSchema),
       listAdvertisers: (): Promise<AdvertiserListResponse> => request('GET', `${AD}/advertisers`, advertiserListResponseSchema),

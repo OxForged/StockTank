@@ -18,3 +18,9 @@ if (!/test/i.test(new URL(testDatabaseUrl).pathname)) {
 process.env.DATABASE_URL = testDatabaseUrl;
 process.env.NODE_ENV = 'test';
 process.env.LOG_LEVEL ??= 'silent';
+
+// Suites use the Postgres search engine; the Meilisearch suite opts in explicitly with its own index prefix,
+// so tests never touch development indexes.
+process.env.MEILISEARCH_TEST_URL ??= process.env.MEILISEARCH_URL ?? '';
+delete process.env.MEILISEARCH_URL;
+process.env.MEILISEARCH_INDEX_PREFIX = 'stocktank_test';

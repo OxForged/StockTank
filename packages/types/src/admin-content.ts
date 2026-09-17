@@ -5,6 +5,7 @@ import {
   episodeSummarySchema,
   livestreamStatusSchema,
   livestreamSummarySchema,
+  personSummarySchema,
   projectKindSchema,
   projectSummarySchema,
   showSummarySchema,
@@ -45,10 +46,11 @@ export const showInputSchema = z.object({
   tagline: optionalText(200),
   description: optionalText(4000),
   coverUrl: optionalUrl,
+  hostIds: z.array(z.string()).max(20).default([]),
   status: publishStatusSchema.default('draft'),
 });
 export type ShowInput = z.infer<typeof showInputSchema>;
-export const adminShowSchema = showSummarySchema.extend(editorialMeta);
+export const adminShowSchema = showSummarySchema.extend({ ...editorialMeta, hostIds: z.array(z.string()) });
 export type AdminShow = z.infer<typeof adminShowSchema>;
 
 // ───────── Episodes ─────────
@@ -67,6 +69,8 @@ export const episodeInputSchema = z.object({
   publishedAt: z.iso.datetime().nullable().optional(),
   projectIds: z.array(z.string()).max(50).default([]),
   companyIds: z.array(z.string()).max(50).default([]),
+  hostIds: z.array(z.string()).max(20).default([]),
+  guestIds: z.array(z.string()).max(50).default([]),
 });
 export type EpisodeInput = z.infer<typeof episodeInputSchema>;
 export const adminEpisodeSchema = episodeSummarySchema.extend({
@@ -76,6 +80,8 @@ export const adminEpisodeSchema = episodeSummarySchema.extend({
   description: z.string().nullable(),
   projectIds: z.array(z.string()),
   companyIds: z.array(z.string()),
+  hostIds: z.array(z.string()),
+  guestIds: z.array(z.string()),
 });
 export type AdminEpisode = z.infer<typeof adminEpisodeSchema>;
 
@@ -147,6 +153,34 @@ export const adminArticleSchema = articleSummarySchema.extend({
   originalUrl: z.string().nullable(),
 });
 export type AdminArticle = z.infer<typeof adminArticleSchema>;
+
+// ───────── People (hosts & guests) ─────────
+
+export const personInputSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  slug: slug.optional(),
+  title: optionalText(160),
+  bio: optionalText(4000),
+  avatarUrl: optionalUrl,
+  twitter: optionalText(100),
+  website: optionalUrl,
+  /** Hosts only. AI personalities are always labelled on the site. */
+  isAi: z.boolean().default(false),
+});
+export type PersonInput = z.infer<typeof personInputSchema>;
+export const adminPersonSchema = personSummarySchema.extend({
+  website: z.string().nullable(),
+  appearances: z.number().int(),
+  updatedAt: z.string(),
+});
+export type AdminPerson = z.infer<typeof adminPersonSchema>;
+export const adminPersonListSchema = z.object({ items: z.array(adminPersonSchema), page: z.number(), pageSize: z.number(), total: z.number() });
+
+export const reindexResponseSchema = z.object({
+  engine: z.enum(['meilisearch', 'postgres']),
+  indexed: z.record(z.string(), z.number().int()),
+});
+export type ReindexResponse = z.infer<typeof reindexResponseSchema>;
 
 // ───────── Live schedule ─────────
 

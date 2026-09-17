@@ -1,6 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /account
-Disallow: /login
-Disallow: /signup
-Disallow: /api/

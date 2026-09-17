@@ -8,6 +8,7 @@ import {
   companyInputSchema,
   episodeInputSchema,
   livestreamInputSchema,
+  personInputSchema,
   projectInputSchema,
   showInputSchema,
   type AdminArticle,
@@ -15,10 +16,12 @@ import {
   type AdminEpisode,
   type AdminList,
   type AdminLivestream,
+  type AdminPerson,
   type AdminProject,
   type AdminShow,
   type ChainOption,
   type PublishStatus,
+  type ReindexResponse,
 } from '@stocktank/types';
 import { writeAudit } from '../lib/audit.js';
 import {
@@ -34,11 +37,13 @@ import {
   toProjectSummary,
 } from '../lib/content.js';
 import { errors } from '../lib/errors.js';
+import type { SearchService, SearchType } from '../lib/search.js';
 import { validate } from '../lib/validate.js';
 import { getAuth, requirePermission } from '../middleware/auth.js';
 
 export interface AdminContentDeps {
   prisma: PrismaClient;
+  search: SearchService;
 }
 
 const idParams = z.object({ id: z.string().min(1).max(64) });
@@ -71,7 +76,7 @@ function conflictOnUnique(err: unknown, what: string): never {
 
 const nullIfUndefined = <T>(v: T | undefined): T | null => (v === undefined ? null : v);
 
-export function adminContentRouter({ prisma }: AdminContentDeps): Router {
+export function adminContentRouter({ prisma, search }: AdminContentDeps): Router {
   const router = Router();
   const read = requirePermission('content.read_drafts');
   const write = requirePermission('content.write');
@@ -79,6 +84,11 @@ export function adminContentRouter({ prisma }: AdminContentDeps): Router {
 
   const audit = (req: Request, action: string, targetType: string, targetId: string, metadata?: Prisma.InputJsonObject) =>
     writeAudit(prisma, req, { action: `content.${action}` as const, actorId: getAuth(req).user.id, targetType, targetId, ...(metadata ? { metadata } : {}) });
+
+  /** Index updates run after the response is decided; failures are logged inside SearchService. */
+  const reindexItems = (type: SearchType, ids: string[]) => {
+    void search.sync(type, ids);
+  };
 
   // ───── Shows ─────
   const adminShowSelect = {
@@ -91,6 +101,7 @@ export function adminContentRouter({ prisma }: AdminContentDeps): Router {
     isDemo: true,
     status: true,
     updatedAt: true,
+    hosts: { select: { hostId: true } },
     _count: { select: { episodes: true } },
   } satisfies Prisma.ShowSelect;
   const toAdminShow = (r: Prisma.ShowGetPayload<{ select: typeof adminShowSelect }>): AdminShow => ({
@@ -104,6 +115,7 @@ export function adminContentRouter({ prisma }: AdminContentDeps): Router {
     isDemo: r.isDemo,
     status: r.status,
     updatedAt: r.updatedAt.toISOString(),
+    hostIds: r.hosts.map((h) => h.hostId),
   });
 
   router.get('/shows', read, async (req, res) => {
@@ -131,11 +143,20 @@ export function adminContentRouter({ prisma }: AdminContentDeps): Router {
       coverUrl: nullIfUndefined(body.coverUrl),
       status: body.status,
     };
+    const hostIds = [...new Set(body.hostIds)];
+    if ((await prisma.host.count({ where: { id: { in: hostIds } } })) !== hostIds.length) throw errors.badRequest('Unknown host');
     try {
-      const row = id
-        ? await prisma.show.update({ where: { id }, data, select: adminShowSelect })
-        : await prisma.show.create({ data, select: adminShowSelect });
+      const row = await prisma.$transaction(async (tx) => {
+        if (id) await tx.showHost.deleteMany({ where: { showId: id } });
+        const hosts = { create: hostIds.map((hostId) => ({ hostId })) };
+        return id
+          ? tx.show.update({ where: { id }, data: { ...data, hosts }, select: adminShowSelect })
+          : tx.show.create({ data: { ...data, hosts }, select: adminShowSelect });
+      });
       await audit(req, id ? 'show.update' : 'show.create', 'show', row.id, { status: row.status });
+      reindexItems('show', [row.id]);
+      // Episode documents carry the show's publication state.
+      reindexItems('episode', (await prisma.episode.findMany({ where: { showId: row.id }, select: { id: true } })).map((e) => e.id));
       return toAdminShow(row);
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') throw errors.notFound('Show not found');
@@ -155,6 +176,8 @@ export function adminContentRouter({ prisma }: AdminContentDeps): Router {
     description: true,
     projects: { select: { projectId: true } },
     companies: { select: { companyId: true } },
+    hosts: { select: { hostId: true } },
+    guests: { select: { guestId: true } },
   } satisfies Prisma.EpisodeSelect;
   const toAdminEpisode = (r: Prisma.EpisodeGetPayload<{ select: typeof adminEpisodeSelect }>): AdminEpisode => ({
     ...toEpisodeSummary(r),
@@ -165,6 +188,8 @@ export function adminContentRouter({ prisma }: AdminContentDeps): Router {
     description: r.description,
     projectIds: r.projects.map((p) => p.projectId),
     companyIds: r.companies.map((c) => c.companyId),
+    hostIds: r.hosts.map((h) => h.hostId),
+    guestIds: r.guests.map((g) => g.guestId),
   });
 
   router.get('/episodes', read, async (req, res) => {
@@ -200,6 +225,13 @@ export function adminContentRouter({ prisma }: AdminContentDeps): Router {
     if (projects !== new Set(body.projectIds).size || companies !== new Set(body.companyIds).size) {
       throw errors.badRequest('One or more linked projects or companies do not exist');
     }
+    const [hostCount, guestCount] = await Promise.all([
+      prisma.host.count({ where: { id: { in: body.hostIds } } }),
+      prisma.guest.count({ where: { id: { in: body.guestIds } } }),
+    ]);
+    if (hostCount !== new Set(body.hostIds).size || guestCount !== new Set(body.guestIds).size) {
+      throw errors.badRequest('One or more hosts or guests do not exist');
+    }
     const publishedAt =
       body.publishedAt !== undefined && body.publishedAt !== null
         ? new Date(body.publishedAt)
@@ -227,16 +259,21 @@ export function adminContentRouter({ prisma }: AdminContentDeps): Router {
           if (body.publishedAt === undefined && existing.publishedAt) data.publishedAt = existing.publishedAt;
           await tx.episodeProject.deleteMany({ where: { episodeId: id } });
           await tx.episodeCompany.deleteMany({ where: { episodeId: id } });
+          await tx.episodeHost.deleteMany({ where: { episodeId: id } });
+          await tx.episodeGuest.deleteMany({ where: { episodeId: id } });
         }
         const links = {
           projects: { create: [...new Set(body.projectIds)].map((projectId) => ({ projectId })) },
           companies: { create: [...new Set(body.companyIds)].map((companyId) => ({ companyId })) },
+          hosts: { create: [...new Set(body.hostIds)].map((hostId) => ({ hostId })) },
+          guests: { create: [...new Set(body.guestIds)].map((guestId) => ({ guestId })) },
         };
         return id
           ? tx.episode.update({ where: { id }, data: { ...data, ...links }, select: adminEpisodeSelect })
           : tx.episode.create({ data: { ...data, ...links }, select: adminEpisodeSelect });
       });
       await audit(req, id ? 'episode.update' : 'episode.create', 'episode', row.id, { status: row.status });
+      reindexItems('episode', [row.id]);
       return toAdminEpisode(row);
     } catch (err) {
       return conflictOnUnique(err, 'episode in this show');
@@ -313,6 +350,7 @@ export function adminContentRouter({ prisma }: AdminContentDeps): Router {
         ? await prisma.project.update({ where: { id }, data, select: adminProjectSelect })
         : await prisma.project.create({ data, select: adminProjectSelect });
       await audit(req, id ? 'project.update' : 'project.create', 'project', row.id, { status: row.status });
+      reindexItems('project', [row.id]);
       return toAdminProject(row);
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') throw errors.notFound('Project not found');
@@ -372,6 +410,7 @@ export function adminContentRouter({ prisma }: AdminContentDeps): Router {
         ? await prisma.company.update({ where: { id }, data, select: adminCompanySelect })
         : await prisma.company.create({ data, select: adminCompanySelect });
       await audit(req, id ? 'company.update' : 'company.create', 'company', row.id, { status: row.status });
+      reindexItems('company', [row.id]);
       return toAdminCompany(row);
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') throw errors.notFound('Company not found');
@@ -432,6 +471,7 @@ export function adminContentRouter({ prisma }: AdminContentDeps): Router {
         ? await prisma.article.update({ where: { id }, data, select: adminArticleSelect })
         : await prisma.article.create({ data, select: adminArticleSelect });
       await audit(req, id ? 'article.update' : 'article.create', 'article', row.id, { status: row.status });
+      reindexItems('article', [row.id]);
       return toAdminArticle(row);
     } catch (err) {
       return conflictOnUnique(err, 'article');
@@ -499,6 +539,151 @@ export function adminContentRouter({ prisma }: AdminContentDeps): Router {
   };
   router.post('/livestreams', publish, async (req, res) => res.status(201).json(await saveLivestream(req, null)));
   router.put('/livestreams/:id', publish, async (req, res) => res.json(await saveLivestream(req, validate(idParams, req.params, 'params').id)));
+
+  // ───── People: hosts & guests ─────
+  const hostSelect = {
+    id: true,
+    slug: true,
+    name: true,
+    bio: true,
+    avatarUrl: true,
+    twitter: true,
+    isAi: true,
+    isDemo: true,
+    updatedAt: true,
+    _count: { select: { episodes: true, shows: true } },
+  } satisfies Prisma.HostSelect;
+  const guestSelect = {
+    id: true,
+    slug: true,
+    name: true,
+    title: true,
+    bio: true,
+    avatarUrl: true,
+    twitter: true,
+    website: true,
+    isDemo: true,
+    updatedAt: true,
+    _count: { select: { episodes: true } },
+  } satisfies Prisma.GuestSelect;
+  const toAdminHost = (h: Prisma.HostGetPayload<{ select: typeof hostSelect }>): AdminPerson => ({
+    id: h.id,
+    slug: h.slug,
+    name: h.name,
+    title: null,
+    bio: h.bio,
+    avatarUrl: h.avatarUrl,
+    twitter: h.twitter,
+    isAi: h.isAi,
+    role: 'host',
+    isDemo: h.isDemo,
+    website: null,
+    appearances: h._count.episodes + h._count.shows,
+    updatedAt: h.updatedAt.toISOString(),
+  });
+  const toAdminGuest = (g: Prisma.GuestGetPayload<{ select: typeof guestSelect }>): AdminPerson => ({
+    id: g.id,
+    slug: g.slug,
+    name: g.name,
+    title: g.title,
+    bio: g.bio,
+    avatarUrl: g.avatarUrl,
+    twitter: g.twitter,
+    isAi: false,
+    role: 'guest',
+    isDemo: g.isDemo,
+    website: g.website,
+    appearances: g._count.episodes,
+    updatedAt: g.updatedAt.toISOString(),
+  });
+  const personQuery = adminContentListQuerySchema.omit({ status: true });
+
+  router.get('/hosts', read, async (req, res) => {
+    const q = validate(personQuery, req.query, 'query');
+    const where: Prisma.HostWhereInput = q.q ? { name: { contains: q.q, mode: 'insensitive' } } : {};
+    const [rows, total] = await Promise.all([
+      prisma.host.findMany({ where, select: hostSelect, orderBy: { name: 'asc' }, skip: (q.page - 1) * q.pageSize, take: q.pageSize }),
+      prisma.host.count({ where }),
+    ]);
+    const response: AdminList<AdminPerson> = { items: rows.map(toAdminHost), page: q.page, pageSize: q.pageSize, total };
+    res.json(response);
+  });
+
+  router.get('/guests', read, async (req, res) => {
+    const q = validate(personQuery, req.query, 'query');
+    const where: Prisma.GuestWhereInput = q.q ? { OR: [{ name: { contains: q.q, mode: 'insensitive' } }, { title: { contains: q.q, mode: 'insensitive' } }] } : {};
+    const [rows, total] = await Promise.all([
+      prisma.guest.findMany({ where, select: guestSelect, orderBy: { name: 'asc' }, skip: (q.page - 1) * q.pageSize, take: q.pageSize }),
+      prisma.guest.count({ where }),
+    ]);
+    const response: AdminList<AdminPerson> = { items: rows.map(toAdminGuest), page: q.page, pageSize: q.pageSize, total };
+    res.json(response);
+  });
+
+  /** AI hosts can only be created or changed by publishers, since they must be disclosed (§25). */
+  const saveHost = async (req: Request, id: string | null) => {
+    const body = validate(personInputSchema, req.body, 'body');
+    if (body.isAi && !getAuth(req).permissions.includes('content.publish')) {
+      throw errors.forbidden('Only editors can mark a host as an AI personality');
+    }
+    const data = {
+      name: body.name,
+      slug: body.slug ?? slugify(body.name),
+      bio: nullIfUndefined(body.bio),
+      avatarUrl: nullIfUndefined(body.avatarUrl),
+      twitter: nullIfUndefined(body.twitter),
+      isAi: body.isAi,
+    };
+    try {
+      const row = id
+        ? await prisma.host.update({ where: { id }, data, select: hostSelect })
+        : await prisma.host.create({ data, select: hostSelect });
+      await audit(req, id ? 'host.update' : 'host.create', 'host', row.id, { isAi: row.isAi });
+      reindexItems('person', [`host_${row.id}`]);
+      return toAdminHost(row);
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') throw errors.notFound('Host not found');
+      return conflictOnUnique(err, 'host');
+    }
+  };
+
+  const saveGuest = async (req: Request, id: string | null) => {
+    const body = validate(personInputSchema, req.body, 'body');
+    if (body.isAi) throw errors.badRequest('Guests cannot be AI personalities');
+    const data = {
+      name: body.name,
+      slug: body.slug ?? slugify(body.name),
+      title: nullIfUndefined(body.title),
+      bio: nullIfUndefined(body.bio),
+      avatarUrl: nullIfUndefined(body.avatarUrl),
+      twitter: nullIfUndefined(body.twitter),
+      website: nullIfUndefined(body.website),
+    };
+    try {
+      const row = id
+        ? await prisma.guest.update({ where: { id }, data, select: guestSelect })
+        : await prisma.guest.create({ data, select: guestSelect });
+      await audit(req, id ? 'guest.update' : 'guest.create', 'guest', row.id);
+      reindexItems('person', [`guest_${row.id}`]);
+      return toAdminGuest(row);
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') throw errors.notFound('Guest not found');
+      return conflictOnUnique(err, 'guest');
+    }
+  };
+
+  router.post('/hosts', write, async (req, res) => res.status(201).json(await saveHost(req, null)));
+  router.put('/hosts/:id', write, async (req, res) => res.json(await saveHost(req, validate(idParams, req.params, 'params').id)));
+  router.post('/guests', write, async (req, res) => res.status(201).json(await saveGuest(req, null)));
+  router.put('/guests/:id', write, async (req, res) => res.json(await saveGuest(req, validate(idParams, req.params, 'params').id)));
+
+  // ───── Search index ─────
+  router.post('/search/reindex', requirePermission('settings.manage'), async (req, res) => {
+    const indexed = await search.reindex();
+    await audit(req, 'search.reindex', 'search_index', search.engineName, { indexed });
+    const response: ReindexResponse = { engine: search.engineName, indexed };
+    res.json(response);
+  });
 
   return router;
 }

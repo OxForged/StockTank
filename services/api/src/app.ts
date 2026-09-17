@@ -7,6 +7,7 @@ import type { Logger } from 'pino';
 import type { PrismaClient } from '@stocktank/database';
 import type { ApiEnv } from './env.js';
 import { createEmailProvider, type EmailProvider } from './lib/email.js';
+import { createSearchService, type SearchService } from './lib/search.js';
 import { createHttpLogger, createLogger } from './lib/logger.js';
 import { attachSession } from './middleware/auth.js';
 import { csrfProtection } from './middleware/csrf.js';
@@ -22,6 +23,7 @@ import { authRouter } from './routes/auth.js';
 import { contentRouter } from './routes/content.js';
 import { meRouter } from './routes/me.js';
 import { newsletterRouter } from './routes/newsletter.js';
+import { seoRouter } from './routes/seo.js';
 import { systemRouter } from './routes/system.js';
 
 export interface AppDeps {
@@ -31,6 +33,8 @@ export interface AppDeps {
   redis?: Redis | null;
   logger?: Logger;
   rateLimits?: Partial<RateLimitConfig>;
+  /** Defaults to Meilisearch when MEILISEARCH_URL is set, otherwise Postgres. */
+  search?: SearchService;
   /** Defaults to the provider configured by EMAIL_PROVIDER. */
   email?: EmailProvider;
   /** Public form limits (advertising inquiries, newsletter sign-ups); overridable for tests. */
@@ -48,6 +52,9 @@ export function createApp(deps: AppDeps): Express {
   const rateLimits: RateLimitConfig = { ...DEFAULT_RATE_LIMITS, ...deps.rateLimits };
   const openApiDocument = buildOpenApiDocument({ version: env.APP_VERSION });
   const email = deps.email ?? createEmailProvider(env, logger);
+  const search =
+    deps.search ??
+    createSearchService(prisma, logger, redis, { url: env.MEILISEARCH_URL, key: env.MEILISEARCH_KEY, prefix: env.MEILISEARCH_INDEX_PREFIX });
 
   const app = express();
   app.set('trust proxy', env.TRUST_PROXY);
@@ -84,11 +91,12 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api', csrfProtection(env.CORS_ORIGINS));
   app.use('/api', attachSession(prisma, env));
   app.use('/api/v1/auth', authRouter({ env, prisma, rateLimits }));
-  app.use('/api/v1', contentRouter({ prisma }));
+  app.use('/api/v1/seo', seoRouter({ env, prisma }));
+  app.use('/api/v1', contentRouter({ prisma, search }));
   app.use('/api/v1', advertisingRouter({ env, prisma, redis, logger, email, inquiryLimit: deps.formLimits?.inquiry }));
   app.use('/api/v1/newsletter', newsletterRouter({ env, prisma, logger, email, subscribeLimit: deps.formLimits?.subscribe }));
   app.use('/api/v1/me', meRouter({ prisma }));
-  app.use('/api/v1/admin/content', adminContentRouter({ prisma }));
+  app.use('/api/v1/admin/content', adminContentRouter({ prisma, search }));
   app.use('/api/v1/admin/advertising', adminAdvertisingRouter({ prisma }));
   app.use('/api/v1/admin', adminRouter({ prisma }));
   app.use('/api/v1/admin', adminMarketingRouter({ prisma }));

@@ -46,6 +46,17 @@ import {
   showListResponseSchema,
   subscriberListQuerySchema,
   subscriberListResponseSchema,
+  adminPersonListSchema,
+  adminPersonSchema,
+  articleDetailResponseSchema,
+  companyDetailResponseSchema,
+  episodeDetailResponseSchema,
+  personDetailResponseSchema,
+  personInputSchema,
+  projectDetailResponseSchema,
+  reindexResponseSchema,
+  searchSuggestResponseSchema,
+  trendingSearchesResponseSchema,
   adminArticleListSchema,
   adminArticleSchema,
   adminCompanyListSchema,
@@ -146,6 +157,20 @@ export function registerGrowthPaths(registry: OpenAPIRegistry, h: GrowthPathHelp
   publicGet('/api/v1/projects', 'List projects', 'Published project profiles. Informational only.', ProjectList, { query: listQuerySchema });
   publicGet('/api/v1/companies', 'List companies', 'Published company profiles. Informational only.', CompanyList, { query: listQuerySchema });
   publicGet('/api/v1/search', 'Search', 'Grouped search across shows, episodes, projects and companies (Postgres until Meilisearch).', Search, { query: searchQuerySchema });
+  publicGet('/api/v1/search/suggest', 'Search suggestions', 'Up to 8 typed suggestions with site paths for autocomplete.', searchSuggestResponseSchema, { query: searchQuerySchema });
+  publicGet('/api/v1/search/trending', 'Trending searches', 'Popular anonymous queries from the last 7 days (only queries that returned results).', trendingSearchesResponseSchema);
+  publicGet('/api/v1/shows/{slug}/episodes/{episodeSlug}', 'Episode detail', 'Episode with hosts, guests, projects, companies, approved clips and more from the show.', episodeDetailResponseSchema, { params: z.object({ slug: z.string(), episodeSlug: z.string() }) }, notFound('Episode'));
+  publicGet('/api/v1/projects/{slug}', 'Project detail', 'Project profile and episodes that discussed it.', projectDetailResponseSchema, { params: slugParams }, notFound('Project'));
+  publicGet('/api/v1/companies/{slug}', 'Company detail', 'Company profile and episodes that discussed it.', companyDetailResponseSchema, { params: slugParams }, notFound('Company'));
+  publicGet('/api/v1/people/{slug}', 'Person detail', 'Host or guest profile and their episodes. AI hosts are flagged.', personDetailResponseSchema, { params: slugParams }, notFound('Person'));
+  publicGet('/api/v1/articles/{slug}', 'Article detail', 'Published article with source attribution.', articleDetailResponseSchema, { params: slugParams }, notFound('Article'));
+  for (const [path, type, summary] of [
+    ['/api/v1/seo/sitemap.xml', 'application/xml', 'Sitemap of published pages'],
+    ['/api/v1/seo/rss.xml', 'application/rss+xml', 'RSS feed of episodes and articles'],
+    ['/api/v1/seo/robots.txt', 'text/plain', 'robots.txt with the sitemap location'],
+  ] as const) {
+    registry.registerPath({ method: 'get', path, tags: ['Content'], summary, responses: { 200: { description: summary, content: { [type]: { schema: z.string() } } } } });
+  }
   publicGet('/api/v1/flags', 'Feature flags', 'Public on/off state of every feature flag (§50).', Flags);
 
   // ───── Advertising (public) ─────
@@ -393,6 +418,25 @@ export function registerGrowthPaths(registry: OpenAPIRegistry, h: GrowthPathHelp
       extra: { ...notFound(noun), ...conflict('Slug already in use') },
     });
   }
+  for (const [path, noun] of [['hosts', 'host'], ['guests', 'guest']] as const) {
+    admin('get', `${CMS}/${path}`, `List ${path}`, 'Requires `content.read_drafts`.', { tag: 'Admin: Content', ok: { status: 200, schema: adminPersonListSchema } });
+    admin('post', `${CMS}/${path}`, `Create ${noun}`, noun === 'host' ? 'Requires `content.write`; marking a host as AI requires `content.publish`.' : 'Requires `content.write`.', {
+      tag: 'Admin: Content',
+      body: personInputSchema,
+      ok: { status: 201, schema: adminPersonSchema },
+    });
+    admin('put', `${CMS}/${path}/{id}`, `Update ${noun}`, 'Requires `content.write`.', {
+      tag: 'Admin: Content',
+      params: idParams,
+      body: personInputSchema,
+      ok: { status: 200, schema: adminPersonSchema },
+      extra: notFound(noun),
+    });
+  }
+  admin('post', `${CMS}/search/reindex`, 'Rebuild the search index', 'Requires `settings.manage`. Indexes published content only.', {
+    tag: 'Admin: Content',
+    ok: { status: 200, schema: reindexResponseSchema },
+  });
   admin('get', `${CMS}/chains`, 'List chains', 'Chain options for project profiles.', {
     tag: 'Admin: Content',
     ok: { status: 200, schema: z.object({ items: z.array(chainOptionSchema) }) },
