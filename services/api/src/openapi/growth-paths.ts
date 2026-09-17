@@ -127,6 +127,17 @@ import {
   radarResponseSchema,
   stockDetailResponseSchema,
   stockListResponseSchema,
+  aiBudgetInputSchema,
+  aiBudgetListSchema,
+  aiBudgetSchema,
+  aiPersonalityInputSchema,
+  aiPersonalityListSchema,
+  aiPersonalitySchema,
+  aiPromptInputSchema,
+  aiPromptVersionListSchema,
+  aiStatusSchema,
+  aiUsageQuerySchema,
+  aiUsageReportSchema,
 } from '@stocktank/types';
 import { component } from './document.js';
 
@@ -320,7 +331,7 @@ export function registerGrowthPaths(registry: OpenAPIRegistry, h: GrowthPathHelp
 
   // ───── Admin: advertising ─────
   const admin = (
-    method: 'get' | 'post' | 'put' | 'patch',
+    method: 'get' | 'post' | 'put' | 'patch' | 'delete',
     path: string,
     summary: string,
     description: string,
@@ -751,4 +762,62 @@ export function registerGrowthPaths(registry: OpenAPIRegistry, h: GrowthPathHelp
   marketsGet('/api/v1/markets/radar', 'Meme Stock Radar', 'Tracked stocks ranked by StockTank buzz (first-party page views, follows, searches and episode mentions over 7 days; methodology included), meme stocks first.', radarResponseSchema);
   marketsGet('/api/v1/markets/stocks/{symbol}', 'Stock page', 'Quote, 30-day buzz timeline, related episodes and clips.', stockDetailResponseSchema, { params: z.object({ symbol: z.string() }) }, notFound('Stock'));
   marketsGet('/api/v1/markets/stocks/{symbol}/bars', 'Price bars', 'OHLCV bars for a range (1D, 5D, 1M, 6M, 1Y) with stats, relative volume and SMA20.', barsResponseSchema, { params: z.object({ symbol: z.string() }), query: z.object({ range: chartRangeSchema.optional() }) }, notFound('Stock'));
+
+  // ───── AI administration (§16–17, §49) ─────
+  const AI = '/api/v1/admin/ai';
+  const aiTag = 'Admin: AI';
+  admin('get', `${AI}/status`, 'AI provider status', 'Requires `ai.review`. Which text, embedding and transcription providers are configured, which models have prices, and what to set. Never includes keys.', {
+    tag: aiTag,
+    ok: { status: 200, schema: aiStatusSchema },
+  });
+  admin('get', `${AI}/personalities`, 'List AI personalities', 'Requires `ai.review`. Includes the server-side prompt; personality prompts are never exposed on public routes (§17).', {
+    tag: aiTag,
+    ok: { status: 200, schema: aiPersonalityListSchema },
+  });
+  admin('post', `${AI}/personalities`, 'Create AI personality', 'Requires `ai.review`; a published, archived or rejected status also needs `content.publish`. An initial prompt becomes version 1. Audited.', {
+    tag: aiTag,
+    body: aiPersonalityInputSchema,
+    ok: { status: 201, schema: aiPersonalitySchema },
+    extra: conflict('Slug already exists'),
+  });
+  admin('put', `${AI}/personalities/{id}`, 'Update AI personality', 'Requires `ai.review`; changing the status to published, archived or rejected also needs `content.publish`. The prompt is edited through its own endpoint. Audited.', {
+    tag: aiTag,
+    params: idParams,
+    body: aiPersonalityInputSchema.omit({ personalityPrompt: true }),
+    ok: { status: 200, schema: aiPersonalitySchema },
+    extra: { ...notFound('Personality'), ...conflict('Slug already exists') },
+  });
+  admin('put', `${AI}/personalities/{id}/prompt`, 'Write a new prompt version', 'Requires `ai.review`. Stores a new prompt version (previous + 1) and makes it current; earlier versions are kept so stored responses stay traceable. Audited.', {
+    tag: aiTag,
+    params: idParams,
+    body: aiPromptInputSchema,
+    ok: { status: 200, schema: aiPersonalitySchema },
+    extra: notFound('Personality'),
+  });
+  admin('get', `${AI}/personalities/{id}/prompts`, 'List prompt versions', 'Requires `ai.review`. Newest first, with the editor who wrote each version.', {
+    tag: aiTag,
+    params: idParams,
+    ok: { status: 200, schema: aiPromptVersionListSchema },
+    extra: notFound('Personality'),
+  });
+  admin('get', `${AI}/usage`, 'AI usage and costs', 'Requires `ai.review`. Totals, daily cost and call series, breakdowns by feature, model and personality for the range (default last 30 days), plus spend today and this month. Costs are estimates in micro-dollars; calls whose model has no configured price are counted separately as unknown cost, never as zero.', {
+    tag: aiTag,
+    query: aiUsageQuerySchema,
+    ok: { status: 200, schema: aiUsageReportSchema },
+  });
+  admin('get', `${AI}/budgets`, 'List AI budgets', 'Requires `ai.review`. Monthly limits with spend to date and percent used.', {
+    tag: aiTag,
+    ok: { status: 200, schema: aiBudgetListSchema },
+  });
+  admin('put', `${AI}/budgets`, 'Create or update an AI budget', 'Requires `ai.review` and `settings.manage`. Upserts by scope and key. Hard limits block new calls once reached. Audited.', {
+    tag: aiTag,
+    body: aiBudgetInputSchema,
+    ok: { status: 200, schema: aiBudgetSchema },
+  });
+  admin('delete', `${AI}/budgets/{id}`, 'Delete an AI budget', 'Requires `ai.review` and `settings.manage`. Audited.', {
+    tag: aiTag,
+    params: idParams,
+    ok: { status: 204 },
+    extra: notFound('Budget'),
+  });
 }

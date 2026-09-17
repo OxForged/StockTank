@@ -1,3 +1,4 @@
+import { aiEnvSchema, type AiEnv } from '@stocktank/ai';
 import { loadServerEnv, type ServerEnv } from '@stocktank/config';
 import { marketDataEnvSchema, type MarketDataEnv } from '@stocktank/market-data';
 import { mediaEnvSchema, type MediaEnv } from '@stocktank/media';
@@ -50,7 +51,7 @@ const apiOnlyEnvSchema = z.object({
     .transform((v) => (v && v.trim() !== '' ? v.trim() : null)),
 });
 
-export type ApiEnv = ServerEnv & z.infer<typeof apiOnlyEnvSchema> & MediaEnv & CastopodEnv & AzuraCastEnv & MarketDataEnv;
+export type ApiEnv = ServerEnv & z.infer<typeof apiOnlyEnvSchema> & MediaEnv & CastopodEnv & AzuraCastEnv & MarketDataEnv & AiEnv;
 
 /** Parses the shared server env plus API-specific settings. Throws on invalid config. */
 export function loadEnv(source: Record<string, string | undefined> = process.env): ApiEnv {
@@ -60,6 +61,11 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
   const castopodParsed = castopodEnvSchema.safeParse(source);
   const azuracastParsed = azuracastEnvSchema.safeParse(source);
   const marketParsed = marketDataEnvSchema.safeParse(source);
+  const aiParsed = aiEnvSchema.safeParse(source);
+  if (!aiParsed.success) {
+    const issues = aiParsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
+    throw new Error(`Invalid API environment:\n${issues}`);
+  }
   if (!marketParsed.success) {
     const issues = marketParsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Invalid API environment:\n${issues}`);
@@ -94,5 +100,5 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
   if (parsed.data.DEV_LOGIN_ENABLED && shared.NODE_ENV === 'production') {
     throw new Error('DEV_LOGIN_ENABLED must not be set in production');
   }
-  return { ...shared, ...parsed.data, ...mediaParsed.data, ...castopodParsed.data, ...azuracastParsed.data, ...marketParsed.data };
+  return { ...shared, ...parsed.data, ...mediaParsed.data, ...castopodParsed.data, ...azuracastParsed.data, ...marketParsed.data, ...aiParsed.data };
 }

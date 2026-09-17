@@ -372,6 +372,12 @@ importers:
       '@asteasolutions/zod-to-openapi':
         specifier: ^9.1.0
         version: 9.1.0(zod@4.6.5)
+      '@stocktank/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
+      '@stocktank/ai-runtime':
+        specifier: workspace:*
+        version: link:../../packages/ai-runtime
       '@stocktank/config':
         specifier: workspace:*
         version: link:../../packages/config
