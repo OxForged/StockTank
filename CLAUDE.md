@@ -2,6 +2,13 @@
 
 - Scope and spec: `README.md` (master build prompt). Go-to-market plan, component audits, and reuse map: `docs/GTM_PLAN.md`.
 - Brand direction: `stocktankexample.png`. Dark navy base, emerald accent, "STOCK" in white and "TANK" in green.
+
+## Design direction (owner, 2026-09-17)
+- **Focus: stocks and meme stocks.** The product, content taxonomy and visuals should read as a markets/meme-stock media network, not a generic crypto site.
+- **Fully animated and interactive UI across web and admin:** charts, graphs, sparklines, heat maps, animated counters and transitions, hover/scrub interactions, live-updating tickers. Static tables alone are not enough anywhere a visual fits.
+- Charts show real market data from a MarketDataProvider adapter when configured; until then they show clearly labeled DEMO data. Never present invented prices, volumes or sentiment as real.
+- Motion must respect `prefers-reduced-motion`, stay keyboard accessible, and keep charts readable (accessible data tables or summaries behind visuals).
+- Market commentary stays informational only; no buy/sell signals or price targets.
 - Component folders (now under `reference/`) are building blocks. **The owner has full permission to reuse all of them**, including folders without a LICENSE file. `ai-video-editor-main` model weights keep their own licenses (see its `MODEL_LICENSES.md`).
 
 ## Security: must do before production
