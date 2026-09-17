@@ -40,8 +40,9 @@ export const LEGAL_DOCS = {
     title: 'Cookie Policy',
     summary: 'How StockTank uses cookies and similar technologies.',
     sections: [
-      { heading: 'What cookies are', body: `${WILL} cookies, local storage and similar technologies in plain language.` },
-      { heading: 'Cookies we use', body: `${WILL} strictly necessary cookies (such as the sign-in session), preference cookies (such as the theme choice, which is stored in local storage), and any analytics or advertising cookies, each with its purpose and lifetime.` },
+      { heading: 'Strictly necessary', body: 'st_session: keeps you signed in. It is httpOnly, is only set when you sign in or create an account, and lasts up to 14 days.' },
+      { heading: 'Advertising measurement', body: 'st_vid: a random first-party identifier set when an ad slot loads. It is used only to count impressions, apply frequency caps and prevent double counting; it is stored hashed, never shared with advertisers, and expires after 12 months.' },
+      { heading: 'Preferences on your device', body: 'Your theme choice and watchlist are stored in your browser’s local storage. Marketing attribution (the campaign link you arrived from) is kept in session storage for the current tab only.' },
       { heading: 'Managing cookies', body: `${WILL} how to control cookies in your browser and via any consent controls StockTank provides.` },
     ],
   },
@@ -76,12 +77,14 @@ export const LEGAL_DOCS = {
   },
   'advertising-disclosure': {
     title: 'Advertising disclosure',
-    summary: 'How sponsorships, ads and paid placements are identified on StockTank.',
+    summary: 'How sponsorships, ads and paid placements are identified and reviewed on StockTank.',
     sections: [
-      { heading: 'Sponsored content', body: `${WILL} how sponsored segments, episodes and articles are labelled.` },
-      { heading: 'Advertising', body: `${WILL} the kinds of advertising on the network and how ads are distinguished from editorial content.` },
-      { heading: 'Editorial independence', body: `${WILL} the separation between advertisers and editorial decisions.` },
-      { heading: 'Creator disclosures', body: `${WILL} the disclosure obligations that apply to creators publishing through StockTank.` },
+      { heading: 'Labels', body: 'Every paid placement carries a visible label: Sponsored, Paid partnership, Presented by or Advertisement. StockTank promoting its own products is labelled StockTank. Host-read sponsorships are disclosed on air.' },
+      { heading: 'Review before publication', body: 'Sales staff can create campaigns but cannot publish them. An editor must approve the advertiser, each creative and the campaign before anything is shown, and staff cannot approve campaigns they created. Every decision is recorded in an audit log.' },
+      { heading: 'Prohibited claims', body: 'StockTank does not run advertising that promises returns, describes investments as risk-free, predicts prices, uses pressure tactics or implies a StockTank endorsement. Ad copy is automatically scanned for such language and any flag must be checked by a reviewer.' },
+      { heading: 'Editorial independence', body: 'Advertisers and sponsors do not influence editorial coverage, interview questions or verdicts. A sponsorship of a show is credited, never written into its content.' },
+      { heading: 'Measurement', body: 'StockTank measures ads with first-party tracking only: an impression is counted when at least half of an ad is visible for one second, and clicks pass through a StockTank link before reaching the advertiser. No third-party ad trackers are used.' },
+      { heading: 'Draft status', body: `${WILL} contact details for questions about specific placements and how to report an ad.` },
     ],
   },
   'financial-disclaimer': {

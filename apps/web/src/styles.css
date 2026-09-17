@@ -25,3 +25,107 @@
     top: 1rem;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Hybrid A + B homepage motion (all disabled by prefers-reduced-motion in @stocktank/ui)
+ * ------------------------------------------------------------------------- */
+@theme {
+  --spacing-rail: 6rem;
+  --spacing-topbar: 4.75rem;
+  --animate-hy-breathe: hy-breathe 6s ease-in-out infinite;
+  --animate-hy-scan: hy-scan 6s linear infinite;
+  --animate-hy-grow: hy-grow 1.1s var(--ease-out-expo) both;
+  --animate-hy-wave: hy-wave 1.1s ease-in-out infinite;
+  --animate-hy-fill: hy-fill 7s linear forwards;
+  --animate-hy-shimmer: hy-shimmer 2.2s linear infinite;
+  --animate-hy-slide: hy-slide 0.7s var(--ease-out-expo) both;
+  --animate-hy-pop: hy-pop 0.4s var(--ease-out-expo) both;
+
+  @keyframes hy-breathe {
+    0%,
+    100% {
+      opacity: 0.1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.2;
+      transform: scale(1.05);
+    }
+  }
+  @keyframes hy-scan {
+    from {
+      transform: translateY(-100%);
+    }
+    to {
+      transform: translateY(700%);
+    }
+  }
+  @keyframes hy-grow {
+    from {
+      transform: scaleY(0);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+  @keyframes hy-wave {
+    0%,
+    100% {
+      transform: scaleY(0.22);
+    }
+    50% {
+      transform: scaleY(1);
+    }
+  }
+  @keyframes hy-fill {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes hy-shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+  @keyframes hy-slide {
+    from {
+      opacity: 0;
+      transform: translateX(-32px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes hy-pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    60% {
+      opacity: 1;
+      transform: scale(1.08);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+}
+
+@utility bg-desk-grid {
+  background-image:
+    linear-gradient(rgb(30 240 168 / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(30 240 168 / 0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+@utility shimmer {
+  background-image: linear-gradient(90deg, var(--st-raised), var(--st-overlay), var(--st-raised));
+  background-size: 200% 100%;
+}

@@ -1,5 +1,8 @@
 import type { ApiClient } from '@stocktank/api-client';
+import type { HomeResponse } from '@stocktank/types';
 import { vi } from 'vitest';
+
+type Mocked<T> = { [K in keyof T]: ReturnType<typeof vi.fn> };
 
 /**
  * A fully mocked API client. Test files install it with:
@@ -11,6 +14,28 @@ export const mockApi = {
     login: vi.fn(),
     logout: vi.fn(),
     me: vi.fn(),
+    devLoginStatus: vi.fn(),
+    devLogin: vi.fn(),
+  },
+  content: {
+    home: vi.fn(),
+    shows: vi.fn(),
+    show: vi.fn(),
+    projects: vi.fn(),
+    companies: vi.fn(),
+    search: vi.fn(),
+    flags: vi.fn(),
+  },
+  ads: {
+    mediaKit: vi.fn(),
+    serve: vi.fn(),
+    recordImpression: vi.fn(),
+  },
+  marketing: {
+    submitInquiry: vi.fn(),
+    subscribe: vi.fn(),
+    confirmSubscription: vi.fn(),
+    unsubscribe: vi.fn(),
   },
   admin: {
     listUsers: vi.fn(),
@@ -21,7 +46,64 @@ export const mockApi = {
     version: vi.fn(),
   },
 } as unknown as ApiClient & {
-  auth: { [K in keyof ApiClient['auth']]: ReturnType<typeof vi.fn> };
-  admin: { [K in keyof ApiClient['admin']]: ReturnType<typeof vi.fn> };
-  system: { [K in keyof ApiClient['system']]: ReturnType<typeof vi.fn> };
+  auth: Mocked<ApiClient['auth']>;
+  content: Mocked<ApiClient['content']>;
+  ads: Mocked<ApiClient['ads']>;
+  marketing: Mocked<ApiClient['marketing']>;
+  admin: Mocked<ApiClient['admin']>;
+  system: Mocked<ApiClient['system']>;
+};
+
+export const EMPTY_HOME: HomeResponse = {
+  featuredShows: [],
+  latestEpisodes: [],
+  clips: [],
+  explainers: [],
+  projects: [],
+  companies: [],
+  live: null,
+  rundown: [],
+  generatedAt: '2026-09-17T00:00:00.000Z',
+};
+
+export const DEMO_HOME: HomeResponse = {
+  ...EMPTY_HOME,
+  featuredShows: [
+    { id: 's1', slug: 'the-tank', title: 'The Tank', tagline: 'Founders pitch.', description: 'A panel asks the hard questions.', coverUrl: null, episodeCount: 6, isDemo: true },
+    { id: 's2', slug: 'market-open', title: 'Market Open', tagline: 'The morning desk.', description: 'Daily briefing.', coverUrl: null, episodeCount: 6, isDemo: true },
+  ],
+  latestEpisodes: [
+    {
+      id: 'e1',
+      slug: 'ep-1',
+      title: 'Can a treasury protocol survive a bear market?',
+      summary: null,
+      coverUrl: null,
+      durationSeconds: 1800,
+      publishedAt: '2026-09-16T10:00:00.000Z',
+      show: { slug: 'the-tank', title: 'The Tank' },
+      isDemo: true,
+    },
+  ],
+  projects: [
+    { id: 'p1', slug: 'harbor', name: 'Harbor Protocol', symbol: null, kind: 'protocol', description: null, chainName: 'Ethereum', logoUrl: null, verified: false, isDemo: true },
+  ],
+  companies: [
+    { id: 'c1', slug: 'meridian', name: 'Meridian Robotics', ticker: null, exchange: null, sector: 'Industrials', country: 'US', description: null, logoUrl: null, isDemo: true },
+  ],
+  live: {
+    id: 'l1',
+    title: 'Market Open (DEMO broadcast)',
+    description: null,
+    status: 'live',
+    scheduledStart: '2026-09-17T00:00:00.000Z',
+    scheduledEnd: null,
+    streamUrl: null,
+    show: { slug: 'market-open', title: 'Market Open' },
+    segments: [
+      { position: 0, title: 'Pre-market: what moved overnight' },
+      { position: 1, title: 'Tokenized equities explained' },
+    ],
+    isDemo: true,
+  },
 };
