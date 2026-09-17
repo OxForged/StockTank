@@ -940,6 +940,100 @@ model NewsletterSubscriber {
   @@map("newsletter_subscribers")
 }
 
+// ───────── AI (§16–18, §49) ─────────
+
+/// AI media personalities. They are hosts and explainers, never financial advisers (§16).
+model AiPersonality {
+  id                String        @id @default(cuid())
+  slug              String        @unique
+  name              String
+  avatarUrl         String?       @map("avatar_url")
+  /// Voice id at the voice provider; only voices with documented consent (§25).
+  voiceId           String?       @map("voice_id")
+  description       String?
+  /// Server-side only; never sent to the web app (§17).
+  personalityPrompt String        @map("personality_prompt")
+  promptVersion     Int           @default(1) @map("prompt_version")
+  tone              String?
+  expertise         String[]
+  /// Shown to the audience wherever this personality appears.
+  disclosures       String
+  status            PublishStatus @default(draft)
+  /// Links the personality to its public host profile (hosts.is_ai).
+  hostId            String?       @unique @map("host_id")
+  isDemo            Boolean       @default(false) @map("is_demo")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  promptVersions AiPromptVersion[]
+  usage          AiUsage[]
+
+  @@map("ai_personalities")
+}
+
+/// Every personality prompt edit is kept, so any stored AI response can be traced to the exact prompt.
+model AiPromptVersion {
+  id            String   @id @default(cuid())
+  personalityId String   @map("personality_id")
+  version       Int
+  content       String
+  note          String?
+  createdById   String?  @map("created_by_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  personality AiPersonality @relation(fields: [personalityId], references: [id], onDelete: Cascade)
+
+  @@unique([personalityId, version])
+  @@map("ai_prompt_versions")
+}
+
+/// One row per provider call (§49): tokens, estimated cost, latency, outcome.
+model AiUsage {
+  id            String   @id @default(cuid())
+  /// personality_chat | transcription | content_factory | entity_extraction | embedding | clip_candidates | …
+  feature       String
+  provider      String
+  model         String
+  personalityId String?  @map("personality_id")
+  inputTokens   Int      @default(0) @map("input_tokens")
+  outputTokens  Int      @default(0) @map("output_tokens")
+  audioSeconds  Float?   @map("audio_seconds")
+  /// Estimated USD × 1e6; null when the model has no configured price.
+  costMicros    BigInt?  @map("cost_micros")
+  latencyMs     Int      @map("latency_ms")
+  success       Boolean
+  error         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  personality AiPersonality? @relation(fields: [personalityId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([feature, createdAt])
+  @@index([personalityId, createdAt])
+  @@map("ai_usage")
+}
+
+enum AiBudgetScope {
+  global
+  feature
+  personality
+}
+
+/// Monthly AI spend limits (§49). Hard limits block new calls once reached; soft limits only warn.
+model AiBudget {
+  id                 String        @id @default(cuid())
+  scope              AiBudgetScope
+  /// Feature name or personality id; empty string for the global budget.
+  scopeKey           String        @default("") @map("scope_key")
+  monthlyLimitMicros BigInt        @map("monthly_limit_micros")
+  hardLimit          Boolean       @default(true) @map("hard_limit")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+
+  @@unique([scope, scopeKey])
+  @@map("ai_budgets")
+}
+
 // ───────── First-party analytics (§29) ─────────
 
 enum AnalyticsEventType {
