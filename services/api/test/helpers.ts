@@ -1,4 +1,5 @@
 import type { Express } from 'express';
+import type { Redis } from 'ioredis';
 import type { Response } from 'supertest';
 import request from 'supertest';
 import { createPrismaClient, type PrismaClient } from '@stocktank/database';
@@ -9,6 +10,7 @@ import { hashPassword } from '../src/lib/crypto.js';
 import { createLogger } from '../src/lib/logger.js';
 import { createRedis } from '../src/lib/redis.js';
 import { SESSION_COOKIE } from '../src/lib/session.js';
+import type { EmailProvider } from '../src/lib/email.js';
 import type { RateLimitConfig } from '../src/middleware/rate-limit.js';
 
 /** Header every state-changing request must carry (CSRF guard). */
@@ -20,20 +22,35 @@ export interface TestContext {
   app: Express;
   prisma: PrismaClient;
   env: ApiEnv;
+  redis: Redis | null;
   close(): Promise<void>;
 }
 
-export async function createTestContext(options: { rateLimits?: Partial<RateLimitConfig>; redis?: boolean } = {}): Promise<TestContext> {
-  const env = loadEnv();
+export interface TestContextOptions {
+  rateLimits?: Partial<RateLimitConfig>;
+  redis?: boolean;
+  email?: EmailProvider;
+  envOverrides?: Partial<ApiEnv>;
+}
+
+/** Generous public-form limits so suites are not throttled; rate limiting has its own tests. */
+const RELAXED_FORM_LIMITS = {
+  inquiry: { windowMs: 60_000, limit: 1_000 },
+  subscribe: { windowMs: 60_000, limit: 1_000 },
+};
+
+export async function createTestContext(options: TestContextOptions = {}): Promise<TestContext> {
+  const env = { ...loadEnv(), ...options.envOverrides };
   const prisma = createPrismaClient(env.DATABASE_URL);
   const logger = createLogger({ level: 'silent' });
   const redis = options.redis !== false && env.REDIS_URL ? createRedis(env.REDIS_URL, logger) : null;
   if (redis) await redis.connect();
-  const app = createApp({ env, prisma, redis, logger, rateLimits: options.rateLimits });
+  const app = createApp({ env, prisma, redis, logger, rateLimits: options.rateLimits, email: options.email, formLimits: RELAXED_FORM_LIMITS });
   return {
     app,
     prisma,
     env,
+    redis,
     close: async () => {
       if (redis) await redis.quit();
       await prisma.$disconnect();
@@ -99,4 +116,32 @@ export async function loginAs(app: Express, email: string, password = PASSWORD):
   const cookie = sessionCookie(res);
   if (!cookie) throw new Error('login did not set a session cookie');
   return cookie;
+}
+
+/** Removes all advertising, lead and newsletter rows (test database only). */
+export async function resetAdvertising(prisma: PrismaClient): Promise<void> {
+  await prisma.adClick.deleteMany({});
+  await prisma.adImpression.deleteMany({});
+  await prisma.creativeAsset.deleteMany({});
+  await prisma.campaignPlacement.deleteMany({});
+  await prisma.campaign.deleteMany({});
+  await prisma.advertisingInquiry.deleteMany({});
+  await prisma.advertiser.deleteMany({});
+  await prisma.adPlacement.deleteMany({});
+  await prisma.newsletterSubscriber.deleteMany({});
+}
+
+/** Removes all content-graph rows (test database only). */
+export async function resetContent(prisma: PrismaClient): Promise<void> {
+  await prisma.livestream.deleteMany({});
+  await prisma.clip.deleteMany({});
+  await prisma.article.deleteMany({});
+  await prisma.episode.deleteMany({});
+  await prisma.show.deleteMany({});
+  await prisma.project.deleteMany({});
+  await prisma.company.deleteMany({});
+}
+
+export async function setFlag(prisma: PrismaClient, key: string, enabled: boolean): Promise<void> {
+  await prisma.featureFlag.upsert({ where: { key }, update: { enabled }, create: { key, enabled } });
 }

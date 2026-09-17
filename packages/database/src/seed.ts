@@ -8,6 +8,7 @@ import argon2 from 'argon2';
 import { PERMISSIONS, roleKeySchema } from '@stocktank/types';
 import { createPrismaClient } from './index.js';
 import { FEATURE_FLAG_DEFINITIONS, ROLE_DEFINITIONS } from './rbac.js';
+import { seedAdInventory } from './seed-inventory.js';
 
 config({ path: path.resolve(import.meta.dirname, '../../../.env'), quiet: true });
 
@@ -45,6 +46,8 @@ async function main() {
     });
   }
 
+  await seedAdInventory(prisma, process.env.PUBLIC_WEB_URL ?? 'http://localhost:5190');
+
   const email = process.env.SEED_ADMIN_EMAIL?.trim().toLowerCase();
   const password = process.env.SEED_ADMIN_PASSWORD;
   if (email && password) {
@@ -65,7 +68,7 @@ async function main() {
       console.log(`Created super admin ${email}`);
     }
   }
-  console.log('Seed complete: roles, permissions, feature flags');
+  console.log('Seed complete: roles, permissions, feature flags, ad inventory, house campaigns');
 }
 
 main()

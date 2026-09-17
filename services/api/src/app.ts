@@ -6,14 +6,20 @@ import type { Redis } from 'ioredis';
 import type { Logger } from 'pino';
 import type { PrismaClient } from '@stocktank/database';
 import type { ApiEnv } from './env.js';
+import { createEmailProvider, type EmailProvider } from './lib/email.js';
 import { createHttpLogger, createLogger } from './lib/logger.js';
 import { attachSession } from './middleware/auth.js';
 import { csrfProtection } from './middleware/csrf.js';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { DEFAULT_RATE_LIMITS, globalRateLimiter, type RateLimitConfig } from './middleware/rate-limit.js';
 import { buildOpenApiDocument } from './openapi/document.js';
+import { adminAdvertisingRouter } from './routes/admin-advertising.js';
+import { adminMarketingRouter } from './routes/admin-marketing.js';
 import { adminRouter } from './routes/admin.js';
+import { advertisingRouter } from './routes/advertising.js';
 import { authRouter } from './routes/auth.js';
+import { contentRouter } from './routes/content.js';
+import { newsletterRouter } from './routes/newsletter.js';
 import { systemRouter } from './routes/system.js';
 
 export interface AppDeps {
@@ -23,6 +29,13 @@ export interface AppDeps {
   redis?: Redis | null;
   logger?: Logger;
   rateLimits?: Partial<RateLimitConfig>;
+  /** Defaults to the provider configured by EMAIL_PROVIDER. */
+  email?: EmailProvider;
+  /** Public form limits (advertising inquiries, newsletter sign-ups); overridable for tests. */
+  formLimits?: {
+    inquiry?: { windowMs: number; limit: number };
+    subscribe?: { windowMs: number; limit: number };
+  };
 }
 
 /** Builds the Express app with every dependency injected, so tests can run it against a test database. */
@@ -32,6 +45,7 @@ export function createApp(deps: AppDeps): Express {
   const logger = deps.logger ?? createLogger({ level: env.LOG_LEVEL ?? 'info' });
   const rateLimits: RateLimitConfig = { ...DEFAULT_RATE_LIMITS, ...deps.rateLimits };
   const openApiDocument = buildOpenApiDocument({ version: env.APP_VERSION });
+  const email = deps.email ?? createEmailProvider(env, logger);
 
   const app = express();
   app.set('trust proxy', env.TRUST_PROXY);
@@ -68,7 +82,12 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api', csrfProtection(env.CORS_ORIGINS));
   app.use('/api', attachSession(prisma, env));
   app.use('/api/v1/auth', authRouter({ env, prisma, rateLimits }));
+  app.use('/api/v1', contentRouter({ prisma }));
+  app.use('/api/v1', advertisingRouter({ env, prisma, redis, logger, email, inquiryLimit: deps.formLimits?.inquiry }));
+  app.use('/api/v1/newsletter', newsletterRouter({ env, prisma, logger, email, subscribeLimit: deps.formLimits?.subscribe }));
+  app.use('/api/v1/admin/advertising', adminAdvertisingRouter({ prisma }));
   app.use('/api/v1/admin', adminRouter({ prisma }));
+  app.use('/api/v1/admin', adminMarketingRouter({ prisma }));
 
   app.use(notFoundHandler);
   app.use(errorHandler(logger, env.NODE_ENV === 'production'));

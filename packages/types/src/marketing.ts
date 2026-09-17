@@ -25,8 +25,8 @@ export const advertisingInquiryRequestSchema = z.object({
   message: z.string().trim().min(10).max(2000),
   /** Must be true: consent to be contacted about advertising. */
   consent: z.literal(true),
-  /** Honeypot; real users leave it empty. */
-  companyFax: z.string().max(0).optional(),
+  /** Honeypot hidden from people: a filled value is accepted silently and discarded. */
+  companyFax: z.string().max(500).optional(),
   utm: z
     .object({
       source: z.string().trim().max(100).optional(),
@@ -37,6 +37,9 @@ export const advertisingInquiryRequestSchema = z.object({
   referrer: z.string().max(500).optional(),
 });
 export type AdvertisingInquiryRequest = z.infer<typeof advertisingInquiryRequestSchema>;
+
+export const inquiryReceivedResponseSchema = z.object({ status: z.literal('received') });
+export type InquiryReceivedResponse = z.infer<typeof inquiryReceivedResponseSchema>;
 
 export const inquiryStatusSchema = z.enum(['new', 'contacted', 'qualified', 'proposal_sent', 'won', 'lost', 'spam']);
 export type InquiryStatus = z.infer<typeof inquiryStatusSchema>;
@@ -96,8 +99,8 @@ export const newsletterSubscribeRequestSchema = z.object({
       campaign: z.string().trim().max(100).optional(),
     })
     .optional(),
-  /** Honeypot; real users leave it empty. */
-  website: z.string().max(0).optional(),
+  /** Honeypot hidden from people: a filled value is accepted silently and discarded. */
+  website: z.string().max(500).optional(),
 });
 export type NewsletterSubscribeRequest = z.infer<typeof newsletterSubscribeRequestSchema>;
 

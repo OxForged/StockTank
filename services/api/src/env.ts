@@ -27,6 +27,14 @@ const apiOnlyEnvSchema = z.object({
     .string()
     .optional()
     .transform((v) => v?.trim().toLowerCase() === 'true'),
+  /** Public site origin, used to build links in emails (newsletter confirmation, unsubscribe). */
+  PUBLIC_WEB_URL: z.url().default('http://localhost:5190'),
+  /** `resend` sends real email; `log` (development only) prints messages to the API log; `none` disables sending. */
+  EMAIL_PROVIDER: z.enum(['resend', 'log', 'none']).optional(),
+  EMAIL_PROVIDER_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().optional(),
+  /** Where new advertising inquiries are forwarded. Optional. */
+  SALES_NOTIFY_EMAIL: z.preprocess((v) => (v === '' ? undefined : v), z.email().optional()),
   GIT_COMMIT: z
     .string()
     .optional()
@@ -43,6 +51,14 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
     const issues = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Invalid API environment:\n${issues}`);
   }
+  const emailProvider = parsed.data.EMAIL_PROVIDER ?? (shared.NODE_ENV === 'production' ? 'none' : 'log');
+  if (emailProvider === 'log' && shared.NODE_ENV === 'production') {
+    throw new Error('EMAIL_PROVIDER=log is for development only');
+  }
+  if (emailProvider === 'resend' && (!parsed.data.EMAIL_PROVIDER_API_KEY || !parsed.data.EMAIL_FROM)) {
+    throw new Error('EMAIL_PROVIDER=resend requires EMAIL_PROVIDER_API_KEY and EMAIL_FROM');
+  }
+  parsed.data.EMAIL_PROVIDER = emailProvider;
   if (parsed.data.DEV_LOGIN_ENABLED && shared.NODE_ENV === 'production') {
     throw new Error('DEV_LOGIN_ENABLED must not be set in production');
   }

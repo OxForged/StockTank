@@ -15,6 +15,7 @@
     "db:migrate": "pnpm --filter @stocktank/database migrate:dev",
     "db:deploy": "pnpm --filter @stocktank/database migrate:deploy",
     "db:seed": "pnpm --filter @stocktank/database seed",
+    "db:seed:demo": "pnpm --filter @stocktank/database seed:demo",
     "infra:up": "docker compose -f docker-compose.dev.yml up -d",
     "infra:down": "docker compose -f docker-compose.dev.yml down",
     "format": "prettier --write ."

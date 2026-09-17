@@ -16,6 +16,7 @@ import {
 } from '@stocktank/types';
 import { SESSION_COOKIE } from '../lib/session.js';
 import { userIdParamsSchema } from '../routes/admin.js';
+import { registerGrowthPaths } from './growth-paths.js';
 
 export interface OpenApiOptions {
   version: string;
@@ -36,7 +37,7 @@ type ComponentMeta = { description?: string; example?: unknown };
  * metadata `.openapi(id)` would write straight into the library's registry tags the original
  * instance (nested references stay `$ref`s) and is idempotent across repeated builds.
  */
-function component<T extends z.ZodType>(id: string, schema: T, meta: ComponentMeta): T {
+export function component<T extends z.ZodType>(id: string, schema: T, meta: ComponentMeta): T {
   zodToOpenAPIRegistry.add(schema, { _internal: { refId: id }, ...meta });
   return schema;
 }
@@ -255,6 +256,8 @@ export function buildOpenApiDocument({ version }: OpenApiOptions): OpenApiDocume
     },
   });
 
+  registerGrowthPaths(registry, { json, errorResponse, csrfHeaders, cookieAuth, commonErrors, authErrors, validationError });
+
   const generator = new OpenApiGeneratorV31(registry.definitions);
   return generator.generateDocument({
     openapi: '3.1.0',
@@ -262,7 +265,7 @@ export function buildOpenApiDocument({ version }: OpenApiOptions): OpenApiDocume
       title: 'StockTank API',
       version,
       description:
-        'Identity, RBAC and system endpoints for StockTank. Sessions are cookie-based; state-changing requests must send `X-Requested-With`. ' +
+        'Identity, RBAC, public content, advertising, marketing and system endpoints for StockTank. Sessions are cookie-based; state-changing requests must send `X-Requested-With`. ' +
         'Financial content served by this platform is informational only and never investment advice.',
     },
     servers: [{ url: '/', description: 'Same origin (dev proxy or deployed API host)' }],
@@ -270,6 +273,11 @@ export function buildOpenApiDocument({ version }: OpenApiOptions): OpenApiDocume
       { name: 'System', description: 'Health, readiness and version' },
       { name: 'Auth', description: 'Registration, login and session' },
       { name: 'Admin', description: 'User administration (permission-gated)' },
+      { name: 'Content', description: 'Public, published content for the web, mobile and TV apps' },
+      { name: 'Advertising', description: 'Media kit, ad serving and impression/click tracking' },
+      { name: 'Marketing', description: 'Advertising inquiries and newsletter double opt-in' },
+      { name: 'Admin: Advertising', description: 'Advertisers, rate card, campaigns, creatives, review queue and reports' },
+      { name: 'Admin: Growth', description: 'Sales leads, newsletter audience and feature flags' },
     ],
   });
 }

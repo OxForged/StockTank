@@ -12,6 +12,7 @@
     "migrate:dev": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
     "seed": "tsx src/seed.ts",
+    "seed:demo": "tsx src/seed-demo.ts",
     "studio": "prisma studio"
   },
   "dependencies": {

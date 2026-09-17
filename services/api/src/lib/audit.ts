@@ -8,7 +8,10 @@ export type AuditAction =
   | 'auth.login.failure'
   | 'auth.logout'
   | 'auth.dev_login'
-  | 'user.roles.update';
+  | 'user.roles.update'
+  | `advertising.${string}`
+  | 'newsletter.export'
+  | 'feature_flag.update';
 
 export interface AuditEntry {
   action: AuditAction;
