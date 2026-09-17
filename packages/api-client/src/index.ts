@@ -1,5 +1,36 @@
 import { z } from 'zod';
 import {
+  adminArticleListSchema,
+  adminArticleSchema,
+  adminCompanyListSchema,
+  adminCompanySchema,
+  adminEpisodeListSchema,
+  adminEpisodeSchema,
+  adminLivestreamListSchema,
+  adminLivestreamSchema,
+  adminProjectListSchema,
+  adminProjectSchema,
+  adminShowListSchema,
+  adminShowSchema,
+  chainOptionSchema,
+  libraryResponseSchema,
+  type AdminArticle,
+  type AdminCompany,
+  type AdminEpisode,
+  type AdminList,
+  type AdminLivestream,
+  type AdminProject,
+  type AdminShow,
+  type ArticleInput,
+  type ChainOption,
+  type CompanyInput,
+  type EpisodeInput,
+  type FollowTarget,
+  type LibraryResponse,
+  type LivestreamInput,
+  type ProjectInput,
+  type PublishStatus,
+  type ShowInput,
   adminPlacementSchema,
   adminUserListResponseSchema,
   advertiserListResponseSchema,
@@ -104,6 +135,9 @@ function qs(query: Query): string {
 const idResponseSchema = z.object({ id: z.string() });
 const placementListSchema = z.object({ items: z.array(adminPlacementSchema) });
 const featureFlagListSchema = z.object({ items: z.array(featureFlagSchema) });
+const chainListSchema = z.object({ items: z.array(chainOptionSchema) });
+
+export type ContentListQuery = { page?: number; pageSize?: number; status?: PublishStatus; q?: string };
 
 /**
  * Typed StockTank API client. Uses cookie sessions (`credentials: 'include'`).
@@ -160,6 +194,7 @@ export function createApiClient(options: ApiClientOptions = {}) {
     await p;
   };
   const AD = '/api/v1/admin/advertising';
+  const CMS = '/api/v1/admin/content';
 
   return {
     auth: {
@@ -195,6 +230,15 @@ export function createApiClient(options: ApiClientOptions = {}) {
       recordImpression: (token: string): Promise<void> =>
         noContent(request('POST', '/api/v1/ads/impressions', null, { token }, { keepalive: true })),
     },
+    me: {
+      library: (): Promise<LibraryResponse> => request('GET', '/api/v1/me/library', libraryResponseSchema),
+      follow: (target: FollowTarget, id: string): Promise<void> => noContent(request('POST', '/api/v1/me/follows', null, { target, id })),
+      unfollow: (target: FollowTarget, id: string): Promise<void> => noContent(request('DELETE', '/api/v1/me/follows', null, { target, id })),
+      bookmark: (episodeId: string, positionSeconds = 0): Promise<void> =>
+        noContent(request('PUT', '/api/v1/me/bookmarks', null, { episodeId, positionSeconds })),
+      removeBookmark: (episodeId: string): Promise<void> =>
+        noContent(request('DELETE', `/api/v1/me/bookmarks/${encodeURIComponent(episodeId)}`, null)),
+    },
     marketing: {
       submitInquiry: (input: AdvertisingInquiryRequest) =>
         request('POST', '/api/v1/advertising/inquiries', inquiryReceivedResponseSchema, input),
@@ -211,6 +255,31 @@ export function createApiClient(options: ApiClientOptions = {}) {
       updateUserRoles: (userId: string, roles: RoleKey[]): Promise<void> =>
         noContent(request('PUT', `/api/v1/admin/users/${encodeURIComponent(userId)}/roles`, null, { roles })),
 
+      content: {
+        listShows: (q: ContentListQuery = {}): Promise<AdminList<AdminShow>> => request('GET', `${CMS}/shows${qs(q)}`, adminShowListSchema),
+        saveShow: (input: ShowInput, id?: string): Promise<AdminShow> =>
+          id ? request('PUT', `${CMS}/shows/${encodeURIComponent(id)}`, adminShowSchema, input) : request('POST', `${CMS}/shows`, adminShowSchema, input),
+        listEpisodes: (q: ContentListQuery & { showId?: string } = {}): Promise<AdminList<AdminEpisode>> =>
+          request('GET', `${CMS}/episodes${qs(q)}`, adminEpisodeListSchema),
+        saveEpisode: (input: EpisodeInput, id?: string): Promise<AdminEpisode> =>
+          id ? request('PUT', `${CMS}/episodes/${encodeURIComponent(id)}`, adminEpisodeSchema, input) : request('POST', `${CMS}/episodes`, adminEpisodeSchema, input),
+        listProjects: (q: ContentListQuery = {}): Promise<AdminList<AdminProject>> => request('GET', `${CMS}/projects${qs(q)}`, adminProjectListSchema),
+        saveProject: (input: ProjectInput, id?: string): Promise<AdminProject> =>
+          id ? request('PUT', `${CMS}/projects/${encodeURIComponent(id)}`, adminProjectSchema, input) : request('POST', `${CMS}/projects`, adminProjectSchema, input),
+        listCompanies: (q: ContentListQuery = {}): Promise<AdminList<AdminCompany>> => request('GET', `${CMS}/companies${qs(q)}`, adminCompanyListSchema),
+        saveCompany: (input: CompanyInput, id?: string): Promise<AdminCompany> =>
+          id ? request('PUT', `${CMS}/companies/${encodeURIComponent(id)}`, adminCompanySchema, input) : request('POST', `${CMS}/companies`, adminCompanySchema, input),
+        listArticles: (q: ContentListQuery = {}): Promise<AdminList<AdminArticle>> => request('GET', `${CMS}/articles${qs(q)}`, adminArticleListSchema),
+        saveArticle: (input: ArticleInput, id?: string): Promise<AdminArticle> =>
+          id ? request('PUT', `${CMS}/articles/${encodeURIComponent(id)}`, adminArticleSchema, input) : request('POST', `${CMS}/articles`, adminArticleSchema, input),
+        listLivestreams: (q: { page?: number; pageSize?: number } = {}): Promise<AdminList<AdminLivestream>> =>
+          request('GET', `${CMS}/livestreams${qs(q)}`, adminLivestreamListSchema),
+        saveLivestream: (input: LivestreamInput, id?: string): Promise<AdminLivestream> =>
+          id
+            ? request('PUT', `${CMS}/livestreams/${encodeURIComponent(id)}`, adminLivestreamSchema, input)
+            : request('POST', `${CMS}/livestreams`, adminLivestreamSchema, input),
+        listChains: async (): Promise<ChainOption[]> => (await request('GET', `${CMS}/chains`, chainListSchema)).items,
+      },
       advertisingOverview: (): Promise<AdvertisingOverview> => request('GET', `${AD}/overview`, advertisingOverviewSchema),
       listAdvertisers: (): Promise<AdvertiserListResponse> => request('GET', `${AD}/advertisers`, advertiserListResponseSchema),
       createAdvertiser: (input: AdvertiserInput): Promise<{ id: string }> =>

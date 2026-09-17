@@ -46,6 +46,29 @@ import {
   showListResponseSchema,
   subscriberListQuerySchema,
   subscriberListResponseSchema,
+  adminArticleListSchema,
+  adminArticleSchema,
+  adminCompanyListSchema,
+  adminCompanySchema,
+  adminContentListQuerySchema,
+  adminEpisodeListSchema,
+  adminEpisodeSchema,
+  adminLivestreamListSchema,
+  adminLivestreamSchema,
+  adminProjectListSchema,
+  adminProjectSchema,
+  adminShowListSchema,
+  adminShowSchema,
+  articleInputSchema,
+  bookmarkRequestSchema,
+  chainOptionSchema,
+  companyInputSchema,
+  episodeInputSchema,
+  followRequestSchema,
+  libraryResponseSchema,
+  livestreamInputSchema,
+  projectInputSchema,
+  showInputSchema,
 } from '@stocktank/types';
 import { component } from './document.js';
 
@@ -337,5 +360,73 @@ export function registerGrowthPaths(registry: OpenAPIRegistry, h: GrowthPathHelp
     body: featureFlagUpdateSchema,
     ok: { status: 204 },
     extra: notFound('Feature flag'),
+  });
+
+  // ───── Admin: content CMS (Milestone 2) ─────
+  const CMS = '/api/v1/admin/content';
+  const cms: Array<[string, string, z.ZodType, z.ZodType, z.ZodType, string]> = [
+    ['shows', 'show', showInputSchema, adminShowSchema, adminShowListSchema, '`content.write`'],
+    ['episodes', 'episode', episodeInputSchema, adminEpisodeSchema, adminEpisodeListSchema, '`content.write`'],
+    ['projects', 'project', projectInputSchema, adminProjectSchema, adminProjectListSchema, '`entities.write`'],
+    ['companies', 'company', companyInputSchema, adminCompanySchema, adminCompanyListSchema, '`entities.write`'],
+    ['articles', 'article', articleInputSchema, adminArticleSchema, adminArticleListSchema, '`content.write`'],
+    ['livestreams', 'broadcast', livestreamInputSchema, adminLivestreamSchema, adminLivestreamListSchema, '`content.publish`'],
+  ];
+  for (const [path, noun, input, item, listSchema, permission] of cms) {
+    const statusRule = path === 'livestreams' ? '' : ' Publishing, archiving or rejecting additionally requires `content.publish`.';
+    admin('get', `${CMS}/${path}`, `List ${path} (all statuses)`, 'Requires `content.read_drafts`.', {
+      tag: 'Admin: Content',
+      query: adminContentListQuerySchema,
+      ok: { status: 200, schema: listSchema },
+    });
+    admin('post', `${CMS}/${path}`, `Create ${noun}`, `Requires ${permission}.${statusRule} Audited.`, {
+      tag: 'Admin: Content',
+      body: input,
+      ok: { status: 201, schema: item },
+      extra: conflict('Slug already in use'),
+    });
+    admin('put', `${CMS}/${path}/{id}`, `Update ${noun}`, `Requires ${permission}.${statusRule} Audited.`, {
+      tag: 'Admin: Content',
+      params: idParams,
+      body: input,
+      ok: { status: 200, schema: item },
+      extra: { ...notFound(noun), ...conflict('Slug already in use') },
+    });
+  }
+  admin('get', `${CMS}/chains`, 'List chains', 'Chain options for project profiles.', {
+    tag: 'Admin: Content',
+    ok: { status: 200, schema: z.object({ items: z.array(chainOptionSchema) }) },
+  });
+
+  // ───── Viewer library ─────
+  const meTag = 'Me';
+  admin('get', '/api/v1/me/library', 'My library', 'Followed shows, projects and companies, and bookmarked episodes (published only).', {
+    tag: meTag,
+    ok: { status: 200, schema: libraryResponseSchema },
+  });
+  admin('post', '/api/v1/me/follows', 'Follow', 'Idempotent.', { tag: meTag, body: followRequestSchema, ok: { status: 204 }, extra: notFound('Item') });
+  registry.registerPath({
+    method: 'delete',
+    path: '/api/v1/me/follows',
+    tags: [meTag],
+    summary: 'Unfollow',
+    security: cookieAuth,
+    request: { headers: csrfHeaders, body: { required: true, content: json(followRequestSchema) } },
+    responses: { 204: { description: 'Unfollowed' }, ...authErrors, ...commonErrors },
+  });
+  admin('put', '/api/v1/me/bookmarks', 'Bookmark an episode', 'Creates or updates the saved position.', {
+    tag: meTag,
+    body: bookmarkRequestSchema,
+    ok: { status: 204 },
+    extra: notFound('Episode'),
+  });
+  registry.registerPath({
+    method: 'delete',
+    path: '/api/v1/me/bookmarks/{episodeId}',
+    tags: [meTag],
+    summary: 'Remove a bookmark',
+    security: cookieAuth,
+    request: { params: z.object({ episodeId: z.string() }), headers: csrfHeaders },
+    responses: { 204: { description: 'Removed' }, ...authErrors, ...commonErrors },
   });
 }

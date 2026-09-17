@@ -14,11 +14,13 @@ import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { DEFAULT_RATE_LIMITS, globalRateLimiter, type RateLimitConfig } from './middleware/rate-limit.js';
 import { buildOpenApiDocument } from './openapi/document.js';
 import { adminAdvertisingRouter } from './routes/admin-advertising.js';
+import { adminContentRouter } from './routes/admin-content.js';
 import { adminMarketingRouter } from './routes/admin-marketing.js';
 import { adminRouter } from './routes/admin.js';
 import { advertisingRouter } from './routes/advertising.js';
 import { authRouter } from './routes/auth.js';
 import { contentRouter } from './routes/content.js';
+import { meRouter } from './routes/me.js';
 import { newsletterRouter } from './routes/newsletter.js';
 import { systemRouter } from './routes/system.js';
 
@@ -85,6 +87,8 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api/v1', contentRouter({ prisma }));
   app.use('/api/v1', advertisingRouter({ env, prisma, redis, logger, email, inquiryLimit: deps.formLimits?.inquiry }));
   app.use('/api/v1/newsletter', newsletterRouter({ env, prisma, logger, email, subscribeLimit: deps.formLimits?.subscribe }));
+  app.use('/api/v1/me', meRouter({ prisma }));
+  app.use('/api/v1/admin/content', adminContentRouter({ prisma }));
   app.use('/api/v1/admin/advertising', adminAdvertisingRouter({ prisma }));
   app.use('/api/v1/admin', adminRouter({ prisma }));
   app.use('/api/v1/admin', adminMarketingRouter({ prisma }));

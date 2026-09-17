@@ -278,6 +278,8 @@ export function buildOpenApiDocument({ version }: OpenApiOptions): OpenApiDocume
       { name: 'Marketing', description: 'Advertising inquiries and newsletter double opt-in' },
       { name: 'Admin: Advertising', description: 'Advertisers, rate card, campaigns, creatives, review queue and reports' },
       { name: 'Admin: Growth', description: 'Sales leads, newsletter audience and feature flags' },
+      { name: 'Admin: Content', description: 'Editorial CMS: shows, episodes, projects, companies, articles and the live schedule' },
+      { name: 'Me', description: 'The signed-in viewer’s follows, bookmarks and library' },
     ],
   });
 }

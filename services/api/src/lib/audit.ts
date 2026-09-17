@@ -10,6 +10,7 @@ export type AuditAction =
   | 'auth.dev_login'
   | 'user.roles.update'
   | `advertising.${string}`
+  | `content.${string}`
   | 'newsletter.export'
   | 'feature_flag.update';
 
