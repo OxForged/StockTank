@@ -31,16 +31,27 @@ Interactive design canvas: https://claude.ai/artifact/9vcvfKgo6qNxKdTthrfgT3
 | `ac80d6c` | API: Meilisearch search (fallback to Postgres), suggest/trending, media-graph detail endpoints, hosts/guests CMS, sitemap/RSS/robots; 98 API tests |
 | `1f3d95c` | Web: episode/project/company/person/news pages, SEO metadata + JSON-LD, richer search; admin hosts/guests + reindex; web 22, admin 9 tests |
 
+| `0e04a14` | Milestone 2 wrap-up (graph pages, search, SEO) |
+
+### Done: Milestone 3, media pipeline
+| Commit | What |
+|---|---|
+| `127817c` | `packages/media` (S3 storage, FFmpeg command builders), `services/media-worker` (BullMQ + FFmpeg), admin media/clip API, public episode and clip media, hls.js episode player, real mini player |
+| (this commit) | Admin Videos (presigned uploads with progress, processing status, retry), Clips (cut, review, render 16:9/9:16/1:1) and Shorts; worker Dockerfile; `pnpm media:bucket` |
+
+Verified live on localhost: an 8s 720p upload went through presigned PUT → complete → worker → HLS 720p/480p + audio-only + MP3 + poster served from MinIO; the demo episode switched to it. A clip rendered to a 1080×1920 vertical MP4. Originals return 403 publicly; renditions are readable. Tests: media 16, worker 6 (real FFmpeg), API 104, web 23, admin 15.
+
 ### Next
 - Owner decisions: prices and packages, legal review of drafts, production email provider, hosting/domain
-- Milestone 2 remaining: hosts/guests/creators editing, Meilisearch search, SEO (sitemap, JSON-LD, OG per page)
-- Milestone 3 media pipeline (makes the mini player and pre-roll inventory real)
+- Milestone 4: Castopod adapter, podcast RSS with MP3 enclosures (the MP3 rendition already exists)
+- Milestone 5: AzuraCast live radio; 6: analytics, roles, API keys, audit viewer; 7: AI services
 
 ### Run locally
 ```bash
 pnpm install
 bash scripts/dev-setup.sh        # infra, migrations, seeds (dev + test DB)
-pnpm dev                         # API :4000, web :5190, admin :5181
+pnpm dev                         # API :4000, web :5190, admin :5181, media worker
+pnpm media:bucket                # once: MinIO bucket (renditions public, originals private)
 pnpm db:seed:demo                # optional: DEMO shows, projects, companies, rundown
 ```
 Admin: `admin@stocktank.local`, password is `SEED_ADMIN_PASSWORD` in `.env` (gitignored).

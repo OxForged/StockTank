@@ -9,6 +9,12 @@
 - Never copy these from `reference/`: `nft-assets-server-main` `/fund`, `/pay-owners`, `x402.ts`, `payments.js`; `nft-video-gen-main/src/services/wallet.js`; face-swap/LivePortrait models.
 - Never commit secrets. Use `.env` (gitignored) and keep `.env.example` in sync.
 
+## Media pipeline
+- Uploads go browser → presigned PUT → `POST /admin/media/assets/:id/complete` (size verified) → BullMQ `stocktank-media` → `services/media-worker` (FFmpeg).
+- Object keys: `originals/*` private, `renditions/*` public (CDN). Never make originals public.
+- An episode switches to new media only when processing succeeds (`target_episode_id`). Clips are public only when published and always keep source timestamps.
+- Worker tests use the test DB and real FFmpeg (`ffmpeg-static` in dev; distro ffmpeg in the Docker image). They run after API tests (turbo.json) because both reset shared tables.
+
 ## Conventions
 - pnpm workspaces + Turborepo. Workspace globs: `apps/*`, `services/*`, `packages/*` (never `reference/`).
 - TypeScript strict everywhere. Zod for all API input/output. API is versioned under `/api/v1`.

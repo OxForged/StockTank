@@ -88,7 +88,7 @@ export function EpisodesCmsPage() {
     title: 'Episodes',
     noun: 'Episode',
     queryKey: 'episodes',
-    description: 'Episodes, show notes and the projects and companies discussed. Media upload arrives with the media pipeline (Milestone 3).',
+    description: 'Episodes, show notes and the projects and companies discussed. Upload episode video or audio under Content → Videos.',
     hasStatus: true,
     list: (q) => api.admin.content.listEpisodes(q),
     save: (input, id) => api.admin.content.saveEpisode(input, id),

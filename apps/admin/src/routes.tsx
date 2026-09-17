@@ -28,12 +28,17 @@ import {
   ProjectsCmsPage,
   ShowsCmsPage,
 } from './pages/cms-pages';
+import { ClipsPage, ShortsPage } from './pages/media/clips-page';
+import { MediaLibraryPage } from './pages/media/media-library-page';
 import { UsersPage } from './pages/users-page';
 
 /** Pages that work today, keyed by path. Everything else in the nav renders a milestone placeholder. */
 const WORKING: Record<string, () => JSX.Element> = {
   '/system/users': UsersPage,
   '/content/episodes': EpisodesCmsPage,
+  '/content/videos': MediaLibraryPage,
+  '/content/clips': () => <ClipsPage />,
+  '/content/shorts': ShortsPage,
   '/content/articles': ArticlesCmsPage,
   '/network/shows': ShowsCmsPage,
   '/network/hosts': HostsCmsPage,

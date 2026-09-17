@@ -35,6 +35,18 @@ export const mockApi = {
       saveGuest: vi.fn(),
       reindexSearch: vi.fn(),
     },
+    media: {
+      status: vi.fn(),
+      listAssets: vi.fn(),
+      asset: vi.fn(),
+      startUpload: vi.fn(),
+      completeUpload: vi.fn(),
+      retry: vi.fn(),
+      detachEpisode: vi.fn(),
+      listClips: vi.fn(),
+      saveClip: vi.fn(),
+      renderClip: vi.fn(),
+    },
     listUsers: vi.fn(),
     updateUserRoles: vi.fn(),
     advertisingOverview: vi.fn(),
@@ -72,6 +84,7 @@ export const mockApi = {
   auth: { [K in keyof ApiClient['auth']]: ReturnType<typeof vi.fn> };
   admin: { [K in keyof ApiClient['admin']]: ReturnType<typeof vi.fn> } & {
     content: { [K in keyof ApiClient['admin']['content']]: ReturnType<typeof vi.fn> };
+    media: { [K in keyof ApiClient['admin']['media']]: ReturnType<typeof vi.fn> };
   };
   system: { [K in keyof ApiClient['system']]: ReturnType<typeof vi.fn> };
 };

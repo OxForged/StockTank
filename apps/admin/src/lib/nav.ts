@@ -62,10 +62,10 @@ export const ADMIN_NAV: readonly (AdminNavItem | AdminNavGroup)[] = [
     permission: 'content.read_drafts',
     items: [
       { label: 'Episodes', to: '/content/episodes', icon: Tv },
-      { label: 'Videos', to: '/content/videos', icon: Video, milestone: 3, description: 'Uploads, transcoding status and HLS renditions.' },
-      { label: 'Clips', to: '/content/clips', icon: Scissors, milestone: 3, description: 'Cut, review and publish clips from episodes and live shows.' },
+      { label: 'Videos', to: '/content/videos', icon: Video },
+      { label: 'Clips', to: '/content/clips', icon: Scissors },
       { label: 'Articles', to: '/content/articles', icon: Newspaper },
-      { label: 'Shorts', to: '/content/shorts', icon: Smartphone, milestone: 3, description: 'Vertical short-form video for social distribution.' },
+      { label: 'Shorts', to: '/content/shorts', icon: Smartphone },
     ],
   },
   {

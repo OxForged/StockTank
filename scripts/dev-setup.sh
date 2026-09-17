@@ -16,3 +16,5 @@ pnpm db:seed:demo
 TEST_URL="$(grep -E '^TEST_DATABASE_URL=' .env | cut -d= -f2-)"
 DATABASE_URL="$TEST_URL" pnpm db:deploy
 DATABASE_URL="$TEST_URL" SEED_ADMIN_EMAIL= SEED_ADMIN_PASSWORD= pnpm db:seed
+# Object storage: create the media bucket with public reads for renditions only (originals stay private).
+pnpm media:bucket

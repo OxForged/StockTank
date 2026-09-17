@@ -6,7 +6,8 @@
   "packageManager": "pnpm@11.25.0",
   "engines": { "node": ">=24" },
   "scripts": {
-    "dev": "turbo run dev --parallel --filter=@stocktank/api --filter=@stocktank/web --filter=@stocktank/admin",
+    "dev": "turbo run dev --parallel --filter=@stocktank/api --filter=@stocktank/web --filter=@stocktank/admin --filter=@stocktank/media-worker",
+    "media:bucket": "pnpm --filter @stocktank/media-worker bucket",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",

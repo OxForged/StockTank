@@ -16,6 +16,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY packages/types ./packages/types
 COPY packages/config ./packages/config
 COPY packages/database ./packages/database
+COPY packages/media ./packages/media
 COPY services/api ./services/api
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --filter @stocktank/api...
