@@ -21,7 +21,13 @@ export const ROLE_DEFINITIONS: Record<
       'entities.write',
       'ai.review',
       'distribution.publish',
+      'ads.approve',
     ],
+  },
+  sales: {
+    name: 'Sales',
+    description: 'Manages advertisers, campaigns, creatives and leads; approvals need an editor',
+    permissions: ['ads.manage', 'leads.manage'],
   },
   creator: {
     name: 'Creator',

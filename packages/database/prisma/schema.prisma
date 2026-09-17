@@ -227,8 +227,9 @@ model Show {
   category Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   seasons  Season[]
   episodes Episode[]
-  hosts    ShowHost[]
-  follows  Follow[]
+  hosts       ShowHost[]
+  follows     Follow[]
+  livestreams Livestream[]
 
   @@index([status])
   @@map("shows")
@@ -578,4 +579,338 @@ model Bookmark {
 
   @@unique([userId, episodeId])
   @@map("bookmarks")
+}
+
+// ───────────────────────── Live schedule (§12, before AzuraCast) ─────────────────────────
+
+enum LivestreamStatus {
+  scheduled
+  live
+  ended
+  cancelled
+}
+
+model Livestream {
+  id             String           @id @default(cuid())
+  showId         String?          @map("show_id")
+  title          String
+  description    String?
+  status         LivestreamStatus @default(scheduled)
+  scheduledStart DateTime         @map("scheduled_start")
+  scheduledEnd   DateTime?        @map("scheduled_end")
+  startedAt      DateTime?        @map("started_at")
+  endedAt        DateTime?        @map("ended_at")
+  /// HLS or station stream URL once media infrastructure exists (Milestones 3–5).
+  streamUrl      String?          @map("stream_url")
+  isDemo         Boolean          @default(false) @map("is_demo")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  show     Show?               @relation(fields: [showId], references: [id], onDelete: SetNull)
+  segments LivestreamSegment[]
+
+  @@index([status, scheduledStart])
+  @@map("livestreams")
+}
+
+model LivestreamSegment {
+  id           String @id @default(cuid())
+  livestreamId String @map("livestream_id")
+  position     Int
+  title        String
+
+  livestream Livestream @relation(fields: [livestreamId], references: [id], onDelete: Cascade)
+
+  @@unique([livestreamId, position])
+  @@map("livestream_segments")
+}
+
+// ───────────────────────── Advertising (§34, §56) ─────────────────────────
+
+enum AdvertiserStatus {
+  pending_review
+  approved
+  suspended
+}
+
+enum PlacementSurface {
+  web
+  newsletter
+  audio
+  video
+}
+
+enum PlacementFormat {
+  sponsor_banner
+  native_card
+  leaderboard
+  sidebar_card
+  audio_read
+  video_preroll
+  show_sponsorship
+  newsletter_slot
+}
+
+enum PricingModel {
+  cpm
+  flat_week
+  flat_episode
+  flat_issue
+}
+
+enum RateVisibility {
+  public
+  on_request
+}
+
+enum CampaignStatus {
+  draft
+  in_review
+  approved
+  rejected
+  paused
+  completed
+}
+
+enum CreativeKind {
+  display
+  native
+  audio_script
+  video
+}
+
+model Advertiser {
+  id              String           @id @default(cuid())
+  name            String
+  slug            String           @unique
+  website         String?
+  contactName     String?          @map("contact_name")
+  contactEmail    String?          @map("contact_email")
+  industry        String?
+  status          AdvertiserStatus @default(pending_review)
+  /// Internal compliance notes (KYC, category checks). Never shown publicly.
+  complianceNotes String?          @map("compliance_notes")
+  isHouse         Boolean          @default(false) @map("is_house")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  campaigns Campaign[]
+  inquiries AdvertisingInquiry[]
+
+  @@map("advertisers")
+}
+
+/// Sellable inventory. Rates are set by sales in the admin; nothing is priced by default.
+model AdPlacement {
+  id                 String           @id @default(cuid())
+  key                String           @unique
+  name               String
+  description        String
+  surface            PlacementSurface
+  format             PlacementFormat
+  specs              String
+  pricingModel       PricingModel     @map("pricing_model")
+  rateCents          Int?             @map("rate_cents")
+  currency           String           @default("USD")
+  rateVisibility     RateVisibility   @default(on_request) @map("rate_visibility")
+  maxActiveCampaigns Int              @default(1) @map("max_active_campaigns")
+  isActive           Boolean          @default(true) @map("is_active")
+  sortOrder          Int              @default(0) @map("sort_order")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+
+  campaigns   CampaignPlacement[]
+  impressions AdImpression[]
+  clicks      AdClick[]
+
+  @@map("ad_placements")
+}
+
+model Campaign {
+  id                 String         @id @default(cuid())
+  advertiserId       String         @map("advertiser_id")
+  name               String
+  objective          String?
+  status             CampaignStatus @default(draft)
+  startsAt           DateTime       @map("starts_at")
+  endsAt             DateTime       @map("ends_at")
+  pricingModel       PricingModel   @map("pricing_model")
+  rateCents          Int            @map("rate_cents")
+  budgetCents        Int            @map("budget_cents")
+  currency           String         @default("USD")
+  impressionGoal     Int?           @map("impression_goal")
+  /// Max impressions per visitor per day (null = uncapped).
+  frequencyCapPerDay Int?           @map("frequency_cap_per_day")
+  weight             Int            @default(1)
+  createdById        String?        @map("created_by_id")
+  submittedAt        DateTime?      @map("submitted_at")
+  reviewedById       String?        @map("reviewed_by_id")
+  reviewedAt         DateTime?      @map("reviewed_at")
+  rejectionReason    String?        @map("rejection_reason")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+
+  advertiser  Advertiser          @relation(fields: [advertiserId], references: [id], onDelete: Restrict)
+  placements  CampaignPlacement[]
+  creatives   CreativeAsset[]
+  impressions AdImpression[]
+  clicks      AdClick[]
+
+  @@index([status, startsAt, endsAt])
+  @@index([advertiserId])
+  @@map("campaigns")
+}
+
+model CampaignPlacement {
+  campaignId  String @map("campaign_id")
+  placementId String @map("placement_id")
+
+  campaign  Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  placement AdPlacement @relation(fields: [placementId], references: [id], onDelete: Restrict)
+
+  @@id([campaignId, placementId])
+  @@map("campaign_placements")
+}
+
+model CreativeAsset {
+  id              String        @id @default(cuid())
+  campaignId      String        @map("campaign_id")
+  kind            CreativeKind
+  headline        String
+  body            String?
+  imageUrl        String?       @map("image_url")
+  altText         String?       @map("alt_text")
+  ctaLabel        String        @default("Learn more") @map("cta_label")
+  /// Validated http(s) destination. Clicks redirect only to this stored URL.
+  clickUrl        String        @map("click_url")
+  disclosureLabel String        @default("Sponsored") @map("disclosure_label")
+  reviewStatus    PublishStatus @default(draft) @map("review_status")
+  /// Automated policy findings (e.g. guaranteed-return language). Reviewers must acknowledge them.
+  policyFlags     String[]      @map("policy_flags")
+  reviewNotes     String?       @map("review_notes")
+  reviewedById    String?       @map("reviewed_by_id")
+  reviewedAt      DateTime?     @map("reviewed_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  campaign    Campaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  impressions AdImpression[]
+  clicks      AdClick[]
+
+  @@index([campaignId, reviewStatus])
+  @@map("creative_assets")
+}
+
+/// One row per verified impression token; the token id makes recording idempotent.
+model AdImpression {
+  id          String   @id
+  campaignId  String   @map("campaign_id")
+  creativeId  String   @map("creative_id")
+  placementId String   @map("placement_id")
+  /// SHA-256 of the anonymous visitor id, never the raw cookie value.
+  visitorHash String?  @map("visitor_hash")
+  userId      String?  @map("user_id")
+  pagePath    String?  @map("page_path")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  campaign  Campaign      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  creative  CreativeAsset @relation(fields: [creativeId], references: [id], onDelete: Cascade)
+  placement AdPlacement   @relation(fields: [placementId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId, createdAt])
+  @@index([placementId, createdAt])
+  @@map("ad_impressions")
+}
+
+model AdClick {
+  id           String   @id @default(cuid())
+  impressionId String?  @map("impression_id")
+  campaignId   String   @map("campaign_id")
+  creativeId   String   @map("creative_id")
+  placementId  String   @map("placement_id")
+  visitorHash  String?  @map("visitor_hash")
+  userId       String?  @map("user_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  campaign  Campaign      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  creative  CreativeAsset @relation(fields: [creativeId], references: [id], onDelete: Cascade)
+  placement AdPlacement   @relation(fields: [placementId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId, createdAt])
+  @@map("ad_clicks")
+}
+
+// ───────────────────────── Marketing & sales pipeline ─────────────────────────
+
+enum InquiryStatus {
+  new
+  contacted
+  qualified
+  proposal_sent
+  won
+  lost
+  spam
+}
+
+enum BudgetRange {
+  under_5k
+  from_5k_to_25k
+  from_25k_to_100k
+  over_100k
+  undisclosed
+}
+
+model AdvertisingInquiry {
+  id            String        @id @default(cuid())
+  company       String
+  contactName   String        @map("contact_name")
+  email         String
+  website       String?
+  budgetRange   BudgetRange   @map("budget_range")
+  placementKeys String[]      @map("placement_keys")
+  message       String
+  status        InquiryStatus @default(new)
+  notes         String?
+  advertiserId  String?       @map("advertiser_id")
+  assignedToId  String?       @map("assigned_to_id")
+  utmSource     String?       @map("utm_source")
+  utmMedium     String?       @map("utm_medium")
+  utmCampaign   String?       @map("utm_campaign")
+  referrer      String?
+  ipHash        String?       @map("ip_hash")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  advertiser Advertiser? @relation(fields: [advertiserId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@map("advertising_inquiries")
+}
+
+enum SubscriberStatus {
+  pending
+  confirmed
+  unsubscribed
+}
+
+/// Newsletter audience with double opt-in. Tokens are stored hashed.
+model NewsletterSubscriber {
+  id                   String           @id @default(cuid())
+  email                String           @unique
+  status               SubscriberStatus @default(pending)
+  source               String?
+  utmSource            String?          @map("utm_source")
+  utmMedium            String?          @map("utm_medium")
+  utmCampaign          String?          @map("utm_campaign")
+  consentAt            DateTime         @map("consent_at")
+  confirmTokenHash     String?          @unique @map("confirm_token_hash")
+  confirmSentAt        DateTime?        @map("confirm_sent_at")
+  confirmedAt          DateTime?        @map("confirmed_at")
+  unsubscribeTokenHash String           @unique @map("unsubscribe_token_hash")
+  unsubscribedAt       DateTime?        @map("unsubscribed_at")
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("newsletter_subscribers")
 }

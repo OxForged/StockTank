@@ -33,7 +33,8 @@ const ROLES: readonly RoleKey[] = roleKeySchema.options;
 const ROLE_HELP: Record<RoleKey, string> = {
   super_admin: 'Full platform control, including roles',
   admin: 'Operates the platform; cannot manage roles',
-  editor: 'Reviews, approves and publishes content',
+  editor: 'Reviews, approves and publishes content and ads',
+  sales: 'Manages advertisers, campaigns and leads; approvals need an editor',
   creator: 'Creates drafts; publishing requires an editor',
   viewer: 'Standard audience account',
 };

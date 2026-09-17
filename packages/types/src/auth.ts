@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /** System roles. Permissions are attached to roles in the database. */
-export const roleKeySchema = z.enum(['super_admin', 'admin', 'editor', 'creator', 'viewer']);
+export const roleKeySchema = z.enum(['super_admin', 'admin', 'editor', 'sales', 'creator', 'viewer']);
 export type RoleKey = z.infer<typeof roleKeySchema>;
 
 export const PERMISSIONS = [
@@ -15,6 +15,9 @@ export const PERMISSIONS = [
   'ai.review',
   'distribution.publish',
   'ads.manage',
+  'ads.approve',
+  'leads.manage',
+  'newsletter.manage',
   'feature_flags.manage',
   'audit_logs.read',
   'api_keys.manage',
