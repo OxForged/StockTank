@@ -5,3 +5,5 @@ export * from './errors.js';
 export * from './marketing.js';
 export * from './system.js';
 export * from './admin-content.js';
+export * from './media.js';
+export * from './admin-media.js';

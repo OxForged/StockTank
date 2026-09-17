@@ -3,7 +3,7 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DEMO_HOME, EMPTY_HOME, mockApi } from '../../test/mock-api';
+import { DEMO_HOME, EMPTY_HOME, EPISODE_DETAIL_BASE, mockApi } from '../../test/mock-api';
 import { renderApp } from '../../test/render';
 
 vi.mock('@stocktank/api-client', async (importOriginal) => {
@@ -53,11 +53,13 @@ describe('HomePage (hybrid A + B)', () => {
 
   it('opens the mini player without pretending media can play', async () => {
     mockApi.content.home.mockResolvedValue(DEMO_HOME);
+    mockApi.content.episode.mockResolvedValue({ ...EPISODE_DETAIL_BASE, media: null });
     renderApp('/');
     const user = userEvent.setup();
     await user.click(await screen.findByRole('button', { name: /play can a treasury protocol/i }));
     const player = screen.getByRole('region', { name: 'Player' });
-    expect(within(player).getByRole('button', { name: /playback not available yet/i })).toBeDisabled();
+    // The card has no media URLs, so the player looks the episode up; the mock episode has no processed media.
+    expect(await within(player).findByRole('button', { name: /playback not available yet/i })).toBeDisabled();
   });
 
   it('saves watchlist items on this device', async () => {

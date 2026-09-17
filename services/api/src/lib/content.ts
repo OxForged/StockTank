@@ -8,6 +8,7 @@ import type {
   ProjectSummary,
   ShowSummary,
 } from '@stocktank/types';
+import { toClipMedia, type MediaService } from './media.js';
 
 /** Only published content is public; drafts and review items never leave the admin. */
 export const PUBLISHED = 'published' as const;
@@ -68,10 +69,12 @@ export const clipSelect = {
   startTime: true,
   endTime: true,
   isDemo: true,
+  renderStatus: true,
+  renditions: true,
   sourceEpisode: { select: { slug: true, title: true, show: { select: { slug: true, title: true } } } },
 } satisfies Prisma.ClipSelect;
 
-export function toClipSummary(row: Prisma.ClipGetPayload<{ select: typeof clipSelect }>): ClipSummary {
+export function toClipSummary(row: Prisma.ClipGetPayload<{ select: typeof clipSelect }>, publicUrl: MediaService['publicUrl']): ClipSummary {
   return {
     id: row.id,
     title: row.title,
@@ -79,6 +82,7 @@ export function toClipSummary(row: Prisma.ClipGetPayload<{ select: typeof clipSe
     endTime: row.endTime,
     episode: { slug: row.sourceEpisode.slug, title: row.sourceEpisode.title },
     show: row.sourceEpisode.show,
+    media: toClipMedia(row, publicUrl),
     isDemo: row.isDemo,
   };
 }

@@ -1,4 +1,5 @@
 import { loadServerEnv, type ServerEnv } from '@stocktank/config';
+import { mediaEnvSchema, type MediaEnv } from '@stocktank/media';
 import { z } from 'zod';
 
 /**
@@ -43,12 +44,17 @@ const apiOnlyEnvSchema = z.object({
     .transform((v) => (v && v.trim() !== '' ? v.trim() : null)),
 });
 
-export type ApiEnv = ServerEnv & z.infer<typeof apiOnlyEnvSchema>;
+export type ApiEnv = ServerEnv & z.infer<typeof apiOnlyEnvSchema> & MediaEnv;
 
 /** Parses the shared server env plus API-specific settings. Throws on invalid config. */
 export function loadEnv(source: Record<string, string | undefined> = process.env): ApiEnv {
   const shared = loadServerEnv(source);
   const parsed = apiOnlyEnvSchema.safeParse(source);
+  const mediaParsed = mediaEnvSchema.safeParse(source);
+  if (!mediaParsed.success) {
+    const issues = mediaParsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
+    throw new Error(`Invalid API environment:\n${issues}`);
+  }
   if (!parsed.success) {
     const issues = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Invalid API environment:\n${issues}`);
@@ -64,5 +70,5 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
   if (parsed.data.DEV_LOGIN_ENABLED && shared.NODE_ENV === 'production') {
     throw new Error('DEV_LOGIN_ENABLED must not be set in production');
   }
-  return { ...shared, ...parsed.data };
+  return { ...shared, ...parsed.data, ...mediaParsed.data };
 }

@@ -38,12 +38,14 @@ import {
 } from '../lib/content.js';
 import { errors } from '../lib/errors.js';
 import { personSelect, toGuestSummary, toHostSummary } from '../lib/people.js';
+import { toEpisodeMedia, type MediaService } from '../lib/media.js';
 import type { SearchService } from '../lib/search.js';
 import { validate } from '../lib/validate.js';
 
 export interface ContentDeps {
   prisma: PrismaClient;
   search: SearchService;
+  media: Pick<MediaService, 'publicUrl'>;
 }
 
 export const slugParamsSchema = z.object({ slug: z.string().min(1).max(160) });
@@ -53,7 +55,8 @@ function publicCache(res: Response, seconds: number): void {
   res.set('Cache-Control', `public, max-age=${seconds}, stale-while-revalidate=${seconds * 4}`);
 }
 
-export function contentRouter({ prisma, search }: ContentDeps): Router {
+export function contentRouter({ prisma, search, media }: ContentDeps): Router {
+  const toClip = (row: Parameters<typeof toClipSummary>[0]) => toClipSummary(row, media.publicUrl);
   const router = Router();
 
   router.get('/home', async (_req, res) => {
@@ -96,7 +99,7 @@ export function contentRouter({ prisma, search }: ContentDeps): Router {
     const response: HomeResponse = {
       featuredShows: featuredShows.map(toShowSummary),
       latestEpisodes: latestEpisodes.map(toEpisodeSummary),
-      clips: clips.map(toClipSummary),
+      clips: clips.map(toClip),
       explainers: explainers.map(toArticleSummary),
       projects: projects.map(toProjectSummary),
       companies: companies.map(toCompanySummary),
@@ -211,6 +214,7 @@ export function contentRouter({ prisma, search }: ContentDeps): Router {
         projects: { where: { project: { status: PUBLISHED } }, select: { project: { select: projectSelect } } },
         companies: { where: { company: { status: PUBLISHED } }, select: { company: { select: companySelect } } },
         clips: { where: { reviewStatus: PUBLISHED }, select: clipSelect, orderBy: { startTime: 'asc' } },
+        mediaAsset: { select: { kind: true, status: true, renditions: true, durationSeconds: true } },
       },
     });
     if (!episode) throw errors.notFound('Episode not found');
@@ -222,11 +226,12 @@ export function contentRouter({ prisma, search }: ContentDeps): Router {
     });
     const response: EpisodeDetailResponse = {
       episode: { ...toEpisodeSummary(episode), description: episode.description, number: episode.number },
+      media: toEpisodeMedia(episode.mediaAsset, media.publicUrl),
       hosts: episode.hosts.map((h) => toHostSummary(h.host)),
       guests: episode.guests.map((g) => toGuestSummary(g.guest)),
       projects: episode.projects.map((p) => toProjectSummary(p.project)),
       companies: episode.companies.map((c) => toCompanySummary(c.company)),
-      clips: episode.clips.map(toClipSummary),
+      clips: episode.clips.map(toClip),
       moreFromShow: more.map(toEpisodeSummary),
     };
     publicCache(res, 60);

@@ -1,8 +1,9 @@
 import { ApiClientError } from '@stocktank/api-client';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { mockApi } from '../test/mock-api';
+import { EPISODE_DETAIL_BASE, mockApi } from '../test/mock-api';
 import { renderApp } from '../test/render';
 
 vi.mock('@stocktank/api-client', async (importOriginal) => {
@@ -27,10 +28,12 @@ describe('Media graph pages', () => {
       guests: [person({ id: 'g1', slug: 'rafael-costa', name: 'Rafael Costa', title: 'Founder', role: 'guest' })],
       projects: [{ id: 'p1', slug: 'harbor', name: 'Harbor Protocol', symbol: null, kind: 'protocol', description: null, chainName: null, logoUrl: null, verified: false, isDemo: false }],
       companies: [],
+      media: null,
       clips: [],
       moreFromShow: [],
     });
     renderApp('/shows/the-tank/bear-market');
+    expect(await screen.findByText(/playback becomes available once/i)).toBeInTheDocument();
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Treasury protocols in a bear market' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /rafael costa/i })).toHaveAttribute('href', '/people/rafael-costa');
@@ -42,6 +45,30 @@ describe('Media graph pages', () => {
     });
     expect(document.title).toBe('Treasury protocols in a bear market · The Tank — StockTank');
     expect(document.head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toMatch(/\/shows\/the-tank\/bear-market$/);
+  });
+
+  it('plays processed episode media inline and in the mini player, including clip ranges', async () => {
+    mockApi.content.episode.mockResolvedValue({
+      ...EPISODE_DETAIL_BASE,
+      media: { kind: 'video', hlsUrl: 'https://cdn.test/r/a/hls/master.m3u8', audioUrl: 'https://cdn.test/r/a/audio.mp3', posterUrl: 'https://cdn.test/r/a/poster.jpg', durationSeconds: 3480 },
+      clips: [
+        { id: 'c1', title: 'The pitch', startTime: 75, endTime: 105, episode: { slug: 'bear-market', title: 'Treasury' }, show, media: null, isDemo: false },
+        { id: 'c2', title: 'Rendered', startTime: 5, endTime: 20, episode: { slug: 'bear-market', title: 'Treasury' }, show, isDemo: false, media: { horizontalUrl: null, verticalUrl: null, squareUrl: null, audioUrl: 'https://cdn.test/clips/c2/audio.mp3', thumbnailUrl: null } },
+      ],
+    });
+    renderApp('/shows/the-tank/bear-market');
+    const video = await screen.findByLabelText('Video: Treasury protocols in a bear market');
+    expect(video).toHaveAttribute('poster', 'https://cdn.test/r/a/poster.jpg');
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /listen in the player/i }));
+    const player = screen.getByRole('region', { name: 'Player' });
+    expect(player.querySelector('audio')?.getAttribute('src')).toBe('https://cdn.test/r/a/audio.mp3');
+    expect(within(player).getByRole('button', { name: 'Play' })).toBeEnabled();
+
+    expect(screen.getByText('1:15 – 1:45')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Play clip Rendered' }));
+    await waitFor(() => expect(screen.getByRole('region', { name: 'Player' }).querySelector('audio')?.getAttribute('src')).toBe('https://cdn.test/clips/c2/audio.mp3'));
   });
 
   it('discloses AI hosts on their profile', async () => {

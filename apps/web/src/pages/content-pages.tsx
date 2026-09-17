@@ -156,7 +156,7 @@ function EpisodeRow({ episode, showTitle, saved, onSave }: { episode: EpisodeSum
       <button
         type="button"
         onClick={() =>
-          open({ id: episode.id, kind: 'episode', title: episode.title, showTitle, showSlug: episode.show.slug, mediaUrl: null, isDemo: episode.isDemo })
+          open({ id: episode.id, kind: 'episode', title: episode.title, showTitle, showSlug: episode.show.slug, episodeSlug: episode.slug, isDemo: episode.isDemo })
         }
         aria-label={`Play ${episode.title}`}
         className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary-hi transition-colors hover:bg-[#1ef0a8] hover:text-[#04110b]"

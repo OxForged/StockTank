@@ -1,5 +1,21 @@
 import { z } from 'zod';
 import {
+  adminClipListSchema,
+  adminClipSchema,
+  adminMediaAssetListSchema,
+  adminMediaAssetSchema,
+  createMediaUploadResponseSchema,
+  mediaStatusResponseSchema,
+  type AdminClip,
+  type AdminClipList,
+  type AdminMediaAsset,
+  type AdminMediaAssetList,
+  type ClipInput,
+  type CreateMediaUploadInput,
+  type CreateMediaUploadResponse,
+  type MediaStatus,
+  type MediaStatusResponse,
+  type PublishStatus as ClipReviewStatus,
   adminPersonListSchema,
   adminPersonSchema,
   articleDetailResponseSchema,
@@ -130,7 +146,7 @@ import {
 export class ApiClientError extends Error {
   constructor(
     readonly status: number,
-    readonly code: ErrorCode | 'NETWORK',
+    readonly code: ErrorCode | 'NETWORK' | 'UPLOAD_FAILED' | 'ABORTED',
     message: string,
     readonly details?: unknown,
   ) {
@@ -217,6 +233,7 @@ export function createApiClient(options: ApiClientOptions = {}) {
   };
   const AD = '/api/v1/admin/advertising';
   const CMS = '/api/v1/admin/content';
+  const MEDIA = '/api/v1/admin/media';
 
   return {
     auth: {
@@ -324,6 +341,24 @@ export function createApiClient(options: ApiClientOptions = {}) {
           id ? request('PUT', `${CMS}/guests/${encodeURIComponent(id)}`, adminPersonSchema, input) : request('POST', `${CMS}/guests`, adminPersonSchema, input),
         reindexSearch: (): Promise<ReindexResponse> => request('POST', `${CMS}/search/reindex`, reindexResponseSchema),
       },
+      media: {
+        status: (): Promise<MediaStatusResponse> => request('GET', `${MEDIA}/status`, mediaStatusResponseSchema),
+        listAssets: (q: { status?: MediaStatus; episodeId?: string; page?: number; pageSize?: number } = {}): Promise<AdminMediaAssetList> =>
+          request('GET', `${MEDIA}/assets${qs(q)}`, adminMediaAssetListSchema),
+        asset: (id: string): Promise<AdminMediaAsset> => request('GET', `${MEDIA}/assets/${encodeURIComponent(id)}`, adminMediaAssetSchema),
+        startUpload: (input: CreateMediaUploadInput): Promise<CreateMediaUploadResponse> =>
+          request('POST', `${MEDIA}/uploads`, createMediaUploadResponseSchema, input),
+        completeUpload: (id: string): Promise<AdminMediaAsset> =>
+          request('POST', `${MEDIA}/assets/${encodeURIComponent(id)}/complete`, adminMediaAssetSchema),
+        retry: (id: string): Promise<AdminMediaAsset> => request('POST', `${MEDIA}/assets/${encodeURIComponent(id)}/retry`, adminMediaAssetSchema),
+        detachEpisode: (episodeId: string): Promise<void> =>
+          noContent(request('POST', `${MEDIA}/episodes/${encodeURIComponent(episodeId)}/detach`, null)),
+        listClips: (q: { reviewStatus?: ClipReviewStatus; episodeId?: string; q?: string; page?: number; pageSize?: number } = {}): Promise<AdminClipList> =>
+          request('GET', `${MEDIA}/clips${qs(q)}`, adminClipListSchema),
+        saveClip: (input: ClipInput, id?: string): Promise<AdminClip> =>
+          id ? request('PUT', `${MEDIA}/clips/${encodeURIComponent(id)}`, adminClipSchema, input) : request('POST', `${MEDIA}/clips`, adminClipSchema, input),
+        renderClip: (id: string): Promise<AdminClip> => request('POST', `${MEDIA}/clips/${encodeURIComponent(id)}/render`, adminClipSchema),
+      },
       advertisingOverview: (): Promise<AdvertisingOverview> => request('GET', `${AD}/overview`, advertisingOverviewSchema),
       listAdvertisers: (): Promise<AdvertiserListResponse> => request('GET', `${AD}/advertisers`, advertiserListResponseSchema),
       createAdvertiser: (input: AdvertiserInput): Promise<{ id: string }> =>
@@ -387,3 +422,28 @@ export function createApiClient(options: ApiClientOptions = {}) {
 }
 
 export type ApiClient = ReturnType<typeof createApiClient>;
+
+/**
+ * Browser-only: PUTs a file to the presigned URL from `admin.media.startUpload`, reporting progress (0–100).
+ * Uses XMLHttpRequest because fetch has no upload progress events.
+ */
+export function uploadToStorage(
+  file: Blob,
+  upload: CreateMediaUploadResponse['upload'],
+  onProgress?: (percent: number) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open(upload.method, upload.url);
+    for (const [name, value] of Object.entries(upload.headers)) xhr.setRequestHeader(name, value);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress?.(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new ApiClientError(xhr.status, 'UPLOAD_FAILED', `Storage rejected the upload (${xhr.status})`)));
+    xhr.onerror = () => reject(new ApiClientError(0, 'NETWORK', 'The upload was interrupted. Check your connection and try again.'));
+    xhr.onabort = () => reject(new ApiClientError(0, 'ABORTED', 'Upload cancelled'));
+    signal?.addEventListener('abort', () => xhr.abort(), { once: true });
+    xhr.send(file);
+  });
+}

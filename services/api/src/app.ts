@@ -7,6 +7,7 @@ import type { Logger } from 'pino';
 import type { PrismaClient } from '@stocktank/database';
 import type { ApiEnv } from './env.js';
 import { createEmailProvider, type EmailProvider } from './lib/email.js';
+import { createMediaService, type MediaService } from './lib/media.js';
 import { createSearchService, type SearchService } from './lib/search.js';
 import { createHttpLogger, createLogger } from './lib/logger.js';
 import { attachSession } from './middleware/auth.js';
@@ -17,6 +18,7 @@ import { buildOpenApiDocument } from './openapi/document.js';
 import { adminAdvertisingRouter } from './routes/admin-advertising.js';
 import { adminContentRouter } from './routes/admin-content.js';
 import { adminMarketingRouter } from './routes/admin-marketing.js';
+import { adminMediaRouter } from './routes/admin-media.js';
 import { adminRouter } from './routes/admin.js';
 import { advertisingRouter } from './routes/advertising.js';
 import { authRouter } from './routes/auth.js';
@@ -37,6 +39,8 @@ export interface AppDeps {
   search?: SearchService;
   /** Defaults to the provider configured by EMAIL_PROVIDER. */
   email?: EmailProvider;
+  /** Object storage, processing queue and public media URLs; defaults to the configured S3/Redis settings. */
+  media?: MediaService;
   /** Public form limits (advertising inquiries, newsletter sign-ups); overridable for tests. */
   formLimits?: {
     inquiry?: { windowMs: number; limit: number };
@@ -52,6 +56,7 @@ export function createApp(deps: AppDeps): Express {
   const rateLimits: RateLimitConfig = { ...DEFAULT_RATE_LIMITS, ...deps.rateLimits };
   const openApiDocument = buildOpenApiDocument({ version: env.APP_VERSION });
   const email = deps.email ?? createEmailProvider(env, logger);
+  const media = deps.media ?? createMediaService(env, logger);
   const search =
     deps.search ??
     createSearchService(prisma, logger, redis, { url: env.MEILISEARCH_URL, key: env.MEILISEARCH_KEY, prefix: env.MEILISEARCH_INDEX_PREFIX });
@@ -92,11 +97,12 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api', attachSession(prisma, env));
   app.use('/api/v1/auth', authRouter({ env, prisma, rateLimits }));
   app.use('/api/v1/seo', seoRouter({ env, prisma }));
-  app.use('/api/v1', contentRouter({ prisma, search }));
+  app.use('/api/v1', contentRouter({ prisma, search, media }));
   app.use('/api/v1', advertisingRouter({ env, prisma, redis, logger, email, inquiryLimit: deps.formLimits?.inquiry }));
   app.use('/api/v1/newsletter', newsletterRouter({ env, prisma, logger, email, subscribeLimit: deps.formLimits?.subscribe }));
   app.use('/api/v1/me', meRouter({ prisma }));
   app.use('/api/v1/admin/content', adminContentRouter({ prisma, search }));
+  app.use('/api/v1/admin/media', adminMediaRouter({ prisma, media }));
   app.use('/api/v1/admin/advertising', adminAdvertisingRouter({ prisma }));
   app.use('/api/v1/admin', adminRouter({ prisma }));
   app.use('/api/v1/admin', adminMarketingRouter({ prisma }));

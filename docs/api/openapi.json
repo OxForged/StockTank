@@ -668,6 +668,51 @@
                     "title"
                   ]
                 },
+                "media": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "properties": {
+                    "horizontalUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "verticalUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "squareUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "audioUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "thumbnailUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "horizontalUrl",
+                    "verticalUrl",
+                    "squareUrl",
+                    "audioUrl",
+                    "thumbnailUrl"
+                  ]
+                },
                 "isDemo": {
                   "type": "boolean"
                 }
@@ -679,6 +724,7 @@
                 "endTime",
                 "episode",
                 "show",
+                "media",
                 "isDemo"
               ]
             }
@@ -4026,6 +4072,52 @@
                         "number"
                       ]
                     },
+                    "media": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "video",
+                            "audio"
+                          ]
+                        },
+                        "hlsUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "audioUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "posterUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "durationSeconds": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "hlsUrl",
+                        "audioUrl",
+                        "posterUrl",
+                        "durationSeconds"
+                      ]
+                    },
                     "hosts": {
                       "type": "array",
                       "items": {
@@ -4345,6 +4437,51 @@
                               "title"
                             ]
                           },
+                          "media": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "properties": {
+                              "horizontalUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "verticalUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "squareUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "audioUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "thumbnailUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "horizontalUrl",
+                              "verticalUrl",
+                              "squareUrl",
+                              "audioUrl",
+                              "thumbnailUrl"
+                            ]
+                          },
                           "isDemo": {
                             "type": "boolean"
                           }
@@ -4356,6 +4493,7 @@
                           "endTime",
                           "episode",
                           "show",
+                          "media",
                           "isDemo"
                         ]
                       }
@@ -4433,6 +4571,7 @@
                   },
                   "required": [
                     "episode",
+                    "media",
                     "hosts",
                     "guests",
                     "projects",
@@ -17563,6 +17702,2898 @@
           },
           "500": {
             "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/media/status": {
+      "get": {
+        "tags": [
+          "Admin: Media"
+        ],
+        "summary": "Media capabilities",
+        "description": "Requires `content.read_drafts`. Whether storage and the processing queue are configured, the upload size limit and accepted formats.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Media capabilities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "storageConfigured": {
+                      "type": "boolean"
+                    },
+                    "queueConfigured": {
+                      "type": "boolean"
+                    },
+                    "maxUploadBytes": {
+                      "type": "integer"
+                    },
+                    "acceptedMimeTypes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "storageConfigured",
+                    "queueConfigured",
+                    "maxUploadBytes",
+                    "acceptedMimeTypes"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/media/assets": {
+      "get": {
+        "tags": [
+          "Admin: Media"
+        ],
+        "summary": "List media assets",
+        "description": "Requires `content.read_drafts`. Filter by status or by episode (assets playing on or queued for it).",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending_upload",
+                "uploaded",
+                "processing",
+                "ready",
+                "failed"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": false,
+            "name": "episodeId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List media assets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "video",
+                              "audio"
+                            ]
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "pending_upload",
+                              "uploaded",
+                              "processing",
+                              "ready",
+                              "failed"
+                            ]
+                          },
+                          "originalName": {
+                            "type": "string"
+                          },
+                          "mimeType": {
+                            "type": "string"
+                          },
+                          "sizeBytes": {
+                            "type": "number"
+                          },
+                          "durationSeconds": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "width": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "height": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "progress": {
+                            "type": "integer"
+                          },
+                          "attempts": {
+                            "type": "integer"
+                          },
+                          "error": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "targetEpisodeId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "episodeId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "playback": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "video",
+                                  "audio"
+                                ]
+                              },
+                              "hlsUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "audioUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "posterUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "durationSeconds": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "hlsUrl",
+                              "audioUrl",
+                              "posterUrl",
+                              "durationSeconds"
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "readyAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind",
+                          "status",
+                          "originalName",
+                          "mimeType",
+                          "sizeBytes",
+                          "durationSeconds",
+                          "width",
+                          "height",
+                          "progress",
+                          "attempts",
+                          "error",
+                          "targetEpisodeId",
+                          "episodeId",
+                          "playback",
+                          "createdAt",
+                          "readyAt"
+                        ]
+                      }
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "pageSize": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "page",
+                    "pageSize",
+                    "total"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/media/assets/{id}": {
+      "get": {
+        "tags": [
+          "Admin: Media"
+        ],
+        "summary": "Media asset status",
+        "description": "Requires `content.read_drafts`. Poll for processing progress.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Media asset status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "video",
+                        "audio"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending_upload",
+                        "uploaded",
+                        "processing",
+                        "ready",
+                        "failed"
+                      ]
+                    },
+                    "originalName": {
+                      "type": "string"
+                    },
+                    "mimeType": {
+                      "type": "string"
+                    },
+                    "sizeBytes": {
+                      "type": "number"
+                    },
+                    "durationSeconds": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "width": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "height": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "progress": {
+                      "type": "integer"
+                    },
+                    "attempts": {
+                      "type": "integer"
+                    },
+                    "error": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "targetEpisodeId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "episodeId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "playback": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "video",
+                            "audio"
+                          ]
+                        },
+                        "hlsUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "audioUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "posterUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "durationSeconds": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "hlsUrl",
+                        "audioUrl",
+                        "posterUrl",
+                        "durationSeconds"
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "readyAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "kind",
+                    "status",
+                    "originalName",
+                    "mimeType",
+                    "sizeBytes",
+                    "durationSeconds",
+                    "width",
+                    "height",
+                    "progress",
+                    "attempts",
+                    "error",
+                    "targetEpisodeId",
+                    "episodeId",
+                    "playback",
+                    "createdAt",
+                    "readyAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Media asset not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/media/uploads": {
+      "post": {
+        "tags": [
+          "Admin: Media"
+        ],
+        "summary": "Start an upload",
+        "description": "Requires `content.write`. Reserves an asset and returns a presigned PUT URL (1 hour) straight to object storage. Accepts MP4, MOV, MP3, WAV and M4A. When `episodeId` is set the episode switches to the asset only after processing succeeds. Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "filename": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
+                  },
+                  "mimeType": {
+                    "type": "string",
+                    "enum": [
+                      "video/mp4",
+                      "video/quicktime",
+                      "audio/mpeg",
+                      "audio/wav",
+                      "audio/x-wav",
+                      "audio/mp4",
+                      "audio/x-m4a"
+                    ]
+                  },
+                  "sizeBytes": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "episodeId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  }
+                },
+                "required": [
+                  "filename",
+                  "mimeType",
+                  "sizeBytes"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Start an upload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "asset": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "video",
+                            "audio"
+                          ]
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending_upload",
+                            "uploaded",
+                            "processing",
+                            "ready",
+                            "failed"
+                          ]
+                        },
+                        "originalName": {
+                          "type": "string"
+                        },
+                        "mimeType": {
+                          "type": "string"
+                        },
+                        "sizeBytes": {
+                          "type": "number"
+                        },
+                        "durationSeconds": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "width": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "height": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "progress": {
+                          "type": "integer"
+                        },
+                        "attempts": {
+                          "type": "integer"
+                        },
+                        "error": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "targetEpisodeId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "episodeId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "playback": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "video",
+                                "audio"
+                              ]
+                            },
+                            "hlsUrl": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "audioUrl": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "posterUrl": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "durationSeconds": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "hlsUrl",
+                            "audioUrl",
+                            "posterUrl",
+                            "durationSeconds"
+                          ]
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        },
+                        "readyAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "status",
+                        "originalName",
+                        "mimeType",
+                        "sizeBytes",
+                        "durationSeconds",
+                        "width",
+                        "height",
+                        "progress",
+                        "attempts",
+                        "error",
+                        "targetEpisodeId",
+                        "episodeId",
+                        "playback",
+                        "createdAt",
+                        "readyAt"
+                      ]
+                    },
+                    "upload": {
+                      "type": "object",
+                      "properties": {
+                        "method": {
+                          "type": "string",
+                          "enum": [
+                            "PUT"
+                          ]
+                        },
+                        "url": {
+                          "type": "string"
+                        },
+                        "headers": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "expiresAt": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "method",
+                        "url",
+                        "headers",
+                        "expiresAt"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "asset",
+                    "upload"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Object storage or the processing queue is not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/media/assets/{id}/complete": {
+      "post": {
+        "tags": [
+          "Admin: Media"
+        ],
+        "summary": "Complete an upload",
+        "description": "Requires `content.write`. Verifies the object exists with the declared size, then queues exactly one transcode (HLS 1080p/720p/480p + audio-only, MP3, poster). Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Complete an upload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "video",
+                        "audio"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending_upload",
+                        "uploaded",
+                        "processing",
+                        "ready",
+                        "failed"
+                      ]
+                    },
+                    "originalName": {
+                      "type": "string"
+                    },
+                    "mimeType": {
+                      "type": "string"
+                    },
+                    "sizeBytes": {
+                      "type": "number"
+                    },
+                    "durationSeconds": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "width": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "height": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "progress": {
+                      "type": "integer"
+                    },
+                    "attempts": {
+                      "type": "integer"
+                    },
+                    "error": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "targetEpisodeId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "episodeId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "playback": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "video",
+                            "audio"
+                          ]
+                        },
+                        "hlsUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "audioUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "posterUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "durationSeconds": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "hlsUrl",
+                        "audioUrl",
+                        "posterUrl",
+                        "durationSeconds"
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "readyAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "kind",
+                    "status",
+                    "originalName",
+                    "mimeType",
+                    "sizeBytes",
+                    "durationSeconds",
+                    "width",
+                    "height",
+                    "progress",
+                    "attempts",
+                    "error",
+                    "targetEpisodeId",
+                    "episodeId",
+                    "playback",
+                    "createdAt",
+                    "readyAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Media asset not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Upload already completed (CONFLICT)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Object storage or the processing queue is not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/media/assets/{id}/retry": {
+      "post": {
+        "tags": [
+          "Admin: Media"
+        ],
+        "summary": "Retry failed processing",
+        "description": "Requires `content.write`. Only failed assets. Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retry failed processing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "video",
+                        "audio"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending_upload",
+                        "uploaded",
+                        "processing",
+                        "ready",
+                        "failed"
+                      ]
+                    },
+                    "originalName": {
+                      "type": "string"
+                    },
+                    "mimeType": {
+                      "type": "string"
+                    },
+                    "sizeBytes": {
+                      "type": "number"
+                    },
+                    "durationSeconds": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "width": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "height": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "progress": {
+                      "type": "integer"
+                    },
+                    "attempts": {
+                      "type": "integer"
+                    },
+                    "error": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "targetEpisodeId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "episodeId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "playback": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "video",
+                            "audio"
+                          ]
+                        },
+                        "hlsUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "audioUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "posterUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "durationSeconds": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "hlsUrl",
+                        "audioUrl",
+                        "posterUrl",
+                        "durationSeconds"
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "readyAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "kind",
+                    "status",
+                    "originalName",
+                    "mimeType",
+                    "sizeBytes",
+                    "durationSeconds",
+                    "width",
+                    "height",
+                    "progress",
+                    "attempts",
+                    "error",
+                    "targetEpisodeId",
+                    "episodeId",
+                    "playback",
+                    "createdAt",
+                    "readyAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Media asset not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Asset is not in a failed state (CONFLICT)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Object storage or the processing queue is not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/media/episodes/{id}/detach": {
+      "post": {
+        "tags": [
+          "Admin: Media"
+        ],
+        "summary": "Detach media from an episode",
+        "description": "Requires `content.write`. Stops playback on the public page; files are kept. Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Detach media from an episode"
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Episode not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/media/clips": {
+      "get": {
+        "tags": [
+          "Admin: Media"
+        ],
+        "summary": "List clips",
+        "description": "Requires `content.read_drafts`.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "review",
+                "approved",
+                "rejected",
+                "published",
+                "archived"
+              ]
+            },
+            "required": false,
+            "name": "reviewStatus",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": false,
+            "name": "episodeId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List clips",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "startTime": {
+                            "type": "number"
+                          },
+                          "endTime": {
+                            "type": "number"
+                          },
+                          "transcript": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "confidence": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "generationModel": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "reviewStatus": {
+                            "type": "string",
+                            "enum": [
+                              "draft",
+                              "review",
+                              "approved",
+                              "rejected",
+                              "published",
+                              "archived"
+                            ]
+                          },
+                          "renderStatus": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "enum": [
+                              "pending_upload",
+                              "uploaded",
+                              "processing",
+                              "ready",
+                              "failed",
+                              null
+                            ]
+                          },
+                          "renderError": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "media": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "properties": {
+                              "horizontalUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "verticalUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "squareUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "audioUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "thumbnailUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "horizontalUrl",
+                              "verticalUrl",
+                              "squareUrl",
+                              "audioUrl",
+                              "thumbnailUrl"
+                            ]
+                          },
+                          "sourceEpisode": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "slug": {
+                                "type": "string"
+                              },
+                              "showSlug": {
+                                "type": "string"
+                              },
+                              "hasMedia": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "title",
+                              "slug",
+                              "showSlug",
+                              "hasMedia"
+                            ]
+                          },
+                          "isDemo": {
+                            "type": "boolean"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "title",
+                          "startTime",
+                          "endTime",
+                          "transcript",
+                          "confidence",
+                          "generationModel",
+                          "reviewStatus",
+                          "renderStatus",
+                          "renderError",
+                          "media",
+                          "sourceEpisode",
+                          "isDemo",
+                          "createdAt",
+                          "updatedAt"
+                        ]
+                      }
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "pageSize": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "page",
+                    "pageSize",
+                    "total"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: Media"
+        ],
+        "summary": "Create clip",
+        "description": "Requires `content.write`. Clips always reference source timestamps (at most 600 seconds). Publishing requires `content.publish`. Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "sourceEpisodeId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "startTime": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "endTime": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      "transcript": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 10000
+                      },
+                      "reviewStatus": {
+                        "type": "string",
+                        "enum": [
+                          "draft",
+                          "review",
+                          "approved",
+                          "rejected",
+                          "published",
+                          "archived"
+                        ],
+                        "default": "draft"
+                      }
+                    },
+                    "required": [
+                      "sourceEpisodeId",
+                      "title",
+                      "startTime",
+                      "endTime"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "startTime": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "endTime": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      }
+                    },
+                    "required": [
+                      "startTime",
+                      "endTime"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Create clip",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "startTime": {
+                      "type": "number"
+                    },
+                    "endTime": {
+                      "type": "number"
+                    },
+                    "transcript": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "confidence": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "generationModel": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "reviewStatus": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "review",
+                        "approved",
+                        "rejected",
+                        "published",
+                        "archived"
+                      ]
+                    },
+                    "renderStatus": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "pending_upload",
+                        "uploaded",
+                        "processing",
+                        "ready",
+                        "failed",
+                        null
+                      ]
+                    },
+                    "renderError": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "media": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "horizontalUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "verticalUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "squareUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "audioUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "thumbnailUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "horizontalUrl",
+                        "verticalUrl",
+                        "squareUrl",
+                        "audioUrl",
+                        "thumbnailUrl"
+                      ]
+                    },
+                    "sourceEpisode": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "slug": {
+                          "type": "string"
+                        },
+                        "showSlug": {
+                          "type": "string"
+                        },
+                        "hasMedia": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "title",
+                        "slug",
+                        "showSlug",
+                        "hasMedia"
+                      ]
+                    },
+                    "isDemo": {
+                      "type": "boolean"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "startTime",
+                    "endTime",
+                    "transcript",
+                    "confidence",
+                    "generationModel",
+                    "reviewStatus",
+                    "renderStatus",
+                    "renderError",
+                    "media",
+                    "sourceEpisode",
+                    "isDemo",
+                    "createdAt",
+                    "updatedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/media/clips/{id}": {
+      "put": {
+        "tags": [
+          "Admin: Media"
+        ],
+        "summary": "Update clip",
+        "description": "Requires `content.write`; publishing requires `content.publish`. Changing the cut clears rendered files. Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "sourceEpisodeId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "startTime": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "endTime": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      "transcript": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 10000
+                      },
+                      "reviewStatus": {
+                        "type": "string",
+                        "enum": [
+                          "draft",
+                          "review",
+                          "approved",
+                          "rejected",
+                          "published",
+                          "archived"
+                        ],
+                        "default": "draft"
+                      }
+                    },
+                    "required": [
+                      "sourceEpisodeId",
+                      "title",
+                      "startTime",
+                      "endTime"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "startTime": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "endTime": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      }
+                    },
+                    "required": [
+                      "startTime",
+                      "endTime"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Update clip",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "startTime": {
+                      "type": "number"
+                    },
+                    "endTime": {
+                      "type": "number"
+                    },
+                    "transcript": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "confidence": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "generationModel": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "reviewStatus": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "review",
+                        "approved",
+                        "rejected",
+                        "published",
+                        "archived"
+                      ]
+                    },
+                    "renderStatus": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "pending_upload",
+                        "uploaded",
+                        "processing",
+                        "ready",
+                        "failed",
+                        null
+                      ]
+                    },
+                    "renderError": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "media": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "horizontalUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "verticalUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "squareUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "audioUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "thumbnailUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "horizontalUrl",
+                        "verticalUrl",
+                        "squareUrl",
+                        "audioUrl",
+                        "thumbnailUrl"
+                      ]
+                    },
+                    "sourceEpisode": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "slug": {
+                          "type": "string"
+                        },
+                        "showSlug": {
+                          "type": "string"
+                        },
+                        "hasMedia": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "title",
+                        "slug",
+                        "showSlug",
+                        "hasMedia"
+                      ]
+                    },
+                    "isDemo": {
+                      "type": "boolean"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "startTime",
+                    "endTime",
+                    "transcript",
+                    "confidence",
+                    "generationModel",
+                    "reviewStatus",
+                    "renderStatus",
+                    "renderError",
+                    "media",
+                    "sourceEpisode",
+                    "isDemo",
+                    "createdAt",
+                    "updatedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Clip not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/media/clips/{id}/render": {
+      "post": {
+        "tags": [
+          "Admin: Media"
+        ],
+        "summary": "Render clip",
+        "description": "Requires `content.write`. Queues horizontal, vertical 9:16 and square 1:1 MP4s, an MP3 and a thumbnail. The source episode must have processed media. Audited.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+              "example": "stocktank"
+            },
+            "required": true,
+            "description": "CSRF guard required on every state-changing request under /api. Any non-empty value (the official clients send \"stocktank\").",
+            "name": "x-requested-with",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Render clip",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "startTime": {
+                      "type": "number"
+                    },
+                    "endTime": {
+                      "type": "number"
+                    },
+                    "transcript": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "confidence": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "generationModel": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "reviewStatus": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "review",
+                        "approved",
+                        "rejected",
+                        "published",
+                        "archived"
+                      ]
+                    },
+                    "renderStatus": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "pending_upload",
+                        "uploaded",
+                        "processing",
+                        "ready",
+                        "failed",
+                        null
+                      ]
+                    },
+                    "renderError": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "media": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "horizontalUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "verticalUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "squareUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "audioUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "thumbnailUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "horizontalUrl",
+                        "verticalUrl",
+                        "squareUrl",
+                        "audioUrl",
+                        "thumbnailUrl"
+                      ]
+                    },
+                    "sourceEpisode": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "slug": {
+                          "type": "string"
+                        },
+                        "showSlug": {
+                          "type": "string"
+                        },
+                        "hasMedia": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "title",
+                        "slug",
+                        "showSlug",
+                        "hasMedia"
+                      ]
+                    },
+                    "isDemo": {
+                      "type": "boolean"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "startTime",
+                    "endTime",
+                    "transcript",
+                    "confidence",
+                    "generationModel",
+                    "reviewStatus",
+                    "renderStatus",
+                    "renderError",
+                    "media",
+                    "sourceEpisode",
+                    "isDemo",
+                    "createdAt",
+                    "updatedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or invalid input (BAD_REQUEST / VALIDATION_FAILED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session cookie (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing X-Requested-With / disallowed Origin, or insufficient permission (FORBIDDEN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Clip not found (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Already rendering or source media not ready (CONFLICT)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (RATE_LIMITED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (INTERNAL)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Object storage or the processing queue is not configured",
             "content": {
               "application/json": {
                 "schema": {

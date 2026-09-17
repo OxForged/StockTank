@@ -2,7 +2,7 @@ import { ApiClientError } from '@stocktank/api-client';
 import type { EpisodeSummary, PersonSummary } from '@stocktank/types';
 import { Button, EmptyState, Skeleton, cn } from '@stocktank/ui';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowUpRight, Bot, Newspaper, Play, Star } from 'lucide-react';
+import { ArrowUpRight, Bot, Headphones, Newspaper, Play, Star } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
 
@@ -10,6 +10,8 @@ import { AdSlot } from '../components/ads/ad-slot';
 import { NewsletterSignup } from '../components/marketing/newsletter-signup';
 import { api } from '../lib/api';
 import { ORGANIZATION_LD, useSeo } from '../lib/seo';
+import { EpisodeVideoPlayer } from '../components/player/episode-player';
+import { formatClock } from '../lib/media';
 import { usePlayer } from '../stores/player';
 import { useWatchlist } from '../stores/watchlist';
 import { NotFoundPage } from './not-found-page';
@@ -156,6 +158,7 @@ export function EpisodePage() {
   if (q.isError) return isNotFound(q.error) ? <NotFoundPage /> : <Retry onRetry={() => q.refetch()} />;
   if (!data) return <Loading />;
   const { episode } = data;
+  const playerBase = { id: episode.id, kind: 'episode' as const, title: episode.title, showTitle: episode.show.title, showSlug: episode.show.slug, episodeSlug: episode.slug, isDemo: episode.isDemo };
 
   return (
     <>
@@ -176,17 +179,23 @@ export function EpisodePage() {
             .filter(Boolean)
             .join(' · ')}
         </p>
-        <Button
-          className="mt-2 self-start"
-          onClick={() => open({ id: episode.id, kind: 'episode', title: episode.title, showTitle: episode.show.title, showSlug: episode.show.slug, mediaUrl: null, isDemo: episode.isDemo })}
-        >
-          <Play className="size-4 fill-current" aria-hidden="true" />
-          Play episode
-        </Button>
+        {data.media ? (
+          <Button
+            className="mt-2 self-start"
+            variant={data.media.hlsUrl ? 'secondary' : 'primary'}
+            onClick={() => open({ ...playerBase, media: data.media })}
+          >
+            {data.media.hlsUrl ? <Headphones className="size-4" aria-hidden="true" /> : <Play className="size-4 fill-current" aria-hidden="true" />}
+            {data.media.hlsUrl ? 'Listen in the player' : 'Play episode'}
+          </Button>
+        ) : (
+          <p className="mt-2 font-mono text-xs text-muted">Playback becomes available once this episode’s media is published.</p>
+        )}
       </Hero>
 
       <div className="grid gap-8 px-4 py-8 md:px-8 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="flex min-w-0 flex-col gap-8">
+          {data.media?.hlsUrl ? <EpisodeVideoPlayer media={data.media} title={episode.title} /> : null}
           {episode.summary ? <p className="text-lg text-muted">{episode.summary}</p> : null}
           {episode.description ? (
             <section aria-labelledby="notes-h" className="flex flex-col gap-3">
@@ -246,12 +255,34 @@ export function EpisodePage() {
               </h2>
               <ul className="grid gap-3 sm:grid-cols-2">
                 {data.clips.map((c) => (
-                  <li key={c.id} className="rounded-xl border border-hairline bg-surface p-4">
-                    <span className="font-mono text-[11px] text-muted">
-                      {Math.floor(c.startTime / 60)}:{String(Math.floor(c.startTime % 60)).padStart(2, '0')} – {Math.floor(c.endTime / 60)}:
-                      {String(Math.floor(c.endTime % 60)).padStart(2, '0')}
-                    </span>
-                    <p className="font-semibold">{c.title}</p>
+                  <li key={c.id} className="flex items-center gap-3 rounded-xl border border-hairline bg-surface p-4">
+                    {c.media?.audioUrl || data.media ? (
+                      <button
+                        type="button"
+                        aria-label={`Play clip ${c.title}`}
+                        onClick={() =>
+                          open({
+                            ...playerBase,
+                            id: c.id,
+                            kind: 'clip',
+                            title: c.title,
+                            isDemo: c.isDemo,
+                            ...(c.media?.audioUrl
+                              ? { media: { hlsUrl: null, audioUrl: c.media.audioUrl, posterUrl: c.media.thumbnailUrl } }
+                              : { media: data.media, startAt: c.startTime, endAt: c.endTime }),
+                          })
+                        }
+                        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary-hi transition-colors hover:bg-[#1ef0a8] hover:text-[#04110b]"
+                      >
+                        <Play className="size-4 fill-current" aria-hidden="true" />
+                      </button>
+                    ) : null}
+                    <div className="flex min-w-0 flex-col">
+                      <span className="font-mono text-[11px] text-muted">
+                        {formatClock(c.startTime)} – {formatClock(c.endTime)}
+                      </span>
+                      <p className="font-semibold">{c.title}</p>
+                    </div>
                   </li>
                 ))}
               </ul>

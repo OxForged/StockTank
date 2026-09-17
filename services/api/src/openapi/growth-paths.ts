@@ -81,6 +81,16 @@ import {
   livestreamInputSchema,
   projectInputSchema,
   showInputSchema,
+  adminClipListQuerySchema,
+  adminClipListSchema,
+  adminClipSchema,
+  adminMediaAssetListQuerySchema,
+  adminMediaAssetListSchema,
+  adminMediaAssetSchema,
+  clipInputSchema,
+  createMediaUploadInputSchema,
+  createMediaUploadResponseSchema,
+  mediaStatusResponseSchema,
 } from '@stocktank/types';
 import { component } from './document.js';
 
@@ -474,5 +484,70 @@ export function registerGrowthPaths(registry: OpenAPIRegistry, h: GrowthPathHelp
     security: cookieAuth,
     request: { params: z.object({ episodeId: z.string() }), headers: csrfHeaders },
     responses: { 204: { description: 'Removed' }, ...authErrors, ...commonErrors },
+  });
+  // ───── Admin: media pipeline (Milestone 3) ─────
+  const MEDIA = '/api/v1/admin/media';
+  const unavailable = { 503: errorResponse('Object storage or the processing queue is not configured') };
+  admin('get', `${MEDIA}/status`, 'Media capabilities', 'Requires `content.read_drafts`. Whether storage and the processing queue are configured, the upload size limit and accepted formats.', {
+    tag: 'Admin: Media',
+    ok: { status: 200, schema: mediaStatusResponseSchema },
+  });
+  admin('get', `${MEDIA}/assets`, 'List media assets', 'Requires `content.read_drafts`. Filter by status or by episode (assets playing on or queued for it).', {
+    tag: 'Admin: Media',
+    query: adminMediaAssetListQuerySchema,
+    ok: { status: 200, schema: adminMediaAssetListSchema },
+  });
+  admin('get', `${MEDIA}/assets/{id}`, 'Media asset status', 'Requires `content.read_drafts`. Poll for processing progress.', {
+    tag: 'Admin: Media',
+    params: idParams,
+    ok: { status: 200, schema: adminMediaAssetSchema },
+    extra: notFound('Media asset'),
+  });
+  admin('post', `${MEDIA}/uploads`, 'Start an upload', 'Requires `content.write`. Reserves an asset and returns a presigned PUT URL (1 hour) straight to object storage. Accepts MP4, MOV, MP3, WAV and M4A. When `episodeId` is set the episode switches to the asset only after processing succeeds. Audited.', {
+    tag: 'Admin: Media',
+    body: createMediaUploadInputSchema,
+    ok: { status: 201, schema: createMediaUploadResponseSchema },
+    extra: unavailable,
+  });
+  admin('post', `${MEDIA}/assets/{id}/complete`, 'Complete an upload', 'Requires `content.write`. Verifies the object exists with the declared size, then queues exactly one transcode (HLS 1080p/720p/480p + audio-only, MP3, poster). Audited.', {
+    tag: 'Admin: Media',
+    params: idParams,
+    ok: { status: 200, schema: adminMediaAssetSchema },
+    extra: { ...notFound('Media asset'), ...conflict('Upload already completed'), ...unavailable },
+  });
+  admin('post', `${MEDIA}/assets/{id}/retry`, 'Retry failed processing', 'Requires `content.write`. Only failed assets. Audited.', {
+    tag: 'Admin: Media',
+    params: idParams,
+    ok: { status: 200, schema: adminMediaAssetSchema },
+    extra: { ...notFound('Media asset'), ...conflict('Asset is not in a failed state'), ...unavailable },
+  });
+  admin('post', `${MEDIA}/episodes/{id}/detach`, 'Detach media from an episode', 'Requires `content.write`. Stops playback on the public page; files are kept. Audited.', {
+    tag: 'Admin: Media',
+    params: idParams,
+    ok: { status: 204 },
+    extra: notFound('Episode'),
+  });
+  admin('get', `${MEDIA}/clips`, 'List clips', 'Requires `content.read_drafts`.', {
+    tag: 'Admin: Media',
+    query: adminClipListQuerySchema,
+    ok: { status: 200, schema: adminClipListSchema },
+  });
+  admin('post', `${MEDIA}/clips`, 'Create clip', 'Requires `content.write`. Clips always reference source timestamps (at most 600 seconds). Publishing requires `content.publish`. Audited.', {
+    tag: 'Admin: Media',
+    body: clipInputSchema,
+    ok: { status: 201, schema: adminClipSchema },
+  });
+  admin('put', `${MEDIA}/clips/{id}`, 'Update clip', 'Requires `content.write`; publishing requires `content.publish`. Changing the cut clears rendered files. Audited.', {
+    tag: 'Admin: Media',
+    params: idParams,
+    body: clipInputSchema,
+    ok: { status: 200, schema: adminClipSchema },
+    extra: notFound('Clip'),
+  });
+  admin('post', `${MEDIA}/clips/{id}/render`, 'Render clip', 'Requires `content.write`. Queues horizontal, vertical 9:16 and square 1:1 MP4s, an MP3 and a thumbnail. The source episode must have processed media. Audited.', {
+    tag: 'Admin: Media',
+    params: idParams,
+    ok: { status: 202, schema: adminClipSchema },
+    extra: { ...notFound('Clip'), ...conflict('Already rendering or source media not ready'), ...unavailable },
   });
 }

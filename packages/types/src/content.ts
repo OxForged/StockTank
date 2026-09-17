@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { clipMediaSchema, episodeMediaSchema } from './media.js';
 
 /** Every public content item says whether it is seeded DEMO data (§52), so the UI can label it. */
 const demoFlag = { isDemo: z.boolean() };
@@ -48,6 +49,8 @@ export const clipSummarySchema = z.object({
   endTime: z.number(),
   episode: z.object({ slug: z.string(), title: z.string() }),
   show: z.object({ slug: z.string(), title: z.string() }),
+  /** Rendered clip files; null until the clip has been rendered. */
+  media: clipMediaSchema.nullable(),
   ...demoFlag,
 });
 export type ClipSummary = z.infer<typeof clipSummarySchema>;
@@ -169,6 +172,8 @@ export const searchQuerySchema = z.object({ q: z.string().trim().min(1).max(100)
 /** Media graph pages (§9): each entity with everything connected to it. */
 export const episodeDetailResponseSchema = z.object({
   episode: episodeSummarySchema.extend({ description: z.string().nullable(), number: z.number().int().nullable() }),
+  /** Playable renditions; null until uploaded media has finished processing. */
+  media: episodeMediaSchema.nullable(),
   hosts: z.array(personSummarySchema),
   guests: z.array(personSummarySchema),
   projects: z.array(projectSummarySchema),

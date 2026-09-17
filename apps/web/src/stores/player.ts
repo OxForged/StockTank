@@ -1,14 +1,27 @@
 import { create } from 'zustand';
 
+export interface PlayerMedia {
+  hlsUrl: string | null;
+  audioUrl: string | null;
+  posterUrl: string | null;
+}
+
 export interface PlayerItem {
   id: string;
   kind: 'episode' | 'clip';
   title: string;
   showTitle: string;
   showSlug: string;
-  /** Null until the media pipeline (Milestone 3) attaches HLS/audio renditions. */
-  mediaUrl: string | null;
+  /** Used to link back and to look up media when the opener did not have it. */
+  episodeSlug: string;
   isDemo: boolean;
+  /**
+   * Known media. `undefined` means "look it up from the episode"; `null` means the item has no playable media.
+   */
+  media?: PlayerMedia | null;
+  /** Clip bounds within the source media, in seconds. */
+  startAt?: number;
+  endAt?: number;
 }
 
 interface PlayerState {
@@ -18,8 +31,8 @@ interface PlayerState {
 }
 
 /**
- * The persistent mini player's queue. It never simulates playback: without a media URL it
- * shows the item and says plainly that playback is not available yet.
+ * The persistent mini player's current item. It never simulates playback: items without processed media
+ * are shown with a plain "not available" state.
  */
 export const usePlayer = create<PlayerState>((set) => ({
   current: null,

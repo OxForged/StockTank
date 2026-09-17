@@ -1,5 +1,5 @@
 import type { ApiClient } from '@stocktank/api-client';
-import type { HomeResponse } from '@stocktank/types';
+import type { EpisodeDetailResponse, HomeResponse } from '@stocktank/types';
 import { vi } from 'vitest';
 
 type Mocked<T> = { [K in keyof T]: ReturnType<typeof vi.fn> };
@@ -122,4 +122,28 @@ export const DEMO_HOME: HomeResponse = {
     ],
     isDemo: true,
   },
+};
+
+/** Minimal published episode detail; spread and override per test. */
+export const EPISODE_DETAIL_BASE: EpisodeDetailResponse = {
+  episode: {
+    id: 'e1',
+    slug: 'bear-market',
+    title: 'Treasury protocols in a bear market',
+    summary: 'Panel grills a founder.',
+    coverUrl: null,
+    durationSeconds: 3480,
+    publishedAt: '2026-09-16T10:00:00.000Z',
+    show: { slug: 'the-tank', title: 'The Tank' },
+    isDemo: false,
+    description: 'Notes',
+    number: 7,
+  },
+  media: null,
+  hosts: [],
+  guests: [],
+  projects: [],
+  companies: [],
+  clips: [],
+  moreFromShow: [],
 };

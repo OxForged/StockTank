@@ -224,9 +224,9 @@ model Show {
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
 
-  category Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  seasons  Season[]
-  episodes Episode[]
+  category    Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  seasons     Season[]
+  episodes    Episode[]
   hosts       ShowHost[]
   follows     Follow[]
   livestreams Livestream[]
@@ -266,15 +266,18 @@ model Episode {
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")
 
-  show      Show             @relation(fields: [showId], references: [id], onDelete: Cascade)
-  season    Season?          @relation(fields: [seasonId], references: [id], onDelete: SetNull)
-  hosts     EpisodeHost[]
-  guests    EpisodeGuest[]
-  projects  EpisodeProject[]
-  companies EpisodeCompany[]
-  topics    EpisodeTopic[]
-  clips     Clip[]
-  bookmarks Bookmark[]
+  show         Show             @relation(fields: [showId], references: [id], onDelete: Cascade)
+  season       Season?          @relation(fields: [seasonId], references: [id], onDelete: SetNull)
+  hosts        EpisodeHost[]
+  guests       EpisodeGuest[]
+  projects     EpisodeProject[]
+  companies    EpisodeCompany[]
+  topics       EpisodeTopic[]
+  clips        Clip[]
+  bookmarks    Bookmark[]
+  /// The asset whose renditions play for this episode (set when processing succeeds).
+  mediaAssetId String?          @unique @map("media_asset_id")
+  mediaAsset   MediaAsset?      @relation("EpisodeMedia", fields: [mediaAssetId], references: [id], onDelete: SetNull)
 
   @@unique([showId, slug])
   @@index([status, publishedAt])
@@ -502,6 +505,10 @@ model Clip {
   confidence      Float?
   generationModel String?       @map("generation_model")
   reviewStatus    PublishStatus @default(draft) @map("review_status")
+  /// Rendered outputs: { horizontal, vertical, square, thumbnail } object keys.
+  renditions      Json?
+  renderStatus    MediaStatus?  @map("render_status")
+  renderError     String?       @map("render_error")
   isDemo          Boolean       @default(false) @map("is_demo")
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")
@@ -913,4 +920,52 @@ model NewsletterSubscriber {
 
   @@index([status])
   @@map("newsletter_subscribers")
+}
+
+// ───────── Media pipeline (§13) ─────────
+
+enum MediaKind {
+  video
+  audio
+}
+
+enum MediaStatus {
+  pending_upload
+  uploaded
+  processing
+  ready
+  failed
+}
+
+/// An uploaded original and everything rendered from it. Originals are private; renditions are served via the CDN.
+model MediaAsset {
+  id                  String      @id @default(cuid())
+  kind                MediaKind
+  status              MediaStatus @default(pending_upload)
+  originalKey         String      @unique @map("original_key")
+  originalName        String      @map("original_name")
+  mimeType            String      @map("mime_type")
+  /// Size declared by the uploader; verified against object storage on completion.
+  sizeBytes           BigInt      @map("size_bytes")
+  durationSeconds     Float?      @map("duration_seconds")
+  width               Int?
+  height              Int?
+  /// { hls, audio, poster, variants: [{ name, height, bandwidth }] } object keys.
+  renditions          Json?
+  error               String?
+  progress            Int         @default(0)
+  attempts            Int         @default(0)
+  createdById         String?     @map("created_by_id")
+  /// Episode that switches to this asset once it is ready, so a replacement never interrupts current playback.
+  targetEpisodeId     String?     @map("target_episode_id")
+  processingStartedAt DateTime?   @map("processing_started_at")
+  readyAt             DateTime?   @map("ready_at")
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+
+  episode Episode? @relation("EpisodeMedia")
+
+  @@index([status, createdAt])
+  @@index([targetEpisodeId])
+  @@map("media_assets")
 }

@@ -14,7 +14,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 
 import { useMe } from '../../lib/auth';
-import { usePlayer } from '../../stores/player';
+import { usePlayer, type PlayerMedia } from '../../stores/player';
 import { useWatchlist } from '../../stores/watchlist';
 
 const COVERS = ['#0f2a22', '#122030', '#1a1f2b', '#0c2230', '#15261f'];
@@ -91,6 +91,8 @@ interface CardModel {
   to: string;
   isDemo: boolean;
   playable: 'episode' | 'clip' | null;
+  episodeSlug: string;
+  media?: PlayerMedia | null;
 }
 
 function fromEpisode(e: EpisodeSummary): CardModel {
@@ -106,6 +108,7 @@ function fromEpisode(e: EpisodeSummary): CardModel {
     to: `/shows/${e.show.slug}/${e.slug}`,
     isDemo: e.isDemo,
     playable: 'episode',
+    episodeSlug: e.slug,
   };
 }
 
@@ -120,6 +123,9 @@ function fromClip(c: ClipSummary): CardModel {
     to: `/shows/${c.show.slug}/${c.episode.slug}`,
     isDemo: c.isDemo,
     playable: 'clip',
+    episodeSlug: c.episode.slug,
+    // Rendered clips carry their own audio; unrendered ones are looked up from the episode.
+    media: c.media?.audioUrl ? { hlsUrl: null, audioUrl: c.media.audioUrl, posterUrl: c.media.thumbnailUrl } : undefined,
   };
 }
 
@@ -134,6 +140,7 @@ function fromArticle(a: ArticleSummary): CardModel {
     to: `/news/${a.slug}`,
     isDemo: a.isDemo,
     playable: null,
+    episodeSlug: '',
   };
 }
 
@@ -155,7 +162,7 @@ function ContentCard({ card, index }: { card: CardModel; index: number }) {
           <button
             type="button"
             onClick={() =>
-              open({ id: card.id, kind: card.playable!, title: card.title, showTitle: card.showTitle, showSlug: card.showSlug, mediaUrl: null, isDemo: card.isDemo })
+              open({ id: card.id, kind: card.playable!, title: card.title, showTitle: card.showTitle, showSlug: card.showSlug, episodeSlug: card.episodeSlug, media: card.media, isDemo: card.isDemo })
             }
             aria-label={`Play ${card.title}`}
             className="absolute right-3.5 top-3.5 flex size-11 scale-90 items-center justify-center rounded-full bg-[#1ef0a8] text-[#04110b] opacity-0 transition-[opacity,transform] duration-200 group-hover:scale-100 group-hover:opacity-100 focus-visible:scale-100 focus-visible:opacity-100"

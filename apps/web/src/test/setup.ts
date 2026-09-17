@@ -39,3 +39,8 @@ if (!Element.prototype.scrollIntoView) {
 
 // ScrollRestoration calls window.scrollTo, which jsdom does not implement.
 window.scrollTo = () => {};
+
+// jsdom does not implement media playback.
+Object.defineProperty(HTMLMediaElement.prototype, 'play', { configurable: true, value: vi.fn(() => Promise.resolve()) });
+Object.defineProperty(HTMLMediaElement.prototype, 'pause', { configurable: true, value: vi.fn() });
+Object.defineProperty(HTMLMediaElement.prototype, 'load', { configurable: true, value: vi.fn() });
