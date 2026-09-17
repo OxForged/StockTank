@@ -64,9 +64,23 @@ Not verified against a live AzuraCast: none runs locally and AzuraCast's public 
 
 | (this commit) | First-party analytics: anonymous event ingestion (salted visitor hashes, no IPs, GPC/DNT honoured, server-derived show ids, clamped clocks), tracked podcast downloads (one per listener/episode/day), web tracker (page views, real playback time, completion, search, share button), admin Audience / Content / Shows / Projects dashboards; likes and comments reported as not tracked |
 
+### Done: Milestone 7 (AI) and markets
+| Commit | What |
+|---|---|
+| `02ea715`, `029d82f` | `packages/ai` (provider-neutral LLM/embeddings/transcription; Anthropic + OpenAI adapters; moderation; cost estimation), AI schema, `AiMeter` budgets |
+| `547d21b` | DEMO "AI Desk" show (disclosed AI hosts) + design direction: stocks and meme stocks, fully animated UI |
+| `43f628b`, `1b89b4c`, `d9e62ff`, `4552859` | Markets: data-provider adapters (demo + Polygon), Meme Stock Radar, interactive charts (`@stocktank/ui`), Markets hub, stock pages, live ticker tape, home section |
+| `a58217b` | Follow us: X, Kick, YouTube, Facebook, Instagram, Twitch, TikTok (configurable handles) |
+| `d0a2b78` (agent merge) | Admin dashboards rebuilt with animated charts, sortable tables, Today strip |
+| `504f31b` (agent merge) | AI admin: personalities with versioned prompts, usage & cost dashboard, budgets |
+| (this commit) | AI content factory: transcripts, drafts, jobs; generators verified against transcripts; worker jobs; review queue with flag acknowledgement, edits and apply-on-approve; AI jobs page |
+
+Working mode since 2026-09-17: Fable subagents in isolated worktrees for separable tracks (each with its own test DB), merged into main after the full gate.
+
 ### Next
-- Owner decisions: prices and packages, legal review of drafts, production email provider, hosting/domain, PODCAST_OWNER_EMAIL, cover art for shows, AzuraCast server
-- Milestone 7: AI services (LLM provider, transcription, RAG with citations, personalities, AI clipping with human review, cost tracking)
+- Owner decisions: rotate leaked keys, hosting/domain, provider keys (email, AI, market data, Castopod, AzuraCast, social), prices/packages, legal review, cover art, real social handles
+- In progress by agents: Milestone 8 distribution adapters; Milestone 12 production ops (compose, deploy pipeline, backups, metrics, Playwright, security checklist)
+- After: notification service, SSR/prerender, mobile/TV/creator monetization (post-launch)
 - Milestone 5: AzuraCast live radio; 6: analytics, roles, API keys, audit viewer; 7: AI services
 
 ### Run locally

@@ -98,8 +98,9 @@ export const ADMIN_NAV: readonly (AdminNavItem | AdminNavGroup)[] = [
       { label: 'Personalities', to: '/ai/personalities', icon: Bot },
       { label: 'Prompts', to: '/ai/prompts', icon: MessageSquareText, milestone: 7, description: 'Versioned prompt templates.' },
       { label: 'Knowledge', to: '/ai/knowledge', icon: Brain, milestone: 7, description: 'RAG sources, indexing and freshness.' },
-      { label: 'Usage & costs', to: '/ai/jobs', icon: Activity },
-      { label: 'Review queue', to: '/ai/review', icon: ListChecks, milestone: 7, description: 'Human review of AI-assisted output before publishing.' },
+      { label: 'AI jobs', to: '/ai/jobs', icon: Activity },
+      { label: 'Review queue', to: '/ai/review', icon: ListChecks },
+      { label: 'Usage & costs', to: '/ai/costs', icon: Coins },
     ],
   },
   {

@@ -81,7 +81,7 @@ describe('AI usage & costs', { timeout: 30_000 }, () => {
     mockApi.admin.ai.listBudgets.mockResolvedValue([budget(), budget({ id: 'b2', scope: 'feature', scopeKey: 'personality_chat', label: 'personality_chat', monthlyLimitMicros: 1000, spentMicros: 1500, percentUsed: 150, hardLimit: false, unknownCostCalls: 0 })]);
     mockApi.admin.ai.status.mockResolvedValue(status);
 
-    renderApp('/ai/jobs');
+    renderApp('/ai/costs');
     expect(await screen.findByText('Spend today')).toBeInTheDocument();
     expect(screen.getByText(/1 calls this month have unknown cost/)).toBeInTheDocument();
     expect(await screen.findAllByText('$0.0040')).not.toHaveLength(0);
@@ -114,7 +114,7 @@ describe('AI usage & costs', { timeout: 30_000 }, () => {
     mockApi.admin.ai.saveBudget.mockResolvedValue(budget({ id: 'b3', scope: 'feature', scopeKey: 'transcription', label: 'transcription', monthlyLimitMicros: 25_000_000, hardLimit: false }));
     mockApi.admin.ai.deleteBudget.mockResolvedValue(undefined);
 
-    renderApp('/ai/jobs');
+    renderApp('/ai/costs');
     const u = userEvent.setup();
     await u.click(await screen.findByRole('button', { name: 'Add budget' }));
     const dialog = await screen.findByRole('dialog');

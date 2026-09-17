@@ -150,6 +150,7 @@ export async function resetContent(prisma: PrismaClient): Promise<void> {
   await prisma.mediaAsset.deleteMany({});
   await prisma.radioStation.deleteMany({});
   await prisma.analyticsEvent.deleteMany({});
+  await prisma.aiJob.deleteMany({});
   await prisma.project.deleteMany({});
   await prisma.company.deleteMany({});
 }

@@ -1,5 +1,17 @@
 import { z } from 'zod';
 import {
+  adminAiDraftListSchema,
+  adminAiDraftSchema,
+  adminTranscriptSchema,
+  aiJobListSchema,
+  aiJobSchema,
+  type AdminAiDraft,
+  type AdminAiDraftList,
+  type AdminTranscript,
+  type AiDraftKind,
+  type AiDraftReviewInput,
+  type AiDraftStatus,
+  type AiJob,
   barsResponseSchema,
   moversResponseSchema,
   radarResponseSchema,
@@ -432,6 +444,18 @@ export function createApiClient(options: ApiClientOptions = {}) {
         saveGuest: (input: PersonInput, id?: string): Promise<AdminPerson> =>
           id ? request('PUT', `${CMS}/guests/${encodeURIComponent(id)}`, adminPersonSchema, input) : request('POST', `${CMS}/guests`, adminPersonSchema, input),
         reindexSearch: (): Promise<ReindexResponse> => request('POST', `${CMS}/search/reindex`, reindexResponseSchema),
+      },
+      aiFactory: {
+        moderationFlags: async (): Promise<Array<{ key: string; label: string }>> =>
+          (await request('GET', '/api/v1/admin/ai/moderation-flags', z.object({ items: z.array(z.object({ key: z.string(), label: z.string() })) }))).items,
+        transcript: (episodeId: string): Promise<AdminTranscript> => request('GET', `/api/v1/admin/ai/episodes/${encodeURIComponent(episodeId)}/transcript`, adminTranscriptSchema),
+        transcribe: (episodeId: string): Promise<AiJob> => request('POST', `/api/v1/admin/ai/episodes/${encodeURIComponent(episodeId)}/transcribe`, aiJobSchema),
+        runFactory: (episodeId: string, kinds?: AiDraftKind[]): Promise<AiJob> =>
+          request('POST', `/api/v1/admin/ai/episodes/${encodeURIComponent(episodeId)}/factory`, aiJobSchema, kinds ? { kinds } : {}),
+        jobs: async (): Promise<AiJob[]> => (await request('GET', '/api/v1/admin/ai/jobs', aiJobListSchema)).items,
+        drafts: (q: { status?: AiDraftStatus; kind?: AiDraftKind; episodeId?: string; page?: number; pageSize?: number } = {}): Promise<AdminAiDraftList> =>
+          request('GET', `/api/v1/admin/ai/drafts${qs(q)}`, adminAiDraftListSchema),
+        review: (id: string, input: AiDraftReviewInput): Promise<AdminAiDraft> => request('POST', `/api/v1/admin/ai/drafts/${encodeURIComponent(id)}/review`, adminAiDraftSchema, input),
       },
       analytics: {
         audience: (q: AnalyticsRangeQuery = {}): Promise<AudienceAnalytics> => request('GET', `/api/v1/admin/analytics/audience${qs(q)}`, audienceAnalyticsSchema),

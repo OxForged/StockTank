@@ -16,6 +16,7 @@ import {
 } from '@stocktank/types';
 import { SESSION_COOKIE } from '../lib/session.js';
 import { userIdParamsSchema } from '../routes/admin.js';
+import { registerAiFactoryPaths } from './ai-factory-paths.js';
 import { registerGrowthPaths } from './growth-paths.js';
 
 export interface OpenApiOptions {
@@ -258,6 +259,7 @@ export function buildOpenApiDocument({ version }: OpenApiOptions): OpenApiDocume
   });
 
   registerGrowthPaths(registry, { json, errorResponse, csrfHeaders, cookieAuth, commonErrors, authErrors, validationError });
+  registerAiFactoryPaths(registry, { json, errorResponse, csrfHeaders, cookieAuth, commonErrors, authErrors, validationError });
 
   const generator = new OpenApiGeneratorV31(registry.definitions);
   return generator.generateDocument({
