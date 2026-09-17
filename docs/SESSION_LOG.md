@@ -57,9 +57,14 @@ Verified live on localhost: the demo "Founder Floor" feed is well-formed XML thr
 
 Not verified against a live AzuraCast: none runs locally and AzuraCast's public demo returned HTTP 521 during this session. Coverage is contract tests built from AzuraCast's documented now-playing payload, plus API/web/admin tests. First real station setup should confirm the payload mapping.
 
+### Milestone 6 (in progress)
+| Commit | What |
+|---|---|
+| (this commit) | System admin: audit log viewer (filters, cursor paging), read-only role and permission catalogue (roles stay defined in code), read-only scoped API keys (hashed, shown once, narrowed to the owner's current permissions, GET only, audited); new `analytics.read` permission |
+
 ### Next
 - Owner decisions: prices and packages, legal review of drafts, production email provider, hosting/domain, PODCAST_OWNER_EMAIL, cover art for shows, AzuraCast server
-- Milestone 6: analytics, roles/permissions UI, API keys, audit log viewer
+- Milestone 6: first-party analytics (events, dashboards)
 - Milestone 5: AzuraCast live radio; 6: analytics, roles, API keys, audit viewer; 7: AI services
 
 ### Run locally

@@ -26,6 +26,7 @@ import { podcastFeedRouter } from './routes/podcasts.js';
 import { adminRadioRouter, radioRouter } from './routes/radio.js';
 import { NowPlayingService } from './lib/radio.js';
 import { adminRouter } from './routes/admin.js';
+import { adminSystemRouter } from './routes/admin-system.js';
 import { advertisingRouter } from './routes/advertising.js';
 import { authRouter } from './routes/auth.js';
 import { contentRouter } from './routes/content.js';
@@ -94,7 +95,7 @@ export function createApp(deps: AppDeps): Express {
       origin: env.CORS_ORIGINS,
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Accept', 'X-Requested-With', 'X-Request-Id'],
+      allowedHeaders: ['Content-Type', 'Accept', 'X-Requested-With', 'X-Request-Id', 'Authorization'],
       exposedHeaders: ['X-Request-Id', 'RateLimit', 'RateLimit-Policy'],
       maxAge: 600,
     }),
@@ -126,6 +127,7 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api/v1', podcastFeedRouter({ env, prisma, media }));
   app.use('/api/v1/admin/advertising', adminAdvertisingRouter({ prisma }));
   app.use('/api/v1/admin', adminRouter({ prisma }));
+  app.use('/api/v1/admin', adminSystemRouter({ prisma }));
   app.use('/api/v1/admin', adminMarketingRouter({ prisma }));
 
   app.use(notFoundHandler);

@@ -107,6 +107,14 @@ import {
   radioStationListSchema,
   radioStationSchema,
   radioStatusResponseSchema,
+  adminPermissionListSchema,
+  adminRoleListSchema,
+  apiKeyListSchema,
+  apiKeySchema,
+  auditLogPageSchema,
+  auditLogQuerySchema,
+  createApiKeyInputSchema,
+  createdApiKeySchema,
 } from '@stocktank/types';
 import { component } from './document.js';
 
@@ -648,4 +656,30 @@ export function registerGrowthPaths(registry: OpenAPIRegistry, h: GrowthPathHelp
     extra: notFound('Station'),
   });
   admin('get', `${RADIO}/azuracast/stations`, 'List AzuraCast stations', 'Requires `content.publish`. For linking.', { tag: 'Admin: Live', ok: { status: 200, schema: azuracastStationListSchema }, extra: azuraDown });
+  // ───── System administration (Milestone 6) ─────
+  admin('get', '/api/v1/admin/audit-logs', 'Audit log', 'Requires `audit_logs.read`. Newest first; filter by action prefix, actor, target and time range; cursor pagination.', {
+    tag: 'Admin: System',
+    query: auditLogQuerySchema,
+    ok: { status: 200, schema: auditLogPageSchema },
+  });
+  admin('get', '/api/v1/admin/roles', 'Role catalogue', 'Requires `roles.manage`. Read-only: role definitions live in code and are applied by the seed, so every change is reviewed.', {
+    tag: 'Admin: System',
+    ok: { status: 200, schema: adminRoleListSchema },
+  });
+  admin('get', '/api/v1/admin/permissions', 'Permission catalogue', 'Requires `roles.manage`. Each permission with its roles and how many users hold it.', {
+    tag: 'Admin: System',
+    ok: { status: 200, schema: adminPermissionListSchema },
+  });
+  admin('get', '/api/v1/admin/api-keys', 'List API keys', 'Requires `api_keys.manage`. Secrets are never returned.', { tag: 'Admin: System', ok: { status: 200, schema: apiKeyListSchema } });
+  admin('post', '/api/v1/admin/api-keys', 'Create API key', 'Requires `api_keys.manage`. Scopes must be in the read-only allow-list and held by the creator. The secret is returned once. Use it as `Authorization: Bearer <key>` on GET requests; keys never authorize writes and are narrowed to the owner’s current permissions. Audited.', {
+    tag: 'Admin: System',
+    body: createApiKeyInputSchema,
+    ok: { status: 201, schema: createdApiKeySchema },
+  });
+  admin('post', '/api/v1/admin/api-keys/{id}/revoke', 'Revoke API key', 'Requires `api_keys.manage`. Audited.', {
+    tag: 'Admin: System',
+    params: idParams,
+    ok: { status: 200, schema: apiKeySchema },
+    extra: { ...notFound('API key'), ...conflict('Already revoked') },
+  });
 }

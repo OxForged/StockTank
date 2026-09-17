@@ -35,6 +35,14 @@ export const mockApi = {
       saveGuest: vi.fn(),
       reindexSearch: vi.fn(),
     },
+    system: {
+      auditLogs: vi.fn(),
+      roles: vi.fn(),
+      permissions: vi.fn(),
+      apiKeys: vi.fn(),
+      createApiKey: vi.fn(),
+      revokeApiKey: vi.fn(),
+    },
     radio: {
       status: vi.fn(),
       listStations: vi.fn(),
@@ -103,6 +111,7 @@ export const mockApi = {
     media: { [K in keyof ApiClient['admin']['media']]: ReturnType<typeof vi.fn> };
     podcasts: { [K in keyof ApiClient['admin']['podcasts']]: ReturnType<typeof vi.fn> };
     radio: { [K in keyof ApiClient['admin']['radio']]: ReturnType<typeof vi.fn> };
+    system: { [K in keyof ApiClient['admin']['system']]: ReturnType<typeof vi.fn> };
   };
   system: { [K in keyof ApiClient['system']]: ReturnType<typeof vi.fn> };
 };

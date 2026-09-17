@@ -1,5 +1,18 @@
 import { z } from 'zod';
 import {
+  adminPermissionListSchema,
+  adminRoleListSchema,
+  apiKeyListSchema,
+  apiKeySchema,
+  auditLogPageSchema,
+  createdApiKeySchema,
+  type AdminPermission,
+  type AdminRole,
+  type ApiKeySummary,
+  type AuditLogPage,
+  type AuditLogQuery,
+  type CreateApiKeyInput,
+  type CreatedApiKey,
   adminRadioStationDetailSchema,
   adminRadioStationListSchema,
   adminRadioStationSchema,
@@ -369,6 +382,14 @@ export function createApiClient(options: ApiClientOptions = {}) {
         saveGuest: (input: PersonInput, id?: string): Promise<AdminPerson> =>
           id ? request('PUT', `${CMS}/guests/${encodeURIComponent(id)}`, adminPersonSchema, input) : request('POST', `${CMS}/guests`, adminPersonSchema, input),
         reindexSearch: (): Promise<ReindexResponse> => request('POST', `${CMS}/search/reindex`, reindexResponseSchema),
+      },
+      system: {
+        auditLogs: (q: Partial<AuditLogQuery> = {}): Promise<AuditLogPage> => request('GET', `/api/v1/admin/audit-logs${qs(q)}`, auditLogPageSchema),
+        roles: async (): Promise<AdminRole[]> => (await request('GET', '/api/v1/admin/roles', adminRoleListSchema)).items,
+        permissions: async (): Promise<AdminPermission[]> => (await request('GET', '/api/v1/admin/permissions', adminPermissionListSchema)).items,
+        apiKeys: async (): Promise<ApiKeySummary[]> => (await request('GET', '/api/v1/admin/api-keys', apiKeyListSchema)).items,
+        createApiKey: (input: CreateApiKeyInput): Promise<CreatedApiKey> => request('POST', '/api/v1/admin/api-keys', createdApiKeySchema, input),
+        revokeApiKey: (id: string): Promise<ApiKeySummary> => request('POST', `/api/v1/admin/api-keys/${encodeURIComponent(id)}/revoke`, apiKeySchema),
       },
       radio: {
         status: (): Promise<RadioStatusResponse> => request('GET', `${RADIO}/status`, radioStatusResponseSchema),

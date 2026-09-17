@@ -9,3 +9,4 @@ export * from './media.js';
 export * from './admin-media.js';
 export * from './podcast.js';
 export * from './radio.js';
+export * from './system-admin.js';

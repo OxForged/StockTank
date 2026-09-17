@@ -22,12 +22,13 @@ export const ROLE_DEFINITIONS: Record<
       'ai.review',
       'distribution.publish',
       'ads.approve',
+      'analytics.read',
     ],
   },
   sales: {
     name: 'Sales',
     description: 'Manages advertisers, campaigns, creatives and leads; approvals need an editor',
-    permissions: ['ads.manage', 'leads.manage'],
+    permissions: ['ads.manage', 'leads.manage', 'analytics.read'],
   },
   creator: {
     name: 'Creator',

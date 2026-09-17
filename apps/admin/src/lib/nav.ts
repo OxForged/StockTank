@@ -160,11 +160,11 @@ export const ADMIN_NAV: readonly (AdminNavItem | AdminNavGroup)[] = [
     icon: Shield,
     items: [
       { label: 'Users', to: '/system/users', icon: Users, permission: 'users.read' },
-      { label: 'Roles', to: '/system/roles', icon: Shield, permission: 'roles.manage', milestone: 6, description: 'Role definitions and their permission sets.' },
-      { label: 'Permissions', to: '/system/permissions', icon: ListChecks, permission: 'roles.manage', milestone: 6, description: 'Permission catalogue and usage.' },
-      { label: 'API keys', to: '/system/api-keys', icon: KeyRound, permission: 'api_keys.manage', milestone: 6, description: 'Service and partner API keys.' },
+      { label: 'Roles', to: '/system/roles', icon: Shield, permission: 'roles.manage' },
+      { label: 'Permissions', to: '/system/permissions', icon: ListChecks, permission: 'roles.manage' },
+      { label: 'API keys', to: '/system/api-keys', icon: KeyRound, permission: 'api_keys.manage' },
       { label: 'Feature flags', to: '/system/feature-flags', icon: Flag, permission: 'feature_flags.manage' },
-      { label: 'Audit logs', to: '/system/audit-logs', icon: ScrollText, permission: 'audit_logs.read', milestone: 6, description: 'Who changed what, and when.' },
+      { label: 'Audit logs', to: '/system/audit-logs', icon: ScrollText, permission: 'audit_logs.read' },
     ],
   },
 ];

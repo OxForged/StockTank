@@ -11,6 +11,7 @@ export type AuditAction =
   | 'user.roles.update'
   | `advertising.${string}`
   | `content.${string}`
+  | `api_key.${string}`
   | 'newsletter.export'
   | 'feature_flag.update';
 

@@ -46,6 +46,7 @@ export function component<T extends z.ZodType>(id: string, schema: T, meta: Comp
 export function buildOpenApiDocument({ version }: OpenApiOptions): OpenApiDocument {
   const registry = new OpenAPIRegistry();
 
+  registry.registerComponent('securitySchemes', 'apiKeyAuth', { type: 'http', scheme: 'bearer', description: 'Read-only StockTank API key (stk_…) created under Admin → System → API keys. GET requests only.' });
   registry.registerComponent('securitySchemes', 'cookieAuth', {
     type: 'apiKey',
     in: 'cookie',

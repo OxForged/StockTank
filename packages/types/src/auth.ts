@@ -22,6 +22,7 @@ export const PERMISSIONS = [
   'audit_logs.read',
   'api_keys.manage',
   'settings.manage',
+  'analytics.read',
 ] as const;
 export const permissionKeySchema = z.enum(PERMISSIONS);
 export type PermissionKey = z.infer<typeof permissionKeySchema>;

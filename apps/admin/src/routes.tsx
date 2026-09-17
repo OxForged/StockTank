@@ -18,6 +18,7 @@ import { ReviewQueuePage } from './pages/advertising/review-page';
 import { LeadsPage } from './pages/growth/leads-page';
 import { NewsletterAudiencePage } from './pages/growth/newsletter-page';
 import { FeatureFlagsPage } from './pages/system/feature-flags-page';
+import { ApiKeysPage, AuditLogsPage, PermissionsPage, RolesPage } from './pages/system/system-pages';
 import {
   ArticlesCmsPage,
   CompaniesCmsPage,
@@ -52,6 +53,10 @@ const WORKING: Record<string, () => JSX.Element> = {
   '/entities/companies': CompaniesCmsPage,
   '/live/streams': LivestreamsCmsPage,
   '/system/feature-flags': FeatureFlagsPage,
+  '/system/audit-logs': AuditLogsPage,
+  '/system/roles': RolesPage,
+  '/system/permissions': PermissionsPage,
+  '/system/api-keys': ApiKeysPage,
   '/advertising/overview': AdvertisingOverviewPage,
   '/advertising/advertisers': AdvertisersPage,
   '/advertising/campaigns': CampaignsPage,

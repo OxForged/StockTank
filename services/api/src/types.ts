@@ -13,6 +13,8 @@ export interface AuthContext {
   roles: RoleKey[];
   permissions: PermissionKey[];
   sessionId: string;
+  /** Set when the request authenticated with an API key instead of a session cookie. */
+  apiKeyId?: string;
 }
 
 declare global {

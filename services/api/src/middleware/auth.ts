@@ -3,6 +3,7 @@ import type { PrismaClient } from '@stocktank/database';
 import type { PermissionKey } from '@stocktank/types';
 import type { ApiEnv } from '../env.js';
 import { errors } from '../lib/errors.js';
+import { loadApiKey, readApiKey } from '../lib/api-keys.js';
 import { clearSessionCookie, loadSession, readSessionToken } from '../lib/session.js';
 import type { AuthContext } from '../types.js';
 
@@ -13,6 +14,19 @@ import type { AuthContext } from '../types.js';
  */
 export function attachSession(prisma: PrismaClient, env: ApiEnv): RequestHandler {
   return async (req, res, next) => {
+    const apiKey = readApiKey(req);
+    if (apiKey) {
+      try {
+        const auth = await loadApiKey(prisma, apiKey);
+        if (!auth) return next(errors.unauthenticated('Invalid, expired or revoked API key'));
+        // Keys are read-only by design: a leaked key can never change data.
+        if (req.method !== 'GET' && req.method !== 'HEAD') return next(errors.forbidden('API keys are read-only'));
+        req.auth = auth;
+        return next();
+      } catch (err) {
+        return next(err);
+      }
+    }
     const token = readSessionToken(req);
     if (!token) return next();
     try {
