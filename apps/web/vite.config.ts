@@ -7,6 +7,8 @@ const API_ORIGIN = process.env.VITE_DEV_API_ORIGIN ?? 'http://localhost:4000';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // Read VITE_* settings from the monorepo .env (only VITE_-prefixed values reach the browser).
+  envDir: '../..',
   server: {
     port: 5190,
     strictPort: true,

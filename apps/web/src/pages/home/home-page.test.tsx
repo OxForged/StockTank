@@ -65,6 +65,17 @@ describe('HomePage (hybrid A + B)', () => {
     expect(await within(player).findByRole('button', { name: /playback not available yet/i })).toBeDisabled();
   });
 
+  it('shows Follow us with every channel and official links', async () => {
+    mockApi.content.home.mockResolvedValue(DEMO_HOME);
+    renderApp('/');
+    expect(await screen.findByRole('heading', { level: 2, name: /everywhere you are/i })).toBeInTheDocument();
+    const list = screen.getByRole('list', { name: 'Social channels' });
+    const links = within(list).getAllByRole('link');
+    expect(links.map((l) => l.textContent?.replace(/\(opens in a new tab\)/, '').trim().split('@')[0])).toEqual(['X', 'Kick', 'YouTube', 'Facebook', 'Instagram', 'Twitch', 'TikTok']);
+    expect(links.every((l) => l.getAttribute('rel')?.includes('noopener') && l.getAttribute('target') === '_blank')).toBe(true);
+    expect(links[2]).toHaveAttribute('href', expect.stringMatching(/^https:\/\/www\.youtube\.com\/@/));
+  });
+
   it('saves watchlist items on this device', async () => {
     mockApi.content.home.mockResolvedValue(DEMO_HOME);
     renderApp('/');

@@ -8,6 +8,7 @@ import { NewsletterSignup } from '../../components/marketing/newsletter-signup';
 import { api } from '../../lib/api';
 import { useDocumentTitle } from '../../lib/seo';
 import { FeaturedHero } from './hero';
+import { FollowUs } from '../../components/marketing/follow-us';
 import { MarketsSection } from './markets-section';
 import { DemoNotice, LatestSection, LineupSection, RundownSection, WatchlistPanel } from './sections';
 
@@ -88,6 +89,8 @@ export function HomePage() {
       </div>
 
       <LineupSection shows={home?.featuredShows ?? []} loading={isPending} />
+
+      <FollowUs />
 
       <div className="px-4 pb-4 md:px-8">
         <NewsletterSignup source="homepage" />

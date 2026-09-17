@@ -2,6 +2,7 @@ import { LogoMark, Wordmark } from '@stocktank/ui';
 import { Link } from 'react-router';
 
 import { DISCLAIMER, LEGAL_NAV, PRIMARY_NAV } from '../../lib/nav';
+import { FollowUs } from '../marketing/follow-us';
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -14,6 +15,7 @@ export function Footer() {
             A media network for the on-chain economy: shows, live radio, clips, news and the projects, companies
             and creators shaping it.
           </p>
+          <FollowUs variant="compact" />
           <p className="max-w-md rounded-md border border-hairline bg-surface p-3 text-xs leading-relaxed text-muted">
             <strong className="font-semibold text-fg">Disclaimer.</strong> {DISCLAIMER}
           </p>
