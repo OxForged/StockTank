@@ -7,6 +7,7 @@ import {
   type CompanyListResponse,
   type HomeResponse,
   type ArticleDetailResponse,
+  type ArticleListResponse,
   type CompanyDetailResponse,
   type EpisodeDetailResponse,
   type PersonDetailResponse,
@@ -147,6 +148,18 @@ export function contentRouter({ prisma, search }: ContentDeps): Router {
       prisma.project.count({ where }),
     ]);
     const response: ProjectListResponse = { items: rows.map(toProjectSummary), page, pageSize, total };
+    publicCache(res, 60);
+    res.json(response);
+  });
+
+  router.get('/articles', async (req, res) => {
+    const { page, pageSize } = validate(listQuerySchema, req.query, 'query');
+    const where = { status: PUBLISHED };
+    const [rows, total] = await Promise.all([
+      prisma.article.findMany({ where, select: articleSelect, orderBy: [{ publishedAt: 'desc' }, { id: 'asc' }], skip: (page - 1) * pageSize, take: pageSize }),
+      prisma.article.count({ where }),
+    ]);
+    const response: ArticleListResponse = { items: rows.map(toArticleSummary), page, pageSize, total };
     publicCache(res, 60);
     res.json(response);
   });

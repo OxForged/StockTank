@@ -102,8 +102,8 @@ export function LibraryPage() {
               ) : (
                 <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {[
-                    ...library.data.projects.map((p) => ({ key: `project:${p.id}`, name: p.name, to: `/projects#${p.slug}`, kind: 'Project' })),
-                    ...library.data.companies.map((c) => ({ key: `company:${c.id}`, name: c.name, to: `/companies#${c.slug}`, kind: 'Company' })),
+                    ...library.data.projects.map((p) => ({ key: `project:${p.id}`, name: p.name, to: `/projects/${p.slug}`, kind: 'Project' })),
+                    ...library.data.companies.map((c) => ({ key: `company:${c.id}`, name: c.name, to: `/companies/${c.slug}`, kind: 'Company' })),
                   ].map((item) => (
                     <li key={item.key} className="flex items-center justify-between gap-3 rounded-xl border border-hairline bg-surface p-4">
                       <span>
@@ -129,7 +129,7 @@ export function LibraryPage() {
                     <li key={b.id} className="flex items-center gap-4 rounded-xl border border-hairline bg-surface p-4">
                       <span className="flex min-w-0 flex-1 flex-col">
                         <span className="font-mono text-[11px] tracking-[0.1em] text-primary-hi">{b.show.title.toUpperCase()}</span>
-                        <Link to={`/shows/${b.show.slug}`} className="truncate font-display text-lg font-bold hover:underline">
+                        <Link to={`/shows/${b.show.slug}/${b.slug}`} className="truncate font-display text-lg font-bold hover:underline">
                           {b.title}
                         </Link>
                       </span>

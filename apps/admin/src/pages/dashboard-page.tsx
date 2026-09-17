@@ -1,11 +1,11 @@
-import { Avatar, Badge, Button, Card, CardDescription, CardHeader, CardTitle, Skeleton, cn } from '@stocktank/ui';
-import { useQuery } from '@tanstack/react-query';
-import { Activity, RefreshCw, Server } from 'lucide-react';
+import { Avatar, Badge, Button, Card, CardDescription, CardHeader, CardTitle, Skeleton, cn, toast } from '@stocktank/ui';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Activity, RefreshCw, Search, Server } from 'lucide-react';
 import { Link } from 'react-router';
 
 import { PageTitle } from '../components/page-title';
 import { api } from '../lib/api';
-import { describeApiError, useMe } from '../lib/auth';
+import { can, describeApiError, useMe } from '../lib/auth';
 import { visibleNav, isGroup } from '../lib/nav';
 
 function StatusDot({ ok }: { ok: boolean | null }) {
@@ -174,6 +174,7 @@ function AreasCard() {
 }
 
 export function DashboardPage() {
+  const { user } = useMe();
   return (
     <>
       <PageTitle kicker="Control room" title="Dashboard" description="System health, your session and the state of each admin area." />
@@ -181,7 +182,36 @@ export function DashboardPage() {
         <SystemStatusCard />
         <SessionCard />
         <AreasCard />
+        {can(user, 'settings.manage') ? <SearchIndexCard /> : null}
       </div>
     </>
+  );
+}
+
+/** Rebuilds the public search index from published content (settings.manage). */
+export function SearchIndexCard() {
+  const reindex = useMutation({
+    mutationFn: () => api.admin.content.reindexSearch(),
+    onSuccess: (r) =>
+      toast.success(`Search index rebuilt (${r.engine})`, {
+        description: Object.entries(r.indexed)
+          .map(([k, v]) => `${k}: ${v}`)
+          .join(' · '),
+      }),
+    onError: (err) => toast.error('Reindex failed', { description: describeApiError(err) }),
+  });
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Search className="size-4 text-primary-hi" aria-hidden="true" />
+          Search index
+        </CardTitle>
+        <CardDescription>Edits sync automatically. Rebuild after bulk imports or if search looks stale.</CardDescription>
+      </CardHeader>
+      <Button variant="secondary" size="sm" className="self-start" loading={reindex.isPending} onClick={() => reindex.mutate()}>
+        Rebuild index
+      </Button>
+    </Card>
   );
 }

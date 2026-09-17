@@ -41,7 +41,7 @@ function useDebounced<T>(value: T, ms: number): T {
 interface Result {
   key: string;
   label: string;
-  type: 'SHOW' | 'EPISODE' | 'PROJECT' | 'COMPANY';
+  type: 'SHOW' | 'EPISODE' | 'PERSON' | 'PROJECT' | 'COMPANY' | 'NEWS';
   mono: string;
   to: string;
 }
@@ -64,20 +64,20 @@ function HeaderSearch() {
   const q = useDebounced(query.trim(), 200);
 
   const search = useQuery({
-    queryKey: ['search', q],
-    queryFn: () => api.content.search(q),
+    queryKey: ['search', 'suggest', q],
+    queryFn: () => api.content.suggest(q),
     enabled: q.length > 0,
     staleTime: 30_000,
   });
 
-  const results: Result[] = search.data
-    ? [
-        ...search.data.shows.map((s) => ({ key: `s-${s.id}`, label: s.title, type: 'SHOW' as const, mono: monogram(s.title), to: `/shows/${s.slug}` })),
-        ...search.data.projects.map((p) => ({ key: `p-${p.id}`, label: p.name, type: 'PROJECT' as const, mono: monogram(p.name), to: `/projects#${p.slug}` })),
-        ...search.data.companies.map((c) => ({ key: `c-${c.id}`, label: c.name, type: 'COMPANY' as const, mono: monogram(c.name), to: `/companies#${c.slug}` })),
-        ...search.data.episodes.map((e) => ({ key: `e-${e.id}`, label: e.title, type: 'EPISODE' as const, mono: monogram(e.show.title), to: `/shows/${e.show.slug}` })),
-      ].slice(0, 7)
-    : [];
+  const TYPE_LABEL = { show: 'SHOW', episode: 'EPISODE', person: 'PERSON', project: 'PROJECT', company: 'COMPANY', article: 'NEWS' } as const;
+  const results: Result[] = (search.data?.suggestions ?? []).map((sug) => ({
+    key: `${sug.type}-${sug.id}`,
+    label: sug.label,
+    type: TYPE_LABEL[sug.type],
+    mono: monogram(sug.label),
+    to: sug.path,
+  }));
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {

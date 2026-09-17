@@ -74,8 +74,8 @@ export const ADMIN_NAV: readonly (AdminNavItem | AdminNavGroup)[] = [
     permission: 'content.read_drafts',
     items: [
       { label: 'Shows', to: '/network/shows', icon: Tv },
-      { label: 'Hosts', to: '/network/hosts', icon: Mic, milestone: 2, description: 'Host profiles and show assignments.' },
-      { label: 'Guests', to: '/network/guests', icon: UserRound, milestone: 2, description: 'Guest profiles and appearances.' },
+      { label: 'Hosts', to: '/network/hosts', icon: Mic },
+      { label: 'Guests', to: '/network/guests', icon: UserRound },
       { label: 'Creators', to: '/network/creators', icon: Users, milestone: 2, description: 'Creator accounts, channels and approvals.' },
     ],
   },

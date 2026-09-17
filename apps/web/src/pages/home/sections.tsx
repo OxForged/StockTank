@@ -103,7 +103,7 @@ function fromEpisode(e: EpisodeSummary): CardModel {
     meta: [formatDuration(e.durationSeconds), e.publishedAt ? new Date(e.publishedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : null]
       .filter(Boolean)
       .join(' · '),
-    to: `/shows/${e.show.slug}`,
+    to: `/shows/${e.show.slug}/${e.slug}`,
     isDemo: e.isDemo,
     playable: 'episode',
   };
@@ -117,7 +117,7 @@ function fromClip(c: ClipSummary): CardModel {
     showSlug: c.show.slug,
     title: c.title,
     meta: `From “${c.episode.title}” · linked to source timestamp`,
-    to: `/shows/${c.show.slug}`,
+    to: `/shows/${c.show.slug}/${c.episode.slug}`,
     isDemo: c.isDemo,
     playable: 'clip',
   };
@@ -131,7 +131,7 @@ function fromArticle(a: ArticleSummary): CardModel {
     showSlug: '',
     title: a.title,
     meta: a.summary ?? '',
-    to: '/news',
+    to: `/news/${a.slug}`,
     isDemo: a.isDemo,
     playable: null,
   };
@@ -274,7 +274,7 @@ export function WatchlistPanel({ projects, companies, loading }: { projects: Pro
           name: p.name,
           meta: [KIND_LABEL[p.kind], p.chainName?.toUpperCase() ?? (p.symbol ? null : 'NO TOKEN')].filter(Boolean).join(' · '),
           isDemo: p.isDemo,
-          to: `/projects#${p.slug}`,
+          to: `/projects/${p.slug}`,
         }))
       : companies.map((c) => ({
           key: `company:${c.id}`,
@@ -283,7 +283,7 @@ export function WatchlistPanel({ projects, companies, loading }: { projects: Pro
           name: c.name,
           meta: [c.sector?.toUpperCase(), c.country?.toUpperCase()].filter(Boolean).join(' · '),
           isDemo: c.isDemo,
-          to: `/companies#${c.slug}`,
+          to: `/companies/${c.slug}`,
         }));
   const followed = ids.filter((id) => id.startsWith('project:') || id.startsWith('company:')).length;
 

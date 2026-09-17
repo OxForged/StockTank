@@ -138,6 +138,8 @@ export type ShowListResponse = z.infer<typeof showListResponseSchema>;
 export const projectListResponseSchema = paginated(projectSummarySchema);
 export type ProjectListResponse = z.infer<typeof projectListResponseSchema>;
 export const companyListResponseSchema = paginated(companySummarySchema);
+export const articleListResponseSchema = paginated(articleSummarySchema);
+export type ArticleListResponse = z.infer<typeof articleListResponseSchema>;
 export type CompanyListResponse = z.infer<typeof companyListResponseSchema>;
 
 export const personSummarySchema = z.object({

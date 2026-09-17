@@ -3,6 +3,8 @@ import {
   adminPersonListSchema,
   adminPersonSchema,
   articleDetailResponseSchema,
+  articleListResponseSchema,
+  type ArticleListResponse,
   companyDetailResponseSchema,
   episodeDetailResponseSchema,
   personDetailResponseSchema,
@@ -249,6 +251,8 @@ export function createApiClient(options: ApiClientOptions = {}) {
       company: (slug: string): Promise<CompanyDetailResponse> =>
         request('GET', `/api/v1/companies/${encodeURIComponent(slug)}`, companyDetailResponseSchema),
       person: (slug: string): Promise<PersonDetailResponse> => request('GET', `/api/v1/people/${encodeURIComponent(slug)}`, personDetailResponseSchema),
+      articles: (page = 1, pageSize = 24): Promise<ArticleListResponse> =>
+        request('GET', `/api/v1/articles${qs({ page, pageSize })}`, articleListResponseSchema),
       article: (slug: string): Promise<ArticleDetailResponse> =>
         request('GET', `/api/v1/articles/${encodeURIComponent(slug)}`, articleDetailResponseSchema),
       flags: (): Promise<PublicFlagsResponse> => request('GET', '/api/v1/flags', publicFlagsResponseSchema),

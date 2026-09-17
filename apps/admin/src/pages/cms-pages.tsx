@@ -5,7 +5,9 @@ import type {
   AdminLivestream,
   AdminProject,
   AdminShow,
+  AdminPerson,
   ArticleInput,
+  PersonInput,
   CompanyInput,
   EpisodeInput,
   LivestreamInput,
@@ -29,15 +31,20 @@ function useOptions() {
   const projects = useQuery({ queryKey: ['admin', 'cms', 'options', 'projects'], queryFn: () => api.admin.content.listProjects({ pageSize: 100 }) });
   const companies = useQuery({ queryKey: ['admin', 'cms', 'options', 'companies'], queryFn: () => api.admin.content.listCompanies({ pageSize: 100 }) });
   const chains = useQuery({ queryKey: ['admin', 'cms', 'options', 'chains'], queryFn: () => api.admin.content.listChains() });
+  const hosts = useQuery({ queryKey: ['admin', 'cms', 'options', 'hosts'], queryFn: () => api.admin.content.listHosts({ pageSize: 100 }) });
+  const guests = useQuery({ queryKey: ['admin', 'cms', 'options', 'guests'], queryFn: () => api.admin.content.listGuests({ pageSize: 100 }) });
   return {
     shows: (shows.data?.items ?? []).map((s) => ({ value: s.id, label: s.title })),
     projects: (projects.data?.items ?? []).map((p) => ({ value: p.id, label: p.name })),
     companies: (companies.data?.items ?? []).map((c) => ({ value: c.id, label: c.name })),
     chains: (chains.data ?? []).map((c) => ({ value: c.slug, label: c.name })),
+    hosts: (hosts.data?.items ?? []).map((h) => ({ value: h.id, label: h.isAi ? `${h.name} (AI)` : h.name })),
+    guests: (guests.data?.items ?? []).map((g) => ({ value: g.id, label: g.title ? `${g.name} · ${g.title}` : g.name })),
   };
 }
 
 export function ShowsCmsPage() {
+  const options = useOptions();
   const config: EntityEditorConfig<AdminShow, ShowInput> = {
     kicker: 'Network',
     title: 'Shows',
@@ -54,6 +61,7 @@ export function ShowsCmsPage() {
       { name: 'tagline', label: 'Tagline (hero statement)', type: 'text', wide: true, value: (s) => s.tagline },
       { name: 'description', label: 'Description', type: 'textarea', wide: true, value: (s) => s.description },
       { name: 'coverUrl', label: 'Cover image URL', type: 'url', value: (s) => s.coverUrl },
+      { name: 'hostIds', label: 'Hosts', type: 'multiselect', options: options.hosts, wide: true, value: (s) => s.hostIds },
     ],
     toInput: (v) => ({
       title: String(v.title ?? ''),
@@ -61,6 +69,7 @@ export function ShowsCmsPage() {
       tagline: str(v.tagline),
       description: str(v.description),
       coverUrl: str(v.coverUrl),
+      hostIds: (v.hostIds as string[]) ?? [],
       status: (v.status as ShowInput['status']) ?? 'draft',
     }),
     columns: [
@@ -96,6 +105,8 @@ export function EpisodesCmsPage() {
       { name: 'coverUrl', label: 'Cover image URL', type: 'url', value: (e) => e.coverUrl },
       { name: 'projectIds', label: 'Projects discussed', type: 'multiselect', options: options.projects, wide: true, value: (e) => e.projectIds },
       { name: 'companyIds', label: 'Companies discussed', type: 'multiselect', options: options.companies, wide: true, value: (e) => e.companyIds },
+      { name: 'hostIds', label: 'Hosts on this episode', type: 'multiselect', options: options.hosts, wide: true, value: (e) => e.hostIds },
+      { name: 'guestIds', label: 'Guests', type: 'multiselect', options: options.guests, wide: true, value: (e) => e.guestIds },
     ],
     toInput: (v) => ({
       showId: String(v.showId ?? ''),
@@ -109,6 +120,8 @@ export function EpisodesCmsPage() {
       coverUrl: str(v.coverUrl),
       projectIds: (v.projectIds as string[]) ?? [],
       companyIds: (v.companyIds as string[]) ?? [],
+      hostIds: (v.hostIds as string[]) ?? [],
+      guestIds: (v.guestIds as string[]) ?? [],
       status: (v.status as EpisodeInput['status']) ?? 'draft',
     }),
     columns: [
@@ -330,4 +343,64 @@ export function LivestreamsCmsPage() {
     ],
   };
   return <EntityEditor config={config} />;
+}
+
+function personConfig(role: 'host' | 'guest'): EntityEditorConfig<AdminPerson, PersonInput> {
+  const isHost = role === 'host';
+  return {
+    kicker: 'Network',
+    title: isHost ? 'Hosts' : 'Guests',
+    noun: isHost ? 'Host' : 'Guest',
+    queryKey: isHost ? 'hosts' : 'guests',
+    description: isHost
+      ? 'Show hosts. Marking a host as an AI personality (editors only) labels them as AI everywhere on the site (§25).'
+      : 'Guest profiles appear on episode pages and at /people/<slug>.',
+    hasStatus: false,
+    list: (q) => (isHost ? api.admin.content.listHosts({ pageSize: q.pageSize, q: q.q }) : api.admin.content.listGuests({ pageSize: q.pageSize, q: q.q })),
+    save: (input, id) => (isHost ? api.admin.content.saveHost(input, id) : api.admin.content.saveGuest(input, id)),
+    itemTitle: (p) => p.name,
+    fields: [
+      { name: 'name', label: 'Name', type: 'text', required: true, value: (p) => p.name },
+      { name: 'slug', label: 'Slug', type: 'text', value: (p) => p.slug },
+      ...(isHost ? [] : [{ name: 'title', label: 'Title / role', type: 'text' as const, value: (p: AdminPerson) => p.title }]),
+      { name: 'twitter', label: 'X handle', type: 'text', value: (p) => p.twitter },
+      { name: 'avatarUrl', label: 'Avatar URL', type: 'url', value: (p) => p.avatarUrl },
+      ...(isHost ? [] : [{ name: 'website', label: 'Website', type: 'url' as const, value: (p: AdminPerson) => p.website }]),
+      { name: 'bio', label: 'Bio', type: 'textarea', wide: true, value: (p) => p.bio },
+      ...(isHost ? [{ name: 'isAi', label: 'AI personality (disclosed on the site)', type: 'checkbox' as const, value: (p: AdminPerson) => p.isAi }] : []),
+    ],
+    toInput: (v) => ({
+      name: String(v.name ?? ''),
+      slug: slugOrUndefined(v.slug),
+      title: str(v.title),
+      twitter: str(v.twitter),
+      avatarUrl: str(v.avatarUrl),
+      website: str(v.website),
+      bio: str(v.bio),
+      isAi: Boolean(v.isAi),
+    }),
+    columns: [
+      {
+        header: isHost ? 'Host' : 'Guest',
+        cell: (p) => (
+          <>
+            <p className="font-semibold">
+              {p.name} {p.isAi ? <Badge variant="info">AI</Badge> : null} {p.isDemo ? <Badge variant="warning">demo</Badge> : null}
+            </p>
+            <p className="text-xs text-muted">{p.title ?? p.slug}</p>
+          </>
+        ),
+      },
+      { header: 'Appearances', cell: (p) => <span className="font-mono">{p.appearances}</span>, className: 'hidden md:table-cell' },
+      { header: 'Updated', cell: (p) => formatDate(p.updatedAt), className: 'hidden lg:table-cell' },
+    ],
+  };
+}
+
+export function HostsCmsPage() {
+  return <EntityEditor config={personConfig('host')} />;
+}
+
+export function GuestsCmsPage() {
+  return <EntityEditor config={personConfig('guest')} />;
 }

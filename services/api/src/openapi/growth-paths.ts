@@ -49,6 +49,7 @@ import {
   adminPersonListSchema,
   adminPersonSchema,
   articleDetailResponseSchema,
+  articleListResponseSchema,
   companyDetailResponseSchema,
   episodeDetailResponseSchema,
   personDetailResponseSchema,
@@ -163,6 +164,7 @@ export function registerGrowthPaths(registry: OpenAPIRegistry, h: GrowthPathHelp
   publicGet('/api/v1/projects/{slug}', 'Project detail', 'Project profile and episodes that discussed it.', projectDetailResponseSchema, { params: slugParams }, notFound('Project'));
   publicGet('/api/v1/companies/{slug}', 'Company detail', 'Company profile and episodes that discussed it.', companyDetailResponseSchema, { params: slugParams }, notFound('Company'));
   publicGet('/api/v1/people/{slug}', 'Person detail', 'Host or guest profile and their episodes. AI hosts are flagged.', personDetailResponseSchema, { params: slugParams }, notFound('Person'));
+  publicGet('/api/v1/articles', 'List articles', 'Published articles, newest first.', component('ArticleListResponse', articleListResponseSchema, {}), { query: listQuerySchema });
   publicGet('/api/v1/articles/{slug}', 'Article detail', 'Published article with source attribution.', articleDetailResponseSchema, { params: slugParams }, notFound('Article'));
   for (const [path, type, summary] of [
     ['/api/v1/seo/sitemap.xml', 'application/xml', 'Sitemap of published pages'],
