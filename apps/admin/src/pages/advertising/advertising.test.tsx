@@ -144,4 +144,42 @@ describe('Advertising admin', () => {
     expect(within(table).getByText('Acme Custody')).toBeInTheDocument();
     expect(within(table).getByText('$5k–$25k')).toBeInTheDocument();
   });
+
+  it('shows the overview with animated counters, week-over-week deltas and a 14-day chart', async () => {
+    mockApi.auth.me.mockResolvedValue({ user: user(['ads.manage'], ['sales']) });
+    const daily = Array.from({ length: 14 }, (_, i) => ({ date: `2026-09-${String(4 + i).padStart(2, '0')}`, impressions: 10 + i, clicks: i % 3 }));
+    mockApi.admin.advertisingOverview.mockResolvedValue({
+      activeCampaigns: 3,
+      pendingReviews: 2,
+      impressionsLast7d: 1500,
+      clicksLast7d: 30,
+      impressionsPrior7d: 1000,
+      clicksPrior7d: 0,
+      daily,
+      bookedRevenueCents: 250_000,
+      newInquiries: 4,
+      confirmedSubscribers: 987,
+      advertisingLive: false,
+    });
+    renderApp('/advertising/overview');
+    const u = userEvent.setup();
+
+    expect((await screen.findAllByText('1,500')).length).toBeGreaterThan(0);
+    const impressions = screen.getByText('Impressions (7 days)').closest('[data-testid="stat-card"]')!;
+    expect(within(impressions).getByText(/50\.00%/)).toHaveTextContent('up');
+    expect(within(impressions).getByRole('img', { name: 'Impressions per day, last 14 days' })).toBeInTheDocument();
+    // No prior clicks, so there is no honest percentage to show.
+    const clicks = screen.getByText('Clicks (7 days)').closest('[data-testid="stat-card"]')!;
+    expect(within(clicks).getByText('—')).toBeInTheDocument();
+    expect(screen.getByText('Booked (paid campaigns)').parentElement).toHaveTextContent('$2,500');
+
+    const chart = screen.getByRole('table', { name: 'Impressions per day' });
+    expect(within(chart).getAllByRole('row')).toHaveLength(14);
+    expect(within(chart).getByRole('row', { name: /2026-09-17/ })).toHaveTextContent('23');
+    await u.click(screen.getByRole('button', { name: 'Clicks' }));
+    expect(screen.getByRole('table', { name: 'Clicks per day' })).toBeInTheDocument();
+
+    expect(screen.getByText('Ads are not serving')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Manage feature flags' })).toBeNull();
+  });
 });

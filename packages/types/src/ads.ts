@@ -286,6 +286,11 @@ export const advertisingOverviewSchema = z.object({
   pendingReviews: z.number().int(),
   impressionsLast7d: z.number().int(),
   clicksLast7d: z.number().int(),
+  /** The 7 days before `impressionsLast7d`/`clicksLast7d`, for week-over-week deltas. */
+  impressionsPrior7d: z.number().int(),
+  clicksPrior7d: z.number().int(),
+  /** One entry per UTC day for the last 14 days (oldest first), zero-filled. */
+  daily: z.array(z.object({ date: z.string(), impressions: z.number().int(), clicks: z.number().int() })),
   bookedRevenueCents: z.number().int(),
   newInquiries: z.number().int(),
   confirmedSubscribers: z.number().int(),

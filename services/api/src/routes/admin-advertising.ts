@@ -132,27 +132,61 @@ export function adminAdvertisingRouter({ prisma }: AdminAdvertisingDeps): Router
   // ───── Overview ─────
   router.get('/overview', requirePermission('ads.manage'), async (_req, res) => {
     const now = new Date();
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const [activeCampaigns, pendingCampaigns, pendingCreatives, impressionsLast7d, clicksLast7d, booked, newInquiries, confirmedSubscribers, flag] =
-      await Promise.all([
-        prisma.campaign.count({ where: { status: 'approved', startsAt: { lte: now }, endsAt: { gte: now } } }),
-        prisma.campaign.count({ where: { status: 'in_review' } }),
-        prisma.creativeAsset.count({ where: { reviewStatus: 'review' } }),
-        prisma.adImpression.count({ where: { createdAt: { gte: weekAgo } } }),
-        prisma.adClick.count({ where: { createdAt: { gte: weekAgo } } }),
-        prisma.campaign.aggregate({
-          where: { status: { in: ['approved', 'paused', 'completed'] }, advertiser: { isHouse: false } },
-          _sum: { budgetCents: true },
-        }),
-        prisma.advertisingInquiry.count({ where: { status: 'new' } }),
-        prisma.newsletterSubscriber.count({ where: { status: 'confirmed' } }),
-        prisma.featureFlag.findUnique({ where: { key: 'advertising' }, select: { enabled: true } }),
-      ]);
+    const DAY = 24 * 60 * 60 * 1000;
+    const weekAgo = new Date(now.getTime() - 7 * DAY);
+    const twoWeeksAgo = new Date(now.getTime() - 14 * DAY);
+    const seriesStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 13));
+    const [
+      activeCampaigns,
+      pendingCampaigns,
+      pendingCreatives,
+      impressionsLast7d,
+      clicksLast7d,
+      impressionsPrior7d,
+      clicksPrior7d,
+      dailyImpressions,
+      dailyClicks,
+      booked,
+      newInquiries,
+      confirmedSubscribers,
+      flag,
+    ] = await Promise.all([
+      prisma.campaign.count({ where: { status: 'approved', startsAt: { lte: now }, endsAt: { gte: now } } }),
+      prisma.campaign.count({ where: { status: 'in_review' } }),
+      prisma.creativeAsset.count({ where: { reviewStatus: 'review' } }),
+      prisma.adImpression.count({ where: { createdAt: { gte: weekAgo } } }),
+      prisma.adClick.count({ where: { createdAt: { gte: weekAgo } } }),
+      prisma.adImpression.count({ where: { createdAt: { gte: twoWeeksAgo, lt: weekAgo } } }),
+      prisma.adClick.count({ where: { createdAt: { gte: twoWeeksAgo, lt: weekAgo } } }),
+      prisma.$queryRaw<Array<{ day: Date; n: bigint }>>`SELECT date_trunc('day', created_at) AS day, count(*)::bigint AS n FROM ad_impressions WHERE created_at >= ${seriesStart} GROUP BY 1`,
+      prisma.$queryRaw<Array<{ day: Date; n: bigint }>>`SELECT date_trunc('day', created_at) AS day, count(*)::bigint AS n FROM ad_clicks WHERE created_at >= ${seriesStart} GROUP BY 1`,
+      prisma.campaign.aggregate({
+        where: { status: { in: ['approved', 'paused', 'completed'] }, advertiser: { isHouse: false } },
+        _sum: { budgetCents: true },
+      }),
+      prisma.advertisingInquiry.count({ where: { status: 'new' } }),
+      prisma.newsletterSubscriber.count({ where: { status: 'confirmed' } }),
+      prisma.featureFlag.findUnique({ where: { key: 'advertising' }, select: { enabled: true } }),
+    ]);
+    // Zero-filled so the chart always spans 14 days; a day with no rows is honestly 0 (impressions are counted server-side).
+    const daily = Array.from({ length: 14 }, (_, i) => ({ date: new Date(seriesStart.getTime() + i * DAY).toISOString().slice(0, 10), impressions: 0, clicks: 0 }));
+    const byDate = new Map(daily.map((d) => [d.date, d]));
+    for (const r of dailyImpressions) {
+      const d = byDate.get(new Date(r.day).toISOString().slice(0, 10));
+      if (d) d.impressions = Number(r.n);
+    }
+    for (const r of dailyClicks) {
+      const d = byDate.get(new Date(r.day).toISOString().slice(0, 10));
+      if (d) d.clicks = Number(r.n);
+    }
     const response: AdvertisingOverview = {
       activeCampaigns,
       pendingReviews: pendingCampaigns + pendingCreatives,
       impressionsLast7d,
       clicksLast7d,
+      impressionsPrior7d,
+      clicksPrior7d,
+      daily,
       bookedRevenueCents: booked._sum.budgetCents ?? 0,
       newInquiries,
       confirmedSubscribers,

@@ -115,6 +115,13 @@ describe('admin advertising workflow', () => {
     const overview = advertisingOverviewSchema.parse((await as(admin).get(`${A}/overview`)).body);
     expect(overview.activeCampaigns).toBe(1);
     expect(overview.advertisingLive).toBe(true);
+    expect(overview.impressionsLast7d).toBe(1);
+    expect(overview.clicksLast7d).toBe(1);
+    expect(overview.impressionsPrior7d).toBe(0);
+    expect(overview.daily).toHaveLength(14);
+    expect(overview.daily.map((d) => d.date)).toEqual([...overview.daily.map((d) => d.date)].sort());
+    expect(overview.daily.at(-1)).toEqual({ date: new Date().toISOString().slice(0, 10), impressions: 1, clicks: 1 });
+    expect(overview.daily.reduce((s, d) => s + d.impressions, 0)).toBe(1);
 
     expect(await ctx.prisma.auditLog.count({ where: { action: { startsWith: 'advertising.' } } })).toBeGreaterThanOrEqual(6);
   });
